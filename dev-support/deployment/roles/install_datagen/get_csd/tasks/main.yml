@@ -1,0 +1,6 @@
+---
+- name: Get CSD file
+  fetch: 
+    src: "{{ target_dir }}/csd/{{ dg_name }}.jar"
+    dest: "/tmp/{{ dg_name }}.jar"
+    flat: yes

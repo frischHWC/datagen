@@ -1,0 +1,68 @@
+{
+  "Fields": [
+    {
+      "name": "city",
+      "type": "CITY",
+      "filters": ["France"]
+    },
+    {
+      "name": "lat",
+      "type": "LINK",
+      "conditionals": {
+        "link": "$city.lat"
+      }
+    },
+    {
+      "name": "long",
+      "type": "LINK",
+      "conditionals": {
+        "link": "$city.long"
+      }
+    },
+    {
+      "name": "reporting_timestamp",
+      "type": "TIMESTAMP"
+    },
+    {
+      "name": "emergency",
+      "type": "STRING",
+      "possible_values": ["VERY URGENT", "URGENT", "VERY IMPORTANT", "IMPORTANT", "NOT IMPORTANT"]
+    },
+    {
+      "name": "type",
+      "type": "STRING",
+      "possible_values": ["CRIME", "ELECTRICAL", "WATER", "TRANSPORT"]
+    }
+  ],
+  "Table_Names": [
+    {"HDFS_FILE_PATH": "/user/datagen/hdfs/publicservice/incident/"},
+    {"HDFS_FILE_NAME": "incident"},
+    {"HIVE_HDFS_FILE_PATH": "/user/datagen/hive/publicservice/incident/"},
+    {"HBASE_TABLE_NAME": "incident"},
+    {"HBASE_NAMESPACE": "datagenpublicservice"},
+    {"KAFKA_TOPIC": "datagen_publicservice_incident"},
+    {"OZONE_VOLUME": "datagenpublicservice"},
+    {"OZONE_BUCKET":  "incident"},
+    {"OZONE_KEY_NAME":  "incident"},
+    {"OZONE_LOCAL_FILE_PATH":  "/home/datagen/temp/incident/"},
+    {"SOLR_COLLECTION": "datagen-publicservice-incident"},
+    {"HIVE_DATABASE": "datagen_publicservice"},
+    {"HIVE_TABLE_NAME":  "incident"},
+    {"KUDU_TABLE_NAME":  "datagen.publicservice_incident"},
+    {"LOCAL_FILE_PATH":  "/home/datagen/publicservice/incident/"},
+    {"LOCAL_FILE_NAME":  "incident"},
+    {"AVRO_NAME":  "datagenpublicserviceincident"}
+  ],
+  "Primary_Keys": [
+    {"KAFKA_MSG_KEY": "city"}
+  ],
+  "Options": [
+    {"KAFKA_ACKS_CONFIG":  "all"},
+    {"KAFKA_RETRIES_CONFIG":  3},
+    {"KAFKA_MESSAGE_TYPE":  "AVRO"},
+    {"KUDU_REPLICAS":  1},
+    {"KUDU_BUCKETS":  32},
+    {"KUDU_BUFFER":  100001},
+    {"KUDU_FLUSH":  "MANUAL_FLUSH"}
+  ]
+}

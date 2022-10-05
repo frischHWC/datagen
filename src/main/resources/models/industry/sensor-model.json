@@ -1,0 +1,50 @@
+{
+  "Fields": [
+    {
+      "name": "sensor_id",
+      "type": "INCREMENT_INTEGER",
+      "min": 0,
+      "max": 100000
+    },
+    {
+      "name": "sensor_type",
+      "type": "STRING",
+      "possible_values": ["pressure", "temperature", "motion", "speed", "humidity", "force", "vibration"]
+    },
+    {
+      "name": "plant_id",
+      "type": "INTEGER",
+      "min": 0,
+      "max": 1000
+    }
+  ],
+  "Table_Names": [
+    {"HDFS_FILE_PATH": "/user/datagen/hdfs/industry/sensor/"},
+    {"HDFS_FILE_NAME": "sensor"},
+    {"HIVE_HDFS_FILE_PATH": "/user/datagen/hive/industry/sensor/"},
+    {"HBASE_TABLE_NAME": "sensor"},
+    {"HBASE_NAMESPACE": "datagenindustry"},
+    {"KAFKA_TOPIC": "industry_sensor"},
+    {"OZONE_VOLUME": "datagenindustry"},
+    {"OZONE_BUCKET":  "sensor"},
+    {"OZONE_KEY_NAME":  "sensor"},
+    {"OZONE_LOCAL_FILE_PATH":  "/home/datagen/temp/sensor/"},
+    {"SOLR_COLLECTION": "datagen-industry-sensor"},
+    {"HIVE_DATABASE": "datagen_industry"},
+    {"HIVE_TABLE_NAME":  "sensor"},
+    {"KUDU_TABLE_NAME":  "datagen-industry.sensor"},
+    {"LOCAL_FILE_PATH":  "/home/datagen/industry/sensor/"},
+    {"LOCAL_FILE_NAME":  "sensor"},
+    {"AVRO_NAME":  "datagenindustrysensor"}
+  ],
+  "Primary_Keys": [
+    {"KAFKA_MSG_KEY": "sensor_id"},
+    {"HBASE_PRIMARY_KEY":  "sensor_id"},
+    {"KUDU_PRIMARY_KEYS":  "sensor_id"},
+    {"KUDU_HASH_KEYS":  "sensor_id"}
+  ],
+  "Options": [
+    {"HBASE_COLUMN_FAMILIES_MAPPING": "parties:sender_id,receiver_id;details:amount,execution_date,currency"},
+    {"DELETE_PREVIOUS":  "true"}
+  ]
+}

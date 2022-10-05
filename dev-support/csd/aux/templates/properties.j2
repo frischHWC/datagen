@@ -1,0 +1,140 @@
+# WARNING: These two properties are required to make the spring boot work with all dependencies
+server.tomcat.additional-tld-skip-patterns=*.jar
+spring.mvc.pathmatch.matching-strategy=ANT_PATH_MATCHER
+
+# When deployed to CDP, should be set to 'cdp'
+spring.profiles.active=cdp
+
+# General conf 
+app.name=Data Generator
+server.port={{ globals['app_port'] }}
+hadoop.user=${USER}
+hadoop.home=/user/${USER}
+
+# General default Conf
+threads={{ globals['threads'] }}
+number.batches.default={{ globals['number_of_batches'] }}
+number.rows.default={{ globals['number_of_rows'] }}
+data.model.path=${DATAGEN_MODELS_DIR}
+data.model.default={{ globals['data_model'] }}
+custom.data.model={{ globals['custom_model_path'] }}
+scheduler.file.path={{ globals['scheduler_file_path'] }}
+
+# Spring internal TLS settings
+server.ssl.key-store={{ globals['keystore_file'] }}
+server.ssl.key-store-password=${KEYSTORE_PASSWORD}
+server.ssl.key-store-type=JKS
+server.ssl.key-alias=${HOST}
+server.ssl.key-password=${KEYSTORE_KEYPASSWORD}
+server.ssl.trust-store={{ globals['truststore_location'] }}
+server.ssl.trust-store-password=${TRUSTSTORE_PASSWORD}
+
+# Auth config
+security.basic.enabled=false
+admin.user={{ globals['admin_user'] }}
+admin.password=${ADMIN_PASSWORD}
+
+# Kerberos Config
+kerberos.enabled={{ globals['kerberos_enabled'] }}
+kerberos.user=${PRINCIPAL}
+kerberos.keytab=${CONF_DIR}/${USER}.keytab
+
+# TLS Config
+tls.enabled={{ globals['tls_enabled'] }}
+truststore.location={{ globals['truststore_location'] }}
+truststore.password=${TRUSTSTORE_PASSWORD}
+keystore.location={{ globals['keystore_file'] }}
+keystore.password=${KEYSTORE_PASSWORD}
+keystore.keypassword=${KEYSTORE_KEYPASSWORD}
+
+# These are default config file's path in a CDP cluster
+# In case below settings are not set, these files are used to extrapolate them
+hadoop.core.site.path={{ globals['core_site_path'] }}
+hadoop.hdfs.site.path={{ globals['hdfs_site_path'] }}
+hadoop.ozone.site.path={{ globals['ozone_site_path'] }}
+hadoop.hbase.site.path={{ globals['hbase_site_path'] }}
+hadoop.hive.site.path={{ globals['hive_site_path'] }}
+solr.env.path={{ globals['solr_env_path'] }}
+kafka.conf.client.path={{ globals['kafka_client_conf_path'] }}
+schema.registry.conf.path={{ globals['schema_registry_conf_path'] }}
+kudu.conf.path={{ globals['kudu_conf_path'] }}
+
+# NB: A value #{VALUE} is a placeholder to another defined value in this file
+
+# Other configurations that are either derived from previous files if empty or must be set using APIs when loading data
+# HDFS
+hdfs.uri={{ globals['hdfs_uri'] }}
+hdfs.auth.kerberos=#{kerberos.enabled}
+# It is not needed to fill below configuration if KERBEROS is not activated
+hdfs.auth.kerberos.user=#{kerberos.user}
+hdfs.auth.kerberos.keytab=#{kerberos.keytab}
+
+
+# HBASE
+hbase.zookeeper.quorum={{ globals['hbase_zk_quorum'] }}
+hbase.zookeeper.port={{ globals['hbase_zk_quorum_port'] }}
+hbase.zookeeper.znode={{ globals['hbase_znode_parent'] }}
+hbase.auth.kerberos=#{kerberos.enabled}
+# It is not needed to fill below configuration if KERBEROS is not activated
+hbase.security.user=#{kerberos.user}
+hbase.security.keytab=#{kerberos.keytab}
+
+
+# OZONE
+ozone.service.id={{ globals['ozone_service_id'] }}
+ozone.auth.kerberos=#{kerberos.enabled}
+# It is not needed to fill below configuration if KERBEROS is not activated
+ozone.auth.kerberos.user=#{kerberos.user}
+ozone.auth.kerberos.keytab=#{kerberos.keytab}
+
+
+# HIVE
+hive.zookeeper.quorum={{ globals['hive_zk_quorum'] }}
+hive.zookeeper.znode={{ globals['hive_znode'] }}
+hive.auth.kerberos=#{kerberos.enabled}
+# It is not needed to fill below configuration if KERBEROS is not activated
+hive.security.user=#{kerberos.user}
+hive.security.keytab=#{kerberos.keytab}
+hive.truststore.location=#{truststore.location}
+hive.truststore.password=#{truststore.password}
+
+
+# SOLR
+solr.zookeeper.quorum={{ globals['solr_zk_quorum'] }}
+solr.zookeeper.znode={{ globals['solr_znode'] }}
+solr.tls.enabled={{ globals['solr_tls_enabled'] }}
+solr.auth.kerberos=#{kerberos.enabled}
+# It is not needed to fill below configuration if KERBEROS is not activated
+solr.auth.kerberos.keytab=#{kerberos.keytab}
+solr.auth.kerberos.user=#{kerberos.user}
+solr.truststore.location=#{truststore.location}
+solr.truststore.password=#{truststore.password}
+solr.keystore.location=#{keystore.location}
+solr.keystore.password=#{keystore.password}
+
+
+# KAFKA
+kafka.brokers={{ globals['kafka_url'] }}
+kafka.security.protocol={{ globals['kafka_protocol'] }}
+schema.registry.url={{ globals['schema_registry_url'] }}
+schema.registry.tls.enabled={{ globals['schema_registry_tls_enabled'] }}
+# It is not needed to fill below configuration if KERBEROS is not activated (i.e. protocol is PLAINTEXT)
+kafka.keystore.location=#{keystore.location}
+kafka.truststore.location=#{truststore.location}
+kafka.keystore.password=#{keystore.password}
+kafka.keystore.key.password=#{keystore.keypassword}
+kafka.truststore.password=#{truststore.password}
+kafka.sasl.mechanism={{ globals['kafka_sasl_mechanism'] }}
+kafka.sasl.kerberos.service.name={{ globals['kafka_sasl_service_name'] }}
+kafka.auth.kerberos.keytab=#{kerberos.keytab}
+kafka.auth.kerberos.user=#{kerberos.user}
+
+
+# KUDU
+kudu.master.server={{ globals['kudu_url'] }}
+kudu.auth.kerberos=#{kerberos.enabled}
+# It is not needed to fill below configuration if KERBEROS is not activated
+kudu.security.user=#{kerberos.user}
+kudu.security.keytab=#{kerberos.keytab}
+kudu.truststore.location=#{truststore.location}
+kudu.truststore.password=#{truststore.password}

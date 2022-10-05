@@ -1,0 +1,13 @@
+---
+- name: Clone Repository
+  git:
+    repo: "{{ data_gen_git_url }}"
+    dest: "{{ target_dir }}/git-repo/"
+    version: "{{ data_gen_git_branch }}"
+
+- name: Clean & Package Project
+  shell:
+    cmd: |
+      export JAVA_HOME='/usr/lib/jvm/java-11/' ;
+      /opt/apache-maven-3.8.6/bin/mvn clean package
+    chdir: "{{ target_dir }}/git-repo/"

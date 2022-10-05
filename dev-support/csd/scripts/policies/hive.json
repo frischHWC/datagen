@@ -1,0 +1,137 @@
+{
+  "id": 1,
+  "guid": "...",
+  "isEnabled": true,
+  "version": 1,
+  "service": "cm_hive",
+  "name": "datagen policy",
+  "policyType": 0,
+  "policyPriority": 0,
+  "description": "DATAGEN's policy for default generation",
+  "isAuditEnabled": true,
+  "resources": {
+    "database": {
+      "values": [
+        "datagen*"
+      ],
+      "isExcludes": false,
+      "isRecursive": false
+    },
+    "column": {
+      "values": [
+        "*"
+      ],
+      "isExcludes": false,
+      "isRecursive": false
+    },
+    "table": {
+      "values": [
+        "*"
+      ],
+      "isExcludes": false,
+      "isRecursive": false
+    }
+  },
+  "policyItems": [
+    {
+      "accesses": [
+        {
+          "type": "select",
+          "isAllowed": true
+        },
+        {
+          "type": "update",
+          "isAllowed": true
+        },
+        {
+          "type": "create",
+          "isAllowed": true
+        },
+        {
+          "type": "drop",
+          "isAllowed": true
+        },
+        {
+          "type": "alter",
+          "isAllowed": true
+        },
+        {
+          "type": "index",
+          "isAllowed": true
+        },
+        {
+          "type": "lock",
+          "isAllowed": true
+        },
+        {
+          "type": "all",
+          "isAllowed": true
+        },
+        {
+          "type": "read",
+          "isAllowed": true
+        },
+        {
+          "type": "write",
+          "isAllowed": true
+        },
+        {
+          "type": "repladmin",
+          "isAllowed": true
+        },
+        {
+          "type": "serviceadmin",
+          "isAllowed": true
+        },
+        {
+          "type": "tempudfadmin",
+          "isAllowed": true
+        },
+        {
+          "type": "refresh",
+          "isAllowed": true
+        }
+      ],
+      "users": [
+        "datagen"
+      ],
+      "groups": [
+
+      ],
+      "roles": [
+
+      ],
+      "conditions": [
+
+      ],
+      "delegateAdmin": true
+    }
+  ],
+  "denyPolicyItems": [
+
+  ],
+  "allowExceptions": [
+
+  ],
+  "denyExceptions": [
+
+  ],
+  "dataMaskPolicyItems": [
+
+  ],
+  "rowFilterPolicyItems": [
+
+  ],
+  "serviceType": "hive",
+  "options": {
+
+  },
+  "validitySchedules": [
+
+  ],
+  "policyLabels": [
+
+  ],
+  "zoneName": "",
+  "isDenyAllElse": false
+}

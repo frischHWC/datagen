@@ -1,0 +1,12 @@
+---
+##############################################
+############# CREATE DATAGEN #############
+
+- name: Create Datagen
+  hosts: edge
+  gather_facts: true
+  roles: 
+    - create_datagen/init
+    - create_datagen/compile_datagen
+    - create_datagen/create_csd
+    - create_datagen/create_parcel

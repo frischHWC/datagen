@@ -1,0 +1,17 @@
+---
+##############################################
+############# Launch DATAGEN #############
+
+- name: Launch Datagen
+  hosts: edge
+  gather_facts: false
+  roles: 
+    - auto_configure/cm-config
+    - auto_configure/all-config
+    - { role: auto_configure/ranger-config, when: ranger_exists }
+    - { role: auto_configure/kafka-config, when: kafka_exists }
+    - { role: auto_configure/solr-config, when: solr_exists }
+    - { role: auto_configure/kudu-config, when: kudu_exists }
+    - { role: auto_configure/schema-registry-config, when: ranger_exists }
+    - launch_datagen/add_service
+    - { role: launch_datagen/launch_command , when: launch_generation }

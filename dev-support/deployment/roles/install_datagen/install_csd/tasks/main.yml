@@ -1,0 +1,18 @@
+---
+- name: Copy CSD to CM
+  copy:
+    src: "/tmp/{{ dg_name }}.jar"
+    dest: "/opt/cloudera/csd/{{ dg_name }}.jar"
+
+- name: Restart CM 
+  systemd:
+    state: restarted
+    name: cloudera-scm-server
+
+- name: wait cloudera-scm-server
+  wait_for:
+    host: "{{ cloudera_manager_host }}"
+    port: "{{ cloudera_manager_port }}"
+    delay: 20
+    state: started
+    timeout: 300

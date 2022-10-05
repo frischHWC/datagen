@@ -1,0 +1,254 @@
+{
+  "Fields": [
+    {
+      "name": "size",
+      "type": "INTEGER"
+    },
+    {
+      "name": "category",
+      "type": "INTEGER",
+      "possible_values": [0, 1, -1]
+    },
+    {
+      "name": "department",
+      "type": "STRING",
+      "possible_values": ["hr", "consulting", "marketing", "finance"]
+    },
+    {
+      "name": "country_of_provenance",
+      "type": "STRING",
+      "possible_values_weighted": {
+        "France": 30,
+        "Germany": 70
+      }
+    },
+    {
+      "name": "percentage",
+      "type": "INTEGER",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "name": "abbreviation",
+      "type": "STRINGAZ",
+      "length": 3
+    },
+    {
+      "name": "randomName",
+      "type": "STRING"
+    },
+    {
+      "name": "userEmail",
+      "type": "EMAIL"
+    },
+    {
+      "name": "limitedName",
+      "type": "STRING",
+      "length": 10
+    },
+    {
+      "name": "bool",
+      "type": "BOOLEAN"
+    },
+    {
+      "name": "progression",
+      "type": "FLOAT"
+    },
+    {
+      "name": "bigSize",
+      "type": "LONG"
+    },
+    {
+      "name": "startDate",
+      "type": "TIMESTAMP"
+    },
+    {
+      "name": "bytesLittleArray",
+      "type": "BYTES",
+      "length" : 10
+    },
+    {
+      "name": "bytesArray",
+      "type": "BYTES"
+    },
+    {
+      "name": "hash",
+      "type": "HASHMD5"
+    },
+    {
+      "name": "restrictedHash",
+      "type": "HASHMD5",
+      "length" : 16
+    },
+    {
+      "name": "birthdate",
+      "type": "BIRTHDATE"
+    },
+    {
+      "name": "birthdate_old",
+      "type": "BIRTHDATE",
+      "min": "1/1/1900",
+      "max": "1/1/1950"
+    },
+    {
+      "name": "name",
+      "type": "NAME",
+      "filters": ["France"]
+    },
+    {
+      "name": "country",
+      "type": "COUNTRY"
+    },
+    {
+      "name": "longPercent",
+      "type": "LONG",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "name": "onePlusOne",
+      "type": "INCREMENT_INTEGER"
+    },
+    {
+      "name": "onePlusTwo",
+      "type": "INCREMENT_LONG"
+    },
+    {
+      "name": "formula_1",
+      "type": "STRING",
+      "conditionals": {
+        "formula": "2 * $longPercent + 42 - $onePlusOne"
+      }
+    },
+    {
+      "name": "condition_2",
+      "type": "STRING",
+      "conditionals": {
+        "$category=0" : "first_cond",
+        "$bool=true" : "second_cond",
+        "$category=1 & $longPercent<50" : "third_cond",
+        "$country!GERMANY | $longPercent>$onePlusTwo" : "fourth_cond",
+        "default" : "default"
+      }
+    },
+    {
+      "name": "city",
+      "type": "CITY",
+      "filters": ["France", "Spain"]
+    },
+    {
+      "name": "city_lat",
+      "type": "LINK",
+      "conditionals": {
+        "link": "$city.lat"
+      }
+    },
+    {
+      "name": "city_long",
+      "type": "LINK",
+      "conditionals": {
+        "link": "$city.long"
+      }
+    },
+    {
+      "name": "city_country",
+      "type": "LINK",
+      "conditionals": {
+        "link": "$city.country"
+      }
+    },
+    {
+      "name": "recording_time",
+      "type": "INTEGER",
+      "min": 1606229803,
+      "max": 1637764585
+    },
+    {
+      "name": "ip",
+      "type": "IP"
+    },
+    {
+      "name": "person",
+      "type": "CSV",
+      "filters": ["country=France"],
+      "file": "/opt/cloudera/parcels/DATAGEN/dictionaries/person_test.csv",
+      "field": "name"
+    },
+    {
+      "name": "person_department",
+      "type": "LINK",
+      "conditionals": {
+        "link": "$person.department"
+      }
+    },
+    {
+      "name": "phone_number",
+      "type": "PHONE",
+      "filters": ["France"]
+    },
+    {
+      "name": "uuid",
+      "type": "UUID"
+    },
+    {
+      "name": "email_from_name",
+      "type": "STRING",
+      "conditionals": {
+        "injection": "toto_${name}@our_company_name.${country}"
+      }
+    }
+  ],
+  "Table_Names": [
+    {"HDFS_FILE_PATH": "/user/datagen/hdfs/full/"},
+    {"HDFS_FILE_NAME": "full"},
+    {"HIVE_HDFS_FILE_PATH": "/user/datagen/hive/full/"},
+    {"HBASE_TABLE_NAME": "full"},
+    {"HBASE_NAMESPACE": "datagen"},
+    {"KAFKA_TOPIC": "datagen_full"},
+    {"OZONE_VOLUME": "datagen"},
+    {"OZONE_BUCKET":  "full"},
+    {"OZONE_KEY_NAME":  "full"},
+    {"OZONE_LOCAL_FILE_PATH":  "/home/datagen/temp/full/"},
+    {"SOLR_COLLECTION": "datagen_full"},
+    {"HIVE_DATABASE": "datagen"},
+    {"HIVE_TABLE_NAME":  "full"},
+    {"HIVE_TEMPORARY_TABLE_NAME":  "full_tmp"},
+    {"KUDU_TABLE_NAME":  "datagen.full"},
+    {"LOCAL_FILE_PATH":  "/home/datagen/full/"},
+    {"LOCAL_FILE_NAME":  "datagen-full"},
+    {"AVRO_NAME":  "datagenfull"}
+  ],
+  "Primary_Keys": [
+    {"KAFKA_MSG_KEY": "bigSize"},
+    {"HBASE_PRIMARY_KEY":  "bool,progression"},
+    {"KUDU_PRIMARY_KEYS":  "size,category,department"},
+    {"KUDU_HASH_KEYS":  "size,department"},
+    {"KUDU_RANGE_KEYS":  "category"}
+  ],
+  "Options": [
+    {"HBASE_COLUMN_FAMILIES_MAPPING": "c:randomName,abbreviation,size,bool,progression,percentage,limitedName,userEmail,department;d:bytesLittleArray,bigSize,startDate,bytesArray,hash,birthdate,name,country,restrictedHash,category;e:longPercent,onePlusOne,onePlusTwo,formula_1,condition_2,recording_time"},
+    {"SOLR_SHARDS":  1},
+    {"SOLR_REPLICAS":  1},
+    {"KUDU_REPLICAS":  1},
+    {"ONE_FILE_PER_ITERATION":  true},
+    {"KAFKA_MESSAGE_TYPE":  "json"},
+    {"KAFKA_JAAS_FILE_PATH":  "/tmp/kafka.jaas"},
+    {"SOLR_JAAS_FILE_PATH":  "/tmp/solr.jaas"},
+    {"HIVE_THREAD_NUMBER":  1},
+    {"HIVE_ON_HDFS":  true},
+    {"HIVE_TEZ_QUEUE_NAME":  "root.default"},
+    {"CSV_HEADER":  true},
+    {"DELETE_PREVIOUS":  false},
+    {"PARQUET_PAGE_SIZE":  1048576},
+    {"PARQUET_ROW_GROUP_SIZE":  134217728},
+    {"PARQUET_DICTIONARY_PAGE_SIZE":  1048576},
+    {"PARQUET_DICTIONARY_ENCODING":  true},
+    {"KAFKA_ACKS_CONFIG":  "all"},
+    {"KAFKA_RETRIES_CONFIG":  3},
+    {"KUDU_BUCKETS":  32},
+    {"KUDU_BUFFER":  100001},
+    {"KUDU_FLUSH":  "MANUAL_FLUSH"},
+    {"OZONE_REPLICATION_FACTOR":  3},
+    {"HDFS_REPLICATION_FACTOR":  3}
+  ]
+}

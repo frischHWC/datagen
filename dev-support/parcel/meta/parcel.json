@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "name": "DATAGEN",
+  "version": "DATAGEN_FULL_VERSION",
+  "setActiveSymlink": true,
+
+  "depends": "",
+  "replaces": "",
+  "conflicts": "",
+
+  "provides": [
+    "datagen"
+  ],
+
+  "scripts": {
+    "defines": "datagen_env.sh"
+  },
+
+  "packages": [],
+
+  "components": [
+    {
+      "name"       : "datagen",
+      "version"    : "DATAGEN_FULL_VERSION"
+    }
+  ],
+
+  "users": {
+    "datagen": {
+      "longname"    : "Data Generator",
+      "home"        : "/home/datagen",
+      "shell"       : "/bin/bash",
+      "extra_groups": []
+    }
+  },
+
+  "groups": [
+    "datagen"
+  ]
+}

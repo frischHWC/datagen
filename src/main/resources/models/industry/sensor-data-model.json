@@ -1,0 +1,47 @@
+{
+  "Fields": [
+    {
+      "name": "sensor_id",
+      "type": "INTEGER",
+      "min": 0,
+      "max": 100000
+    },
+    {
+      "name": "timestamp_of_production",
+      "type": "TIMESTAMP"
+    },
+    {
+      "name": "value",
+      "type": "LONG"
+    }
+  ],
+  "Table_Names": [
+    {"HDFS_FILE_PATH": "/user/datagen/hdfs/industry/sensor_data/"},
+    {"HDFS_FILE_NAME": "sensor-data"},
+    {"HIVE_HDFS_FILE_PATH": "/user/datagen/hive/industry/sensor_data/"},
+    {"HBASE_TABLE_NAME": "industry-sensor-data"},
+    {"HBASE_NAMESPACE": "datagenindustry"},
+    {"KAFKA_TOPIC": "datagen_industry_sensor_data"},
+    {"OZONE_VOLUME": "datagenindustry"},
+    {"OZONE_BUCKET":  "sensordata"},
+    {"OZONE_KEY_NAME":  "sensor-data"},
+    {"OZONE_LOCAL_FILE_PATH":  "/home/datagen/temp/sensor_data/"},
+    {"SOLR_COLLECTION": "datagen-industry-sensor-data"},
+    {"HIVE_DATABASE": "datagen_industry"},
+    {"HIVE_TABLE_NAME":  "sensor_data"},
+    {"KUDU_TABLE_NAME":  "datagen-industry.sensor-data"},
+    {"LOCAL_FILE_PATH":  "/home/datagen/industry/sensor_data/"},
+    {"LOCAL_FILE_NAME":  "sensor_data"},
+    {"AVRO_NAME":  "industrysensordata"}
+  ],
+  "Primary_Keys": [
+    {"KAFKA_MSG_KEY": "sensor_id"},
+    {"HBASE_PRIMARY_KEY":  "sensor_id,timestamp"},
+    {"KUDU_PRIMARY_KEYS":  "sensor_id,timestamp"},
+    {"KUDU_HASH_KEYS":  "sensor_id"},
+    {"KUDU_RANGE_KEYS":  "timestamp"}
+  ],
+  "Options": [
+    {"HBASE_COLUMN_FAMILIES_MAPPING": "id:sensor_id;values:timestamp,value"}
+  ]
+}

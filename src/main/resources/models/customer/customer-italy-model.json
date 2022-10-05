@@ -1,0 +1,87 @@
+{
+  "Fields": [
+    {
+      "name": "name",
+      "type": "NAME",
+      "filters": ["Italy"]
+    },
+    {
+      "name": "id",
+      "type": "INCREMENT_INTEGER",
+      "min": 490000,
+      "max": 520000
+    },
+    {
+      "name": "birthdate",
+      "type": "BIRTHDATE",
+      "min": "1/1/1945",
+      "max": "1/1/1994"
+    },
+    {
+      "name": "city",
+      "type": "CITY",
+      "filters": ["Italy"]
+    },
+    {
+      "name": "country",
+      "type": "LINK",
+      "conditionals": {
+        "link": "$city.country"
+      }
+    },
+    {
+      "name": "email",
+      "type": "STRING",
+      "conditionals": {
+        "injection": "${name}@company.it"
+      }
+    },
+    {
+      "name": "phone_number",
+      "type": "PHONE",
+      "filters": ["Italy"]
+    },
+    {
+      "name": "membership",
+      "type": "STRING",
+      "possible_values_weighted": {
+        "BRONZE": 70,
+        "SILVER": 20,
+        "GOLD": 8,
+        "PLATINUM": 2
+      }
+    }
+  ],
+  "Table_Names": [
+    {"HDFS_FILE_PATH": "/user/datagen/hdfs/customer/"},
+    {"HDFS_FILE_NAME": "customer-it"},
+    {"HIVE_HDFS_FILE_PATH": "/user/datagen/hive/customer/"},
+    {"HBASE_TABLE_NAME": "customer"},
+    {"HBASE_NAMESPACE": "datagen"},
+    {"KAFKA_TOPIC": "datagen_customer"},
+    {"OZONE_VOLUME": "datagen"},
+    {"OZONE_BUCKET":  "customer"},
+    {"OZONE_KEY_NAME":  "customer-it"},
+    {"OZONE_LOCAL_FILE_PATH":  "/home/datagen/temp/customer/"},
+    {"SOLR_COLLECTION": "datagen_customer"},
+    {"HIVE_DATABASE": "datagen"},
+    {"HIVE_TABLE_NAME":  "customer"},
+    {"KUDU_TABLE_NAME":  "datagen.customer"},
+    {"LOCAL_FILE_PATH":  "/home/datagen/customer/"},
+    {"LOCAL_FILE_NAME":  "customer-it"},
+    {"AVRO_NAME":  "datagencustomer"}
+  ],
+  "Primary_Keys": [
+    {"KAFKA_MSG_KEY": "membership"},
+    {"HBASE_PRIMARY_KEY":  "id"},
+    {"KUDU_PRIMARY_KEYS":  "country,city,id"},
+    {"KUDU_HASH_KEYS":  "id"},
+    {"KUDU_RANGE_KEYS":  "country,city"}
+  ],
+  "Options": [
+    {"HBASE_COLUMN_FAMILIES_MAPPING": "details:name,email,country,birthdate,phone_number;technicals:membership,id"},
+    {"SOLR_SHARDS":  1},
+    {"SOLR_REPLICAS":  1},
+    {"KUDU_REPLICAS":  1}
+  ]
+}

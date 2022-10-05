@@ -1,0 +1,141 @@
+---
+# List Parcels and check if it exists
+- name: Get All Parcels
+  uri:
+    url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/parcels/"
+    user: "{{ cloudera_manager_user }}"
+    password: "{{ cloudera_manager_password }}"
+    method: GET
+    force_basic_auth: yes
+    status_code: 200
+    return_content: yes
+    validate_certs: no
+    body_format: json
+  register: cloudera_manager_all_parcels
+
+- set_fact:
+    datagen_parcel_existing: "{{ cloudera_manager_all_parcels.json | community.general.json_query(query) }}"
+  vars:
+    query: "items[?product == 'DATAGEN'].version | [0]"
+
+- name: DEBUG - datagen_parcel_existing
+  debug:
+    msg: "{{ datagen_parcel_existing }}"
+  when: debug | default(false)
+
+- set_fact:
+    datagen_parcel_exists: "{{ datagen_parcel_existing | length > 0 }}"
+  vars:
+    query: "items[?product == 'DATAGEN'].version | [0]"
+  when: datagen_parcel_existing is defined and datagen_parcel_existing is not none
+
+- set_fact:
+    datagen_parcel_exists: false
+  when: datagen_parcel_exists is not defined
+
+
+- name: DEBUG - datagen_parcel_exists
+  debug:
+    msg: "{{ datagen_parcel_exists }}"
+  when: debug | default(false)
+
+- set_fact:
+    datagen_parcel_version: "{{ cloudera_manager_all_parcels.json | community.general.json_query(query) }}"
+  vars:
+    query: "items[?product == 'DATAGEN'].version | [0]"
+  when: datagen_parcel_exists
+
+- name: DEBUG - datagen_parcel_version
+  debug:
+    msg: "{{ datagen_parcel_version }}"
+  when: datagen_parcel_exists and debug | default(false)
+
+
+- name: Deactivate Parcel 
+  uri:
+    url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/parcels/products/DATAGEN/versions/{{ datagen_parcel_version }}/commands/deactivate"
+    user: "{{ cloudera_manager_user }}"
+    password: "{{ cloudera_manager_password }}"
+    method: POST
+    force_basic_auth: yes
+    status_code: 200
+    return_content: yes
+    validate_certs: no
+    body_format: json
+  when: datagen_parcel_exists
+
+- name: Check DATAGEN is deactivated
+  uri:
+    url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/parcels/products/DATAGEN/versions/{{ datagen_parcel_version }}"
+    user: "{{ cloudera_manager_user }}"
+    password: "{{ cloudera_manager_password }}"
+    force_basic_auth: yes
+    status_code: 200
+    return_content: yes
+    validate_certs: no
+    method: GET
+  register: dg_download
+  until: dg_download.json.stage != "ACTIVATED"
+  retries: 100
+  delay: 1
+  when: datagen_parcel_exists
+
+- name: Remove completely Parcel 
+  uri:
+    url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/parcels/products/DATAGEN/versions/{{ datagen_parcel_version }}/commands/startRemovalOfDistribution"
+    user: "{{ cloudera_manager_user }}"
+    password: "{{ cloudera_manager_password }}"
+    method: POST
+    force_basic_auth: yes
+    status_code: 200
+    return_content: yes
+    validate_certs: no
+    body_format: json
+  when: datagen_parcel_exists
+
+- name: Check DATAGEN is no more distributed
+  uri:
+    url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/parcels/products/DATAGEN/versions/{{ datagen_parcel_version }}"
+    user: "{{ cloudera_manager_user }}"
+    password: "{{ cloudera_manager_password }}"
+    force_basic_auth: yes
+    status_code: 200
+    return_content: yes
+    validate_certs: no
+    method: GET
+  register: dg_download
+  until: dg_download.json.stage != "DISTRIBUTED" and dg_download.json.stage != "ACTIVATED"
+  retries: 100
+  delay: 5
+  when: datagen_parcel_exists
+
+- name: Remove Downloadable Parcel
+  uri:
+    url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/parcels/products/DATAGEN/versions/{{ datagen_parcel_version }}/commands/removeDownload"
+    user: "{{ cloudera_manager_user }}"
+    password: "{{ cloudera_manager_password }}"
+    method: POST
+    force_basic_auth: yes
+    status_code: 200
+    return_content: yes
+    validate_certs: no
+    body_format: json
+  when: datagen_parcel_exists
+
+- name: Check DATAGEN is no more distributed
+  uri:
+    url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/parcels/products/DATAGEN/versions/{{ datagen_parcel_version }}"
+    user: "{{ cloudera_manager_user }}"
+    password: "{{ cloudera_manager_password }}"
+    force_basic_auth: yes
+    status_code: 200
+    return_content: yes
+    validate_certs: no
+    method: GET
+  register: dg_download
+  until: dg_download.json.stage != "DOWNLOADED" and dg_download.json.stage != "DISTRIBUTED" and dg_download.json.stage != "ACTIVATED"
+  retries: 100
+  delay: 1
+  when: datagen_parcel_exists
+
+

@@ -1,0 +1,12 @@
+---
+- name: Find CSD Jar name
+  find:
+    paths: "/opt/cloudera/csd/"
+    patterns: 'DATAGEN*.jar'
+  register: jars_compiled
+
+- name: Remove CSD jar file
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items: "{{ jars_compiled.files | map(attribute='path') | list }}"

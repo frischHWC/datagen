@@ -1,0 +1,104 @@
+---
+- name: Clean Directory of parcel
+  file:
+    path: "{{ target_dir }}/parcel/"
+    state: absent
+
+- name: Create Directory for parcel
+  file:
+    path: "{{ target_dir }}/parcel/"
+    state: directory
+    mode: '0755'
+
+- name: Create Directory for parcel's files 
+  file:
+    path: "{{ target_dir }}/parcel/{{ dg_name }}/"
+    state: directory
+    mode: '0755'
+
+- name: Create Directory for parcel's directory meta 
+  file:
+    path: "{{ target_dir }}/parcel/{{ dg_name }}/meta/"
+    state: directory
+    mode: '0755'
+
+- name: Create Directory for parcel's directory models 
+  file:
+    path: "{{ target_dir }}/parcel/{{ dg_name }}/model/"
+    state: directory
+    mode: '0755'
+
+- name: Create Directory for parcel's directory dictionaries 
+  file:
+    path: "{{ target_dir }}/parcel/{{ dg_name }}/dictionaries/"
+    state: directory
+    mode: '0755'
+
+- name: Find jar compiled
+  find:
+    paths: "{{ target_dir }}/git-repo/target/"
+    patterns: 'datagen*.jar'
+  register: jar_compiled
+
+- name: Get Jar from Compilation
+  copy:
+    src: "{{ jar_compiled.files[0].path }}"
+    dest: "{{ target_dir }}/parcel/{{ dg_name }}/{{ dg_name }}.jar"
+    remote_src: yes
+
+
+- name: Copy Meta's file
+  copy:
+    src: "{{ target_dir }}/git-repo/dev-support/parcel/meta/"
+    dest: "{{ target_dir }}/parcel/{{ dg_name }}/meta/"
+    mode: '0755'
+    remote_src: true
+
+- name: Copy Dictionaries's files
+  copy:
+    src: "{{ target_dir }}/git-repo/src/main/resources/dictionaries/"
+    dest: "{{ target_dir }}/parcel/{{ dg_name }}/dictionaries/"
+    mode: '0755'
+    remote_src: true
+
+- name: Copy Models's files
+  copy:
+    src: "{{ target_dir }}/git-repo/src/main/resources/models/"
+    dest: "{{ target_dir }}/parcel/{{ dg_name }}/models/"
+    mode: '0755'
+    remote_src: true
+
+- name: Copy application.properties
+  copy:
+    src: "{{ target_dir }}/git-repo/src/main/resources/application.properties"
+    dest: "{{ target_dir }}/parcel/{{ dg_name }}/application.properties"
+    mode: '0755'
+    remote_src: true
+
+- name: Copy logback-spring.xml
+  copy:
+    src: "{{ target_dir }}/git-repo/src/main/resources/logback-spring.xml"
+    dest: "{{ target_dir }}/parcel/{{ dg_name }}/logback-spring.xml"
+    mode: '0755'
+    remote_src: true
+
+
+# Inject version in datagen_env.sh and parcel.json
+- name: Inject DG full Name
+  replace:
+    path: "{{ target_dir }}/parcel/{{ dg_name }}/meta/datagen_env.sh"
+    regexp: 'DATAGEN_FULL_NAME'
+    replace: "{{ dg_name }}"
+
+- name: Inject DG full version
+  replace:
+    path: "{{ target_dir }}/parcel/{{ dg_name }}/meta/parcel.json"
+    regexp: 'DATAGEN_FULL_VERSION'
+    replace: "{{ dg_full_version }}"
+
+
+
+- name: Create Parcel tar
+  command:
+    cmd: "tar -czvf {{ parcel_name }}.parcel {{ dg_name }}/"
+    chdir: "{{ target_dir }}/parcel/"

@@ -1,0 +1,135 @@
+{
+  "Fields": [
+    {
+      "name": "city",
+      "type": "CITY",
+      "filters": ["France"]
+    },
+    {
+      "name": "date",
+      "type": "BIRTHDATE",
+      "min": "1/1/2015",
+      "max": "1/1/2022"
+    },
+    {
+      "name": "lat",
+      "type": "LINK",
+      "conditionals": {
+        "link": "$city.lat"
+      }
+    },
+    {
+      "name": "long",
+      "type": "LINK",
+      "conditionals": {
+        "link": "$city.long"
+      }
+    },
+    {
+      "name": "wind_provenance_9_am",
+      "type": "STRING",
+      "possible_values": ["NORTH", "EAST", "WEST", "SOUTH"]
+    },
+    {
+      "name": "wind_force_9_am",
+      "type": "INTEGER",
+      "min": 0,
+      "max": 120
+    },
+    {
+      "name": "wind_provenance_9_pm",
+      "type": "STRING",
+      "possible_values": ["NORTH", "EAST", "WEST", "SOUTH"]
+    },
+    {
+      "name": "wind_force_9_pm",
+      "type": "INTEGER",
+      "min": 0,
+      "max": 120
+    },
+    {
+      "name": "pressure_9_am",
+      "type": "INTEGER",
+      "min": 1000,
+      "max": 1020
+    },
+    {
+      "name": "pressure_9_pm",
+      "type": "INTEGER",
+      "min": 1000,
+      "max": 1020
+    },
+    {
+      "name": "humidity_9_am",
+      "type": "INTEGER",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "name": "humidity_9_pm",
+      "type": "INTEGER",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "name": "temperature_9_am",
+      "type": "INTEGER",
+      "min": -10,
+      "max": 35
+    },
+    {
+      "name": "temperature_9_pm",
+      "type": "INTEGER",
+      "min": -10,
+      "max": 35
+    },
+    {
+      "name": "rain",
+      "type": "STRING",
+      "conditionals": {
+        "$humidity_9_am>70 & $temperature_9_am<20 & $wind_force_9_am<80" : "true",
+        "$humidity_9_pm>70 & $temperature_9_pm<20 & $wind_force_9_am<80" : "true",
+        "$wind_provenance_9_am=NORTH & $wind_force_9_am>80" : "true",
+        "$wind_provenance_9_pm=NORTH & $wind_force_9_pm>80" : "true",
+        "$humidity_9_pm>70 & $temperature_9_pm<25 & $pressure_9_pm<1010": "true",
+        "$humidity_9_am>70 & $temperature_9_am<25 & $pressure_9_am<1010": "true",
+        "default" : "false"
+      }
+    }
+  ],
+  "Table_Names": [
+    {"HDFS_FILE_PATH": "/user/datagen/hdfs/publicservice/weather/"},
+    {"HDFS_FILE_NAME": "weather"},
+    {"HIVE_HDFS_FILE_PATH": "/user/datagen/hive/publicservice/weather/"},
+    {"HBASE_TABLE_NAME": "weather"},
+    {"HBASE_NAMESPACE": "datagenpublicservice"},
+    {"KAFKA_TOPIC": "datagen_publicservice_weather"},
+    {"OZONE_VOLUME": "datagenpublicservice"},
+    {"OZONE_BUCKET":  "weather"},
+    {"OZONE_KEY_NAME":  "weather"},
+    {"OZONE_LOCAL_FILE_PATH":  "/home/datagen/temp/weather/"},
+    {"SOLR_COLLECTION": "datagen-publicservice-weather"},
+    {"HIVE_DATABASE": "datagen_publicservice"},
+    {"HIVE_TABLE_NAME":  "weather"},
+    {"KUDU_TABLE_NAME":  "datagen.publicservice_weather"},
+    {"LOCAL_FILE_PATH":  "/home/datagen/publicservice/weather/"},
+    {"LOCAL_FILE_NAME":  "weather"},
+    {"AVRO_NAME":  "datagenpublicserviceweather"}
+  ],
+  "Primary_Keys": [
+    {"KAFKA_MSG_KEY": "city"},
+    {"KUDU_PRIMARY_KEYS":  "city,date"},
+    {"KUDU_HASH_KEYS":  "date"},
+    {"KUDU_RANGE_KEYS":  "city"}
+  ],
+  "Options": [
+    {"SOLR_SHARDS":  3},
+    {"SOLR_REPLICAS":  1},
+    {"KAFKA_ACKS_CONFIG":  "all"},
+    {"KAFKA_RETRIES_CONFIG":  3},
+    {"KUDU_REPLICAS":  1},
+    {"KUDU_BUCKETS":  32},
+    {"KUDU_BUFFER":  100001},
+    {"KUDU_FLUSH":  "MANUAL_FLUSH"}
+  ]
+}

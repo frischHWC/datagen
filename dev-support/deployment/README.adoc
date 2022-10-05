@@ -1,0 +1,22 @@
+# Deployment
+
+This directory intents to provide some ansible playbooks to easily deploy this project (CSD + Parcel) to a running Cloudera cluster
+
+## How to launch it ?
+
+
+## Steps
+
+Given a CM host / user / password + ssh key and unix user
++ github branch / repo
+
+- Clone this repo on remote host
+- mvn clean package
+- Remove the DATAGEN service from CM
+- Remove the DATAGEN parcel
+- Create the csd
+- Install It
+- Create the Parcel
+- Install it
+- Add the DATAGEN service
+- Run whatever is needed with the DATAGEN

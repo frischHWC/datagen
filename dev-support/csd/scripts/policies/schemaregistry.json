@@ -1,0 +1,77 @@
+{
+  "name": "Datagen policy",
+  "service": "cm_schema-registry",
+  "policyType": 0,
+  "policyPriority": 0,
+  "description": "DATAGEN's policy for default generation",
+  "policyLabels": [
+
+  ],
+  "sameLevel40schema-branch": null,
+  "isAuditEnabled": true,
+  "resources": {
+    "schema-group": {
+      "values": [
+        "kafka"
+      ],
+      "isRecursive": false,
+      "isExcludes": false
+    },
+    "schema-metadata": {
+      "values": [
+        "datagen*"
+      ],
+      "isRecursive": false,
+      "isExcludes": false
+    },
+    "schema-branch": {
+      "values": [
+        "*"
+      ],
+      "isRecursive": false,
+      "isExcludes": false
+    },
+    "schema-version": {
+      "values": [
+        "*"
+      ],
+      "isRecursive": false,
+      "isExcludes": false
+    }
+  },
+  "isDenyAllElse": false,
+  "policyItems": [
+    {
+      "users": [
+        "datagen"
+      ],
+      "accesses": [
+        {
+          "type": "create",
+          "isAllowed": true
+        },
+        {
+          "type": "read",
+          "isAllowed": true
+        },
+        {
+          "type": "update",
+          "isAllowed": true
+        },
+        {
+          "type": "delete",
+          "isAllowed": true
+        }
+      ]
+    }
+  ],
+  "allowExceptions": [
+
+  ],
+  "denyPolicyItems": [
+
+  ],
+  "denyExceptions": [
+
+  ]
+}

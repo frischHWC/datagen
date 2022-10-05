@@ -1,0 +1,2 @@
+export SOLR_ZK_ENSEMBLE=zk_server_1:2181,zk_server_2:2181,zk_server_3:2181/solr
+export SOLR_HADOOP_DEPENDENCY_FS_TYPE=shared

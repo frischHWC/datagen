@@ -1,0 +1,60 @@
+{
+  "Fields": [
+    {
+      "name": "sender_id",
+      "type": "INTEGER",
+      "min": 0,
+      "max": 100000
+    },
+    {
+      "name": "receiver_id",
+      "type": "INTEGER",
+      "min": 0,
+      "max": 100000
+    },
+    {
+      "name": "amount",
+      "type": "FLOAT",
+      "min": 0,
+      "max": 5000
+    },
+    {
+      "name": "execution_date",
+      "type": "TIMESTAMP"
+    },
+    {
+      "name": "currency",
+      "type": "STRING",
+      "possible_values": ["EUR", "USD", "YEN"]
+    }
+  ],
+  "Table_Names": [
+    {"HDFS_FILE_PATH": "/user/datagen/hdfs/finance/transaction/"},
+    {"HDFS_FILE_NAME": "transaction"},
+    {"HIVE_HDFS_FILE_PATH": "/user/datagen/hive/finance/transaction/"},
+    {"HBASE_TABLE_NAME": "transaction"},
+    {"HBASE_NAMESPACE": "datagenfinance"},
+    {"KAFKA_TOPIC": "datagen_finance_transaction"},
+    {"OZONE_VOLUME": "datagenfinance"},
+    {"OZONE_BUCKET":  "transaction"},
+    {"OZONE_KEY_NAME":  "transaction"},
+    {"OZONE_LOCAL_FILE_PATH":  "/home/datagen/temp/customer/"},
+    {"SOLR_COLLECTION": "datagen-finance-transaction"},
+    {"HIVE_DATABASE": "datagen_finance"},
+    {"HIVE_TABLE_NAME":  "transaction"},
+    {"KUDU_TABLE_NAME":  "datagen-finance.transaction"},
+    {"LOCAL_FILE_PATH":  "/home/datagen/finance/transaction/"},
+    {"LOCAL_FILE_NAME":  "transaction"},
+    {"AVRO_NAME":  "datagenfinancetransaction"}
+  ],
+  "Primary_Keys": [
+    {"KAFKA_MSG_KEY": "currency"},
+    {"HBASE_PRIMARY_KEY":  "sender_id,receiver_id,execution_date"},
+    {"KUDU_PRIMARY_KEYS":  "sender_id"},
+    {"KUDU_HASH_KEYS":  "sender_id"},
+    {"KUDU_RANGE_KEYS":  "execution_date"}
+  ],
+  "Options": [
+    {"HBASE_COLUMN_FAMILIES_MAPPING": "parties:sender_id,receiver_id;details:amount,execution_date,currency"}
+  ]
+}

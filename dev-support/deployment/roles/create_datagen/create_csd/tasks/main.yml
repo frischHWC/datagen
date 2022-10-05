@@ -1,0 +1,61 @@
+---
+- name: Clean Directory of CSD
+  file:
+    path: "{{ target_dir }}/csd/"
+    state: absent
+
+- name: Create Directory for CSD
+  file:
+    path: "{{ target_dir }}/csd/"
+    state: directory
+    mode: '0755'
+
+- name: Create Directory for CSD - descriptor
+  file:
+    path: "{{ target_dir }}/csd/descriptor/"
+    state: directory
+    mode: '0755'
+
+- name: Create Directory for CSD - scripts
+  file:
+    path: "{{ target_dir }}/csd/scripts/"
+    state: directory
+    mode: '0755'
+
+- name: Create Directory for CSD - aux
+  file:
+    path: "{{ target_dir }}/csd/aux/"
+    state: directory
+    mode: '0755'
+
+- name: Create Directory for CSD - aux/templates
+  file:
+    path: "{{ target_dir }}/csd/aux/templates/"
+    state: directory
+    mode: '0755'
+
+- name: Copy scripts file
+  copy:
+    src: "{{ target_dir }}/git-repo/dev-support/csd/scripts/"
+    dest: "{{ target_dir }}/csd/scripts/"
+    mode: '0755'
+    remote_src: true
+
+- name: Copy descriptor files
+  copy:
+    src: "{{ target_dir }}/git-repo/dev-support/csd/descriptor/"
+    dest: "{{ target_dir }}/csd/descriptor/"
+    mode: '0755'
+    remote_src: true
+
+- name: Copy templates file
+  copy:
+    src: "{{ target_dir }}/git-repo/dev-support/csd/aux/templates/"
+    dest: "{{ target_dir }}/csd/aux/templates/"
+    mode: '0755'
+    remote_src: true
+
+- name: Create CSD jar
+  shell:
+    cmd: "jar -cvf {{ dg_name }}.jar *"
+    chdir: "{{ target_dir }}/csd/"

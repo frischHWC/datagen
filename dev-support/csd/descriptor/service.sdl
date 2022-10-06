@@ -2,7 +2,7 @@
   "name": "DATAGEN",
   "label": "Datagen",
   "description": "The service to generate Data into various services of CDP platform",
-  "version": "1.0",
+  "version": "0.2.5",
   "parcel": {
     "requiredTags": [
       "datagen"
@@ -16,7 +16,7 @@
     "group": "datagen",
     "principal": "datagen"
   },
-  "maxInstances": 10,
+  "maxInstances": 1,
   "compatibility": {
     "generation": 2,
     "cdhVersion": {
@@ -219,17 +219,17 @@
           "instance": "${host}"
         }
       ],
-        "metricsSource": {
-          "metricsFormat": "SIMPLE",
-          "httpSource": {
-            "httpUrl": "http://${host}:${app_port}/metrics/all",
-            "httpsUrl": "https://${host}:${app_port}/metrics/all",
-            "sslEnabled": "${ssl_enabled}",
-            "mtlsEnabled": "false",
-            "kerberosEnabled": "false",
-            "kerberosPrincipal": "${principal}"
-          }
-        },
+      "metricsSource": {
+        "metricsFormat": "SIMPLE",
+        "httpSource": {
+          "httpUrl": "http://${host}:${app_port}/metrics/all",
+          "httpsUrl": "https://${host}:${app_port}/metrics/all",
+          "sslEnabled": "${ssl_enabled}",
+          "mtlsEnabled": "false",
+          "kerberosEnabled": "false",
+          "kerberosPrincipal": "${principal}"
+        }
+      },
       "sslServer": {
         "keystoreFormat": "jks",
         "keyIdentifier": "clientkey",
@@ -263,10 +263,13 @@
       },
       "topology": {
         "minInstances": "0",
-        "maxInstances": "100",
         "softMinInstances": "1",
-        "softMaxInstances": "1",
         "requiresOddNumberOfInstances": "false"
+      },
+      "healthAggregation": {
+        "type": "nonSingleton",
+        "percentGreenForGreen": 90.0,
+        "percentYellowGreenForYellow": 50.0
       },
       "commands": [
         {
@@ -283,20 +286,20 @@
               "init"
             ],
             "environmentVariables": {
-                "DATAGEN_USER": "${user}",
-                "RANGER_SERVICE_NAME": "${dependency:RANGER}",
-                "RANGER_URL": "${ranger_url}",
-                "RANGER_ADMIN_USER": "${ranger_user}",
-                "RANGER_ADMIN_PASSWORD": "${ranger_password}",
-                "ADMIN_PASSWORD": "${admin_password}",
-                "HBASE_SERVICE": "${dependency:HBASE}",
-                "HDFS_SERVICE": "${dependency:HDFS}",
-                "HIVE_SERVICE": "${dependency:HIVE}",
-                "KAFKA_SERVICE": "${dependency:KAFKA}",
-                "KUDU_SERVICE": "${dependency:KUDU}",
-                "OZONE_SERVICE": "${dependency:OZONE}",
-                "SCHEMAREGISTRY_SERVICE": "${dependency:SCHEMAREGISTRY}",
-                "SOLR_SERVICE": "${dependency:SOLR}"
+              "DATAGEN_USER": "${user}",
+              "RANGER_SERVICE_NAME": "${dependency:RANGER}",
+              "RANGER_URL": "${ranger_url}",
+              "RANGER_ADMIN_USER": "${ranger_user}",
+              "RANGER_ADMIN_PASSWORD": "${ranger_password}",
+              "ADMIN_PASSWORD": "${admin_password}",
+              "HBASE_SERVICE": "${dependency:HBASE}",
+              "HDFS_SERVICE": "${dependency:HDFS}",
+              "HIVE_SERVICE": "${dependency:HIVE}",
+              "KAFKA_SERVICE": "${dependency:KAFKA}",
+              "KUDU_SERVICE": "${dependency:KUDU}",
+              "OZONE_SERVICE": "${dependency:OZONE}",
+              "SCHEMAREGISTRY_SERVICE": "${dependency:SCHEMAREGISTRY}",
+              "SOLR_SERVICE": "${dependency:SOLR}"
             }
           }
         },
@@ -319,7 +322,7 @@
             ]
           }
         },
-       {
+        {
           "name": "gen_customer_hdfs",
           "label": "Generates 1 Million Customer Data to HDFS in Parquet",
           "description": "Generates 1 Million Customer Data to HDFS in Parquet",
@@ -624,8 +627,6 @@
           "default": "",
           "type": "string"
         },
-
-
         {
           "name": "hdfs_uri",
           "label": "HDFS URI",

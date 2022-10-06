@@ -58,7 +58,7 @@ public class MetricsService {
         break;
 
       case HIVE:
-        allMetrics.put(Metrics.HIVE_ROW_GENERATED, allMetrics.get(Metrics.HIVE_ROW_GENERATED) + (numberOfBatches*rowPerBatch));
+        allMetrics.put(Metrics.HIVE_ROWS_GENERATED, allMetrics.get(Metrics.HIVE_ROWS_GENERATED) + (numberOfBatches*rowPerBatch));
         break;
 
       case KAFKA:
@@ -129,7 +129,9 @@ public class MetricsService {
     sb.append(System.lineSeparator());
 
     allMetrics.forEach((metrics, s) -> {
+      sb.append("\"");
       sb.append(metrics.toString());
+      sb.append("\"");
       sb.append(" : ");
       sb.append(s.toString());
       sb.append(",");
@@ -160,7 +162,7 @@ public class MetricsService {
 
     HBASE_ROWS_GENERATED,
 
-    HIVE_ROW_GENERATED,
+    HIVE_ROWS_GENERATED,
 
     KAFKA_ROWS_GENERATED,
 

@@ -13,7 +13,7 @@ public class HealthController {
   @GetMapping(value = "/status")
   @ResponseBody
   public String getStatus() {
-    return "OK";
+    return "{ \"status\": \"OK\" }";
   }
 
 }

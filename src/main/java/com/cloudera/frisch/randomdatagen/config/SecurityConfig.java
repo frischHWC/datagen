@@ -39,6 +39,8 @@ public class SecurityConfig {
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     return http
           .requiresChannel(channel -> channel.anyRequest().requiresSecure())
+          .authorizeRequests(authorize -> authorize.antMatchers("/metrics/**").permitAll())
+          .authorizeRequests(authorize -> authorize.antMatchers("/health/status").permitAll())
           .authorizeRequests(authorize -> authorize.anyRequest().authenticated())
           .httpBasic(withDefaults())
           .csrf().disable()

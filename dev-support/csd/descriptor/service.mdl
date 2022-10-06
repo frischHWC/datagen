@@ -1,5 +1,5 @@
 {
-  "version": "7.8.0",
+  "version": "0.2.5",
   "name": "DATAGEN",
   "nameForCrossEntityAggregateMetrics": "datagen",
   "compatibility": {
@@ -20,7 +20,300 @@
           "name": "datagen_rows_generated",
           "type": "gauge",
           "numeratorUnit": "rows"
+        },
+        {
+          "context": "GENERATIONS_MADE",
+          "description": "Number of runs",
+          "label": "Number of runs",
+          "name": "datagen_runs_made",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "HDFS_CSV_FILES_GENERATED",
+          "description": "HDFS CSV FILES Generated",
+          "label": "HDFS CSV FILES Generated",
+          "name": "datagen_hdfs_csv_files",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "HDFS_CSV_ROWS_GENERATED",
+          "description": "HDFS CSV Rows generated",
+          "label": "HDFS CSV Rows generated",
+          "name": "datagen_hdfs_csv_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "HDFS_AVRO_FILES_GENERATED",
+          "description": "HDFS Avro Files generated",
+          "label": "HDFS Avro Files generated",
+          "name": "datagen_hdfs_avro_files",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "HDFS_AVRO_ROWS_GENERATED",
+          "description": "HDFS Avro rows generated",
+          "label": "HDFS Avro rows generated",
+          "name": "datagen_hdfs_avro_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "HDFS_PARQUET_FILES_GENERATED",
+          "description": "HDFS Parquet files generated",
+          "label": "HDFS Parquet files generated",
+          "name": "datagen_hdfs_parquet_files",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "HDFS_PARQUET_ROWS_GENERATED",
+          "description": "HDFS Parquet Rows generated",
+          "label": "HDFS Parquet Rows generated",
+          "name": "datagen_hdfs_parquet_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "HDFS_ORC_FILES_GENERATED",
+          "description": "HDFS ORC Files Generated",
+          "label": "HDFS ORC Files Generated",
+          "name": "datagen_hdfs_orc_files",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "HDFS_ORC_ROWS_GENERATED",
+          "description": "HDFS ORC Rows Generated",
+          "label": "HDFS ORC Rows Generated",
+          "name": "datagen_hdfs_orc_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "HDFS_JSON_FILES_GENERATED",
+          "description": "HDFS JSON Files Generated",
+          "label": "HDFS JSON Files Generated",
+          "name": "datagen_hdfs_json_files",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "HDFS_JSON_ROWS_GENERATED",
+          "description": "HDFS JSON Rows Generated",
+          "label": "HDFS JSON Rows Generated",
+          "name": "datagen_hdfs_json_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+
+        {
+          "context": "OZONE_CSV_FILES_GENERATED",
+          "description": "OZONE CSV FILES Generated",
+          "label": "OZONE CSV FILES Generated",
+          "name": "datagen_ozone_csv_files",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "OZONE_CSV_ROWS_GENERATED",
+          "description": "OZONE CSV Rows generated",
+          "label": "OZONE CSV Rows generated",
+          "name": "datagen_ozone_csv_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "OZONE_AVRO_FILES_GENERATED",
+          "description": "OZONE Avro Files generated",
+          "label": "OZONE Avro Files generated",
+          "name": "datagen_ozone_avro_files",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "OZONE_AVRO_ROWS_GENERATED",
+          "description": "OZONE Avro rows generated",
+          "label": "OZONE Avro rows generated",
+          "name": "datagen_ozone_avro_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "OZONE_PARQUET_FILES_GENERATED",
+          "description": "OZONE Parquet files generated",
+          "label": "OZONE Parquet files generated",
+          "name": "datagen_ozone_parquet_files",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "OZONE_PARQUET_ROWS_GENERATED",
+          "description": "OZONE Parquet Rows generated",
+          "label": "OZONE Parquet Rows generated",
+          "name": "datagen_ozone_parquet_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "OZONE_ORC_FILES_GENERATED",
+          "description": "OZONE ORC Files Generated",
+          "label": "OZONE ORC Files Generated",
+          "name": "datagen_ozone_orc_files",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "OZONE_ORC_ROWS_GENERATED",
+          "description": "OZONE ORC Rows Generated",
+          "label": "OZONE ORC Rows Generated",
+          "name": "datagen_ozone_orc_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "OZONE_JSON_FILES_GENERATED",
+          "description": "OZONE JSON Files Generated",
+          "label": "OZONE JSON Files Generated",
+          "name": "datagen_ozone_json_files",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "OZONE_JSON_ROWS_GENERATED",
+          "description": "OZONE JSON Rows Generated",
+          "label": "OZONE JSON Rows Generated",
+          "name": "datagen_ozone_json_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+
+
+        {
+          "context": "CSV_FILES_GENERATED",
+          "description": "Local CSV FILES Generated",
+          "label": "Local CSV FILES Generated",
+          "name": "datagen_local_csv_files",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "CSV_ROWS_GENERATED",
+          "description": "Local CSV Rows generated",
+          "label": "Local CSV Rows generated",
+          "name": "datagen_local_csv_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "AVRO_FILES_GENERATED",
+          "description": "Local Avro Files generated",
+          "label": "Local Avro Files generated",
+          "name": "datagen_local_avro_files",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "AVRO_ROWS_GENERATED",
+          "description": "Local Avro rows generated",
+          "label": "Local Avro rows generated",
+          "name": "datagen_local_avro_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "PARQUET_FILES_GENERATED",
+          "description": "Local Parquet files generated",
+          "label": "Local Parquet files generated",
+          "name": "datagen_local_parquet_files",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "PARQUET_ROWS_GENERATED",
+          "description": "Local Parquet Rows generated",
+          "label": "Local Parquet Rows generated",
+          "name": "datagen_local_parquet_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "ORC_FILES_GENERATED",
+          "description": "Local ORC Files Generated",
+          "label": "Local ORC Files Generated",
+          "name": "datagen_local_orc_files",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "ORC_ROWS_GENERATED",
+          "description": "Local ORC Rows Generated",
+          "label": "Local ORC Rows Generated",
+          "name": "datagen_local_orc_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "JSON_FILES_GENERATED",
+          "description": "Local JSON Files Generated",
+          "label": "Local JSON Files Generated",
+          "name": "datagen_local_json_files",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "JSON_ROWS_GENERATED",
+          "description": "Local JSON Rows Generated",
+          "label": "Local JSON Rows Generated",
+          "name": "datagen_local_json_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+
+        {
+          "context": "HBASE_ROWS_GENERATED",
+          "description": "HBase Rows generated",
+          "label": "HBase Rows generated",
+          "name": "datagen_hbase_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "HIVE_ROWS_GENERATED",
+          "description": "Hive Rows Generated",
+          "label": "Hive Rows Generated",
+          "name": "datagen_hive_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "KAFKA_ROWS_GENERATED",
+          "description": "Kafka Rows Generated",
+          "label": "Kafka Rows Generated",
+          "name": "datagen_kafka_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "KUDU_ROWS_GENERATED",
+          "description": "Kudu Rows Generated",
+          "label": "Kudu Rows Generated",
+          "name": "datagen_kudu_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "SOLR_ROWS_GENERATED",
+          "description": "SolR Rows Generated",
+          "label": "SolR Rows Generated",
+          "name": "datagen_solr_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
         }
+
       ]
     }
   ]

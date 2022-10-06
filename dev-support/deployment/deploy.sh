@@ -48,7 +48,7 @@ export LAUNCH_GENERATION=false
 export TARGET_DIR="/tmp/datagen"
 
 # Datagen Repository
-export DATA_GEN_GIT_URL="https://github.infra.cloudera.com/frisch/datagen"
+export DATA_GEN_GIT_URL="https://github.com/frischHWC/datagen"
 export DATA_GEN_GIT_BRANCH="main"
 
 
@@ -191,7 +191,7 @@ EXTRA_VARS_TEMP=$(mktemp)
 
 if [ "${EDGE_HOST}" = "" ]
 then
-  export EDG_HOST=${CM_HOST}
+  export EDGE_HOST=${CM_HOST}
 fi
 
 mkdir -p ${LOG_DIR}
@@ -213,7 +213,7 @@ then
     echo "ansible_ssh_private_key_file=${SSH_KEY}" >> ${HOSTS_TEMP}
 elif [ "${SSH_PASSWORD}" != "" ]
 then
-    echo "ansible_ssh_pass=${PASSWORD}" >> ${HOSTS_TEMP}
+    echo "ansible_ssh_pass=${SSH_PASSWORD}" >> ${HOSTS_TEMP}
 fi
 
 if [ -z "${CLUSTER_NAME_STREAMING}" ] || [ "${CLUSTER_NAME_STREAMING}" == "" ]

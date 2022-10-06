@@ -130,31 +130,6 @@
   vars:
     query: "clusters[?name == '{{ cluster_name }}' ].fullVersion | [0]"
 
-- set_fact:
-    cdp_patch_full_version: "{{ cloudera_manager_deployment.json | community.general.json_query(query) }}"
-  vars:
-    query: "clusters[?name == '{{ cluster_name }}' ] | [0] | parcels[?product == 'CDH' ].version | [0]"
-
-- name: DEBUG - cdp_patch_full_version
-  debug:
-    msg: "{{ cdp_patch_full_version }}"
-  when: debug | default(false)
-
-- set_fact:
-    cdp_patch_version: "{{ cdp_patch_full_version.split('cdh')[1].split('p')[1].split('.')[0] }}"
-
-- name: DEBUG - cdp_patch_version
-  debug:
-    msg: "{{ cdp_patch_version }}"
-  when: debug | default(false)
-
-- set_fact:
-    cdp_patch_version_exists: "{{ false if cdp_patch_version == '' else true }}"
-
-- set_fact:
-    cdp_version: "{{ cdp_version }}.{{ cdp_patch_version }}"
-  when: cdp_patch_version_exists | default(false)
-
 - name: DEBUG - cdp_version
   debug:
     msg: "{{ cdp_version }}"

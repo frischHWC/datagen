@@ -11,7 +11,7 @@ def main(server_port, model_file_path, rows, batches, timeout, tls_enabled, admi
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     model_file_path_url_fromatted = model_file_path.replace("/", "%2F")
-    headers = {"Accept":"*/*"}
+    headers = {"Accept":"*/*", "Content-Type": "multipart/form-data ; boundary=toto"}
     protocol = "http"
     if tls_enabled:
         protocol = "https"

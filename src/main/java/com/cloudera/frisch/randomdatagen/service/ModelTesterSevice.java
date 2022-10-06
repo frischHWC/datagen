@@ -6,15 +6,17 @@ import com.cloudera.frisch.randomdatagen.config.PropertiesLoader;
 import com.cloudera.frisch.randomdatagen.model.Model;
 import com.cloudera.frisch.randomdatagen.model.Row;
 import com.cloudera.frisch.randomdatagen.parsers.JsonParser;
-import com.cloudera.frisch.randomdatagen.parsers.Parser;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 
 @Service
@@ -25,7 +27,7 @@ public class ModelTesterSevice {
   @Autowired
   private PropertiesLoader propertiesLoader;
 
-  public String generateData(@Nullable String modelFilePath)
+  public String generateData(@Nullable MultipartFile modelFileAsFile, @Nullable String modelFilePath)
   {
     log.info("Starting Generation");
     long start = System.currentTimeMillis();
@@ -47,6 +49,16 @@ public class ModelTesterSevice {
       log.info("Model file passed is identified as one of the one provided, so will look for it in data model path: {} ",
           properties.get(ApplicationConfigs.DATA_MODEL_PATH_DEFAULT));
       modelFile = properties.get(ApplicationConfigs.DATA_MODEL_PATH_DEFAULT) + modelFilePath;
+    }
+    if(modelFileAsFile!=null && !modelFileAsFile.isEmpty()) {
+      log.info("Model passed is an uploaded file");
+      modelFile = properties.get(ApplicationConfigs.DATA_MODEL_RECEIVED_PATH) + "/model-test-" + new Random().nextInt() + ".json";
+      try {
+        modelFileAsFile.transferTo(new File(modelFile));
+      } catch (IOException e) {
+        log.error("Could not save model file passed in request locally, due to error:", e);
+        return "{ \"commandUuid\": \"\" , \"error\": \"Error with Model File - Cannot save it locally\" }";
+      }
     }
 
     // Parsing model

@@ -29,6 +29,8 @@ public class ApplicationConfigMapper {
       return ApplicationConfigs.NUMBER_OF_ROWS_DEFAULT;
     case "data.model.path":
       return ApplicationConfigs.DATA_MODEL_PATH_DEFAULT;
+    case "data.model.received.path":
+      return ApplicationConfigs.DATA_MODEL_RECEIVED_PATH;
     case "data.model.default":
       return ApplicationConfigs.DATA_MODEL_DEFAULT;
     case "custom.data.model":

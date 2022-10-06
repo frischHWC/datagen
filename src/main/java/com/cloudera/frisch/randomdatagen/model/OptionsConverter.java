@@ -144,6 +144,10 @@ public class OptionsConverter {
                 return Options.ONE_FILE_PER_ITERATION;
             case "KAFKA_MESSAGE_TYPE":
                 return Options.KAFKA_MESSAGE_TYPE;
+            case "KAFKA_JAAS_FILE_PATH":
+                return Options.KAFKA_JAAS_FILE_PATH;
+            case "SOLR_JAAS_FILE_PATH":
+                return Options.SOLR_JAAS_FILE_PATH;
             case "HIVE_THREAD_NUMBER":
                 return Options.HIVE_THREAD_NUMBER;
             case "HIVE_ON_HDFS":

@@ -16,7 +16,7 @@
     "group": "datagen",
     "principal": "datagen"
   },
-  "maxInstances": 1,
+  "maxInstances": 10,
   "compatibility": {
     "generation": 2,
     "cdhVersion": {
@@ -58,72 +58,72 @@
     },
     {
       "name": "gen_customer",
-      "label": "Generates 1M Customers to HDFS, Ozone and Hive",
-      "description": "Generates 1M Customers to HDFS and Hive",
+      "label": "Generates 1 Million Customers to HDFS, Ozone and Hive",
+      "description": "Generates 1 Million Customers to HDFS and Hive",
       "roleCommand": "gen_customer_hdfs_ozone_hive",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_customer_hdfs",
-      "label": "Generates 1M Customers to HDFS",
-      "description": "Generates 1M Customers to HDFS",
+      "label": "Generates 1 Million Customers to HDFS",
+      "description": "Generates 1 Million Customers to HDFS",
       "roleCommand": "gen_customer_hdfs",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_customer_ozone",
-      "label": "Generates 1M Customers to Ozone",
-      "description": "Generates 1M Customers to Ozone",
+      "label": "Generates 1 Million Customers to Ozone",
+      "description": "Generates 1 Million Customers to Ozone",
       "roleCommand": "gen_customer_ozone",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_transaction",
-      "label": "Generates 1M Transactions to HBase",
-      "description": "Generates 1M Transactions to HBase",
+      "label": "Generates 1 Million Transactions to HBase",
+      "description": "Generates 1 Million Transactions to HBase",
       "roleCommand": "gen_transaction_hbase",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_sensor",
-      "label": "Generates 10M Sensors Data to Hive",
-      "description": "Generates 10M Sensors Data to Hive",
+      "label": "Generates 10 Millions Sensors Data to Hive",
+      "description": "Generates 10 Millions Sensors Data to Hive",
       "roleCommand": "gen_sensor_hive",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_public_service_kudu",
-      "label": "Generates 1M Public Service Data to Kudu",
-      "description": "Generates 1M Public Service Data to Kudu",
+      "label": "Generates 1 Million Public Service Data to Kudu",
+      "description": "Generates 1 Million Public Service Data to Kudu",
       "roleCommand": "gen_public_service_kudu",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_public_service_kafka",
-      "label": "Generates 1M Public Service Data to Kafka in Avro",
-      "description": "Generates 1M Public Service Data to Kafka in Avro",
+      "label": "Generates 1 Million Public Service Data to Kafka in Avro",
+      "description": "Generates 1 Million Public Service Data to Kafka in Avro",
       "roleCommand": "gen_public_service_kafka",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_weather_solr",
-      "label": "Generates 1M Weather Data to SolR ",
-      "description": "Generates 1M Weather Data to SolR",
+      "label": "Generates 1 Million Weather Data to SolR ",
+      "description": "Generates 1 Million Weather Data to SolR",
       "roleCommand": "gen_weather_solr",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_weather_kafka",
-      "label": "Generates 1M Weather Data to Kafka in JSON",
-      "description": "Generates 1M Weather Data to Kafka in JSON",
+      "label": "Generates 1 Million Weather Data to Kafka in JSON",
+      "description": "Generates 1 Million Weather Data to Kafka in JSON",
       "roleCommand": "gen_weather_kafka",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
@@ -302,8 +302,8 @@
         },
         {
           "name": "gen_customer_hdfs_ozone_hive",
-          "label": "Generates 1M Customers to HDFS and Hive and Ozone",
-          "description": "Generates 1M Customers to HDFS and Hive and Ozone",
+          "label": "Generates 1 Million Customers to HDFS and Hive and Ozone",
+          "description": "Generates 1 Million Customers to HDFS and Hive and Ozone",
           "expectedExitCodes": [
             0
           ],
@@ -321,8 +321,8 @@
         },
        {
           "name": "gen_customer_hdfs",
-          "label": "Generates 1M Customer Data to HDFS in Parquet",
-          "description": "Generates 1M Customer Data to HDFS in Parquet",
+          "label": "Generates 1 Million Customer Data to HDFS in Parquet",
+          "description": "Generates 1 Million Customer Data to HDFS in Parquet",
           "expectedExitCodes": [
             0
           ],
@@ -340,8 +340,8 @@
         },
         {
           "name": "gen_customer_ozone",
-          "label": "Generates 1M Customer Data to Ozone in Parquet",
-          "description": "Generates 1M Customer Data to Ozone in Parquet",
+          "label": "Generates 1 Million Customer Data to Ozone in Parquet",
+          "description": "Generates 1 Million Customer Data to Ozone in Parquet",
           "expectedExitCodes": [
             0
           ],
@@ -359,8 +359,8 @@
         },
         {
           "name": "gen_transaction_hbase",
-          "label": "Generates 1M Transactions to HBase",
-          "description": "Generates 1M Transactions to HBase",
+          "label": "Generates 1 Million Transactions to HBase",
+          "description": "Generates 1 Million Transactions to HBase",
           "expectedExitCodes": [
             0
           ],
@@ -378,8 +378,8 @@
         },
         {
           "name": "gen_sensor_hive",
-          "label": "Generates 10M Sensors Data to Hive",
-          "description": "Generates 10M Sensors Data to Hive",
+          "label": "Generates 10 Millions Sensors Data to Hive",
+          "description": "Generates 10 Millions Sensors Data to Hive",
           "expectedExitCodes": [
             0
           ],
@@ -397,8 +397,8 @@
         },
         {
           "name": "gen_public_service_kafka",
-          "label": "Generates 1M Public Service Data to Kafka in Avro",
-          "description": "Generates 1M Public Service Data to Kafka in Avro",
+          "label": "Generates 1 Million Public Service Data to Kafka in Avro",
+          "description": "Generates 1 Million Public Service Data to Kafka in Avro",
           "expectedExitCodes": [
             0
           ],
@@ -416,8 +416,8 @@
         },
         {
           "name": "gen_public_service_kudu",
-          "label": "Generates 1M Public Service Data to Kudu",
-          "description": "Generates 1M Public Service Data to Kudu",
+          "label": "Generates 1 Million Public Service Data to Kudu",
+          "description": "Generates 1 Million Public Service Data to Kudu",
           "expectedExitCodes": [
             0
           ],
@@ -435,8 +435,8 @@
         },
         {
           "name": "gen_weather_solr",
-          "label": "Generate 1M Weather Data to SOLR",
-          "description": "Generate 1M Weather Data to SOLR",
+          "label": "Generate 1 Million Weather Data to SOLR",
+          "description": "Generate 1 Million Weather Data to SOLR",
           "expectedExitCodes": [
             0
           ],
@@ -454,8 +454,8 @@
         },
         {
           "name": "gen_weather_kafka",
-          "label": "Generate 1M Weather Data to Kafka in JSON",
-          "description": "Generate 1M Weather Data to Kafka in JSON",
+          "label": "Generate 1 Million Weather Data to Kafka in JSON",
+          "description": "Generate 1 Million Weather Data to Kafka in JSON",
           "expectedExitCodes": [
             0
           ],
@@ -837,6 +837,15 @@
           "label": "Custom Model Path",
           "description": "The custom Model Path to use instead of the furnished data model. This file must exists on the machine where the web server is installed. Learn how to create a model here: https://github.com/frischHWC/random-datagen#data-generated",
           "default": "",
+          "type": "path",
+          "pathType": "serviceSpecific",
+          "mode": "0755"
+        },
+        {
+          "name": "data_model_received",
+          "label": "Data Model Received Path",
+          "description": "The path where to store locally data model received by API calls.",
+          "default": "/home/datagen/models-received",
           "type": "path",
           "pathType": "serviceSpecific",
           "mode": "0755"

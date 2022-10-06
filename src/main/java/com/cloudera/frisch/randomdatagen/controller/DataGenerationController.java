@@ -2,14 +2,18 @@ package com.cloudera.frisch.randomdatagen.controller;
 
 
 import com.cloudera.frisch.randomdatagen.config.ApplicationConfigs;
+import com.cloudera.frisch.randomdatagen.config.PropertiesLoader;
 import com.cloudera.frisch.randomdatagen.service.CommandRunnerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -20,10 +24,14 @@ public class DataGenerationController {
   @Autowired
   private CommandRunnerService commandRunnerService;
 
+  @Autowired
+  private PropertiesLoader propertiesLoader;
 
-  @PostMapping(value = "/multiplesinks")
+
+  @PostMapping(value = "/multiplesinks", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoMultipleSinks(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -35,12 +43,13 @@ public class DataGenerationController {
     StringBuffer sinkList = new StringBuffer();
     sinks.forEach(s -> {sinkList.append(s) ; sinkList.append(" ; ");});
     log.debug("Received request with model: {} , threads: {} , batches: {}, rows: {}, to sinks: {}", modelFilePath, threads, numberOfBatches, rowsPerBatch, sinkList);
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions, sinks, null);
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions, sinks, null);
   }
 
-  @PostMapping(value = "/csv")
+  @PostMapping(value = "/csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoCsv(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -49,13 +58,14 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "delay_between_executions_seconds") Long delayBetweenExecutions
   ) {
     log.debug("Received request for CSV with model: {} , threads: {} , batches: {}, rows: {}", modelFilePath, threads, numberOfBatches, rowsPerBatch);
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("CSV"), null);
   }
 
-  @PostMapping(value = "/json")
+  @PostMapping(value = "/json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoJson(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -64,13 +74,14 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "delay_between_executions_seconds") Long delayBetweenExecutions
   ) {
     log.debug("Received request for JSON with model: {} , threads: {} , batches: {}, rows: {}", modelFilePath, threads, numberOfBatches, rowsPerBatch);
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("JSON"), null);
   }
 
-  @PostMapping(value = "/avro")
+  @PostMapping(value = "/avro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoAvro(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -79,13 +90,14 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "delay_between_executions_seconds") Long delayBetweenExecutions
   ) {
     log.debug("Received request for Avro with model: {} , threads: {} , batches: {}, rows: {}", modelFilePath, threads, numberOfBatches, rowsPerBatch);
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("AVRO"), null);
   }
 
-  @PostMapping(value = "/parquet")
+  @PostMapping(value = "/parquet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoParquet(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -94,13 +106,14 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "delay_between_executions_seconds") Long delayBetweenExecutions
   ) {
     log.debug("Received request for Parquet with model: {} , threads: {} , batches: {}, rows: {}", modelFilePath, threads, numberOfBatches, rowsPerBatch);
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("PARQUET"), null);
   }
 
-  @PostMapping(value = "/orc")
+  @PostMapping(value = "/orc", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoOrc(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -109,15 +122,16 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "delay_between_executions_seconds") Long delayBetweenExecutions
   ) {
     log.debug("Received request for ORC with model: {} , threads: {} , batches: {}, rows: {}", modelFilePath, threads, numberOfBatches, rowsPerBatch);
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("ORC"), null);
   }
 
   // TODO: Add extra properties optional for below sinks
 
-  @PostMapping(value = "/hdfs-csv")
+  @PostMapping(value = "/hdfs-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoHdfsCsv(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -152,13 +166,14 @@ public class DataGenerationController {
     if(kerberosKeytab!=null && !kerberosKeytab.isEmpty()){
       extraProperties.put(ApplicationConfigs.HDFS_AUTH_KERBEROS_KEYTAB, kerberosKeytab);
     }
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("HDFS-CSV"), extraProperties);
   }
 
-  @PostMapping(value = "/hdfs-avro")
+  @PostMapping(value = "/hdfs-avro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoHdfsAvro(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -193,13 +208,14 @@ public class DataGenerationController {
     if(kerberosKeytab!=null && !kerberosKeytab.isEmpty()){
       extraProperties.put(ApplicationConfigs.HDFS_AUTH_KERBEROS_KEYTAB, kerberosKeytab);
     }
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("HDFS-AVRO"), extraProperties);
   }
 
-  @PostMapping(value = "/hdfs-json")
+  @PostMapping(value = "/hdfs-json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoHdfsJson(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -234,13 +250,14 @@ public class DataGenerationController {
     if(kerberosKeytab!=null && !kerberosKeytab.isEmpty()){
       extraProperties.put(ApplicationConfigs.HDFS_AUTH_KERBEROS_KEYTAB, kerberosKeytab);
     }
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("HDFS-JSON"), extraProperties);
   }
 
-  @PostMapping(value = "/hdfs-parquet")
+  @PostMapping(value = "/hdfs-parquet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoHdfsParquet(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -275,13 +292,14 @@ public class DataGenerationController {
     if(kerberosKeytab!=null && !kerberosKeytab.isEmpty()){
       extraProperties.put(ApplicationConfigs.HDFS_AUTH_KERBEROS_KEYTAB, kerberosKeytab);
     }
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("HDFS-PARQUET"), extraProperties);
   }
 
-  @PostMapping(value = "/hdfs-orc")
+  @PostMapping(value = "/hdfs-orc", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoHdfsOrc(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -316,13 +334,14 @@ public class DataGenerationController {
     if(kerberosKeytab!=null && !kerberosKeytab.isEmpty()){
       extraProperties.put(ApplicationConfigs.HDFS_AUTH_KERBEROS_KEYTAB, kerberosKeytab);
     }
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("HDFS-ORC"), extraProperties);
   }
 
-  @PostMapping(value = "/hbase")
+  @PostMapping(value = "/hbase", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoHbase(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -361,13 +380,14 @@ public class DataGenerationController {
     if(kerberosKeytab!=null && !kerberosKeytab.isEmpty()){
       extraProperties.put(ApplicationConfigs.HBASE_AUTH_KERBEROS_KEYTAB, kerberosKeytab);
     }
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("HBASE"), extraProperties);
   }
 
-  @PostMapping(value = "/hive")
+  @PostMapping(value = "/hive", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoHive(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -410,13 +430,14 @@ public class DataGenerationController {
     if(kerberosKeytab!=null && !kerberosKeytab.isEmpty()){
       extraProperties.put(ApplicationConfigs.HIVE_AUTH_KERBEROS_KEYTAB, kerberosKeytab);
     }
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("HIVE"), extraProperties);
   }
 
-  @PostMapping(value = "/ozone")
+  @PostMapping(value = "/ozone", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoOzone(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -447,13 +468,14 @@ public class DataGenerationController {
     if(kerberosKeytab!=null && !kerberosKeytab.isEmpty()){
       extraProperties.put(ApplicationConfigs.OZONE_AUTH_KERBEROS_KEYTAB, kerberosKeytab);
     }
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("OZONE"), extraProperties);
   }
 
-  @PostMapping(value = "/ozone-csv")
+  @PostMapping(value = "/ozone-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoOzoneCsv(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -484,13 +506,14 @@ public class DataGenerationController {
     if(kerberosKeytab!=null && !kerberosKeytab.isEmpty()){
       extraProperties.put(ApplicationConfigs.OZONE_AUTH_KERBEROS_KEYTAB, kerberosKeytab);
     }
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("OZONE-CSV"), extraProperties);
   }
 
-  @PostMapping(value = "/ozone-json")
+  @PostMapping(value = "/ozone-json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoOzoneJson(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -521,13 +544,14 @@ public class DataGenerationController {
     if(kerberosKeytab!=null && !kerberosKeytab.isEmpty()){
       extraProperties.put(ApplicationConfigs.OZONE_AUTH_KERBEROS_KEYTAB, kerberosKeytab);
     }
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("OZONE-JSON"), extraProperties);
   }
 
-  @PostMapping(value = "/ozone-avro")
+  @PostMapping(value = "/ozone-avro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoOzoneAvro(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -558,13 +582,14 @@ public class DataGenerationController {
     if(kerberosKeytab!=null && !kerberosKeytab.isEmpty()){
       extraProperties.put(ApplicationConfigs.OZONE_AUTH_KERBEROS_KEYTAB, kerberosKeytab);
     }
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("OZONE-AVRO"), extraProperties);
   }
 
-  @PostMapping(value = "/ozone-parquet")
+  @PostMapping(value = "/ozone-parquet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoOzoneParquet(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -595,13 +620,14 @@ public class DataGenerationController {
     if(kerberosKeytab!=null && !kerberosKeytab.isEmpty()){
       extraProperties.put(ApplicationConfigs.OZONE_AUTH_KERBEROS_KEYTAB, kerberosKeytab);
     }
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("OZONE-PARQUET"), extraProperties);
   }
 
-  @PostMapping(value = "/ozone-orc")
+  @PostMapping(value = "/ozone-orc", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoOzoneOrc(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -632,13 +658,14 @@ public class DataGenerationController {
     if(kerberosKeytab!=null && !kerberosKeytab.isEmpty()){
       extraProperties.put(ApplicationConfigs.OZONE_AUTH_KERBEROS_KEYTAB, kerberosKeytab);
     }
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("OZONE-ORC"), extraProperties);
   }
 
-  @PostMapping(value = "/kafka")
+  @PostMapping(value = "/kafka", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoKafka(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -693,13 +720,14 @@ public class DataGenerationController {
     if(kerberosKeytab!=null && !kerberosKeytab.isEmpty()){
       extraProperties.put(ApplicationConfigs.KAFKA_AUTH_KERBEROS_KEYTAB, kerberosKeytab);
     }
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("KAFKA"), extraProperties);
   }
 
-  @PostMapping(value = "/solr")
+  @PostMapping(value = "/solr", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoSolR(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -742,13 +770,14 @@ public class DataGenerationController {
     if(kerberosKeytab!=null && !kerberosKeytab.isEmpty()){
       extraProperties.put(ApplicationConfigs.SOLR_AUTH_KERBEROS_KEYTAB, kerberosKeytab);
     }
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("SOLR"), extraProperties);
   }
 
-  @PostMapping(value = "/kudu")
+  @PostMapping(value = "/kudu", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoKudu(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
@@ -783,7 +812,7 @@ public class DataGenerationController {
     if(kerberosKeytab!=null && !kerberosKeytab.isEmpty()){
       extraProperties.put(ApplicationConfigs.KUDU_AUTH_KERBEROS_KEYTAB, kerberosKeytab);
     }
-    return commandRunnerService.generateData(modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("KUDU"), extraProperties);
   }
 

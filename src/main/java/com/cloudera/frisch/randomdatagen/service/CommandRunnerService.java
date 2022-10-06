@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -46,6 +47,8 @@ public class CommandRunnerService {
     readScheduledCommands();
     // After reading scheduled values, file should be re-written
     writeScheduledCommands();
+
+    Utils.createLocalDirectory(propertiesLoader.getPropertiesCopy().get(ApplicationConfigs.DATA_MODEL_RECEIVED_PATH));
   }
 
   public String getCommandStatusAsString(UUID uuid) {
@@ -193,7 +196,9 @@ public class CommandRunnerService {
    * @param sinksListAsString
    * @param extraProperties
    */
-  public String generateData(@Nullable String modelFilePath,
+  public String generateData(
+                           @Nullable MultipartFile modelFileAsFile,
+                           @Nullable String modelFilePath,
                            @Nullable Integer numberOfThreads,
                            @Nullable Long numberOfBatches,
                            @Nullable Long rowsPerBatch,
@@ -234,8 +239,9 @@ public class CommandRunnerService {
     }
     log.info("Will run generation for {} rows", rows);
 
+    Boolean isModelUploaded = false;
     String modelFile = modelFilePath;
-    if(modelFilePath==null) {
+    if(modelFilePath==null && (modelFileAsFile==null || modelFileAsFile.isEmpty())) {
       log.info("No model file passed, will default to custom data model or default defined one in configuration");
       if(properties.get(ApplicationConfigs.CUSTOM_DATA_MODEL_DEFAULT)!=null) {
         modelFile = properties.get(ApplicationConfigs.CUSTOM_DATA_MODEL_DEFAULT);
@@ -248,6 +254,17 @@ public class CommandRunnerService {
       log.info("Model file passed is identified as one of the one provided, so will look for it in data model path: {} ",
           properties.get(ApplicationConfigs.DATA_MODEL_PATH_DEFAULT));
       modelFile = properties.get(ApplicationConfigs.DATA_MODEL_PATH_DEFAULT) + modelFilePath;
+    }
+    if(modelFileAsFile!=null && !modelFileAsFile.isEmpty()) {
+      log.info("Model passed is an uploaded file");
+      modelFile = properties.get(ApplicationConfigs.DATA_MODEL_RECEIVED_PATH) + "/model-" + new Random().nextInt() + ".json";
+      try {
+        modelFileAsFile.transferTo(new File(modelFile));
+      } catch (IOException e) {
+        log.error("Could not save model file passed in request locally, due to error:", e);
+        return "{ \"commandUuid\": \"\" , \"error\": \"Error with Model File - Cannot save it locally\" }";
+      }
+      isModelUploaded = true;
     }
 
     Boolean scheduled = false;
@@ -287,6 +304,12 @@ public class CommandRunnerService {
 
     // Creation of command and queued to be processed
     Command command = new Command(modelFile, model, threads, batches, rows, scheduled, delayBetweenExecutions, sinksList, properties);
+    if(isModelUploaded) {
+      // If model has been uploaded, it must be renamed to use its UUID for user and admin convenience
+      String newModelFilePath = properties.get(ApplicationConfigs.DATA_MODEL_RECEIVED_PATH) + "/model-" + command.getCommandUuid().toString() + ".json";
+      Utils.moveLocalFile(modelFile, newModelFilePath);
+      command.setModelFilePath(newModelFilePath);
+    }
     commands.put(command.getCommandUuid(), command);
     commandsToProcess.add(command);
 

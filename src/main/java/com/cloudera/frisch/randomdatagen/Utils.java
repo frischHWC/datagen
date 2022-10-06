@@ -218,6 +218,21 @@ public class Utils {
     }
 
     /**
+     *  Move a file locally
+     * @param pathSrc
+     * @param pathDest
+     */
+    public static void moveLocalFile(String pathSrc, String pathDest) {
+        try {
+            File fileDest = new File(pathDest);
+            fileDest.getParentFile().mkdirs();
+            new File(pathSrc).renameTo(fileDest);
+        } catch (Exception e) {
+            log.error("Unable to move file from : {} to {} due to error: ", pathSrc, pathDest, e);
+        }
+    }
+
+    /**
      * Delete a file locally
      * @param path
      */

@@ -60,6 +60,13 @@ kafka.conf.client.path={{ globals['kafka_client_conf_path'] }}
 schema.registry.conf.path={{ globals['schema_registry_conf_path'] }}
 kudu.conf.path={{ globals['kudu_conf_path'] }}
 
+# Auto-discovery Using CM - This replaces config files if it is set
+cm.autodiscovery={{ globals['cm_auto_discovery'] }}
+cm.url=${CM_URL}
+cm.user=${CM_USER}
+cm.password=${CM_PASSWORD}
+cm.cluster.name=${CLUSTER_NAME}
+
 # NB: A value #{VALUE} is a placeholder to another defined value in this file
 
 # Other configurations that are either derived from previous files if empty or must be set using APIs when loading data

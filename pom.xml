@@ -6,7 +6,7 @@
 
     <groupId>com.cloudera.frisch</groupId>
     <artifactId>datagen</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.920</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -84,6 +84,12 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.10.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+            <version>2.7.0</version>
         </dependency>
 
         <!-- HDFS -->
@@ -183,7 +189,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.cloudera.frisch.randomdatagen.Main</mainClass>
+                    <mainClass>com.cloudera.frisch.datagen.Main</mainClass>
                 </configuration>
             </plugin>
 

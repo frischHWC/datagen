@@ -156,9 +156,65 @@
   delay: 30
 
 
-- name: Generate Weather Data
+- name: Generate Weather Data to Kafka
   uri:
     url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/services/datagen/commands/gen_weather_kafka"
+    user: "{{ cloudera_manager_user }}"
+    password: "{{ cloudera_manager_password }}"
+    method: POST
+    force_basic_auth: yes
+    status_code: 200
+    return_content: yes
+    validate_certs: no
+
+- name: Check that no command is currently running on the service
+  uri:
+    url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/services/datagen/commands"
+    user: "{{ cloudera_manager_user }}"
+    password: "{{ cloudera_manager_password }}"
+    method: GET
+    force_basic_auth: yes
+    status_code: 200
+    return_content: yes
+    validate_certs: no
+    body_format: json
+  register: result
+  until: result.content|length == 19
+  retries: 60
+  delay: 30
+
+
+- name: Generate Weather Data to SolR
+  uri:
+    url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/services/datagen/commands/gen_weather_solr"
+    user: "{{ cloudera_manager_user }}"
+    password: "{{ cloudera_manager_password }}"
+    method: POST
+    force_basic_auth: yes
+    status_code: 200
+    return_content: yes
+    validate_certs: no
+
+- name: Check that no command is currently running on the service
+  uri:
+    url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/services/datagen/commands"
+    user: "{{ cloudera_manager_user }}"
+    password: "{{ cloudera_manager_password }}"
+    method: GET
+    force_basic_auth: yes
+    status_code: 200
+    return_content: yes
+    validate_certs: no
+    body_format: json
+  register: result
+  until: result.content|length == 19
+  retries: 60
+  delay: 30
+
+
+- name: Generate Public Service Data to Kafka
+  uri:
+    url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/services/datagen/commands/gen_public_service_kafka"
     user: "{{ cloudera_manager_user }}"
     password: "{{ cloudera_manager_password }}"
     method: POST

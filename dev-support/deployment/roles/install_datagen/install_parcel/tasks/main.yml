@@ -128,7 +128,7 @@
 
 - name: Pause to acknowledge parcels
   pause:
-    seconds: 5
+    seconds: 10
 
 ### Download and activate DATAGEN ###
 - name: Start Download
@@ -142,6 +142,10 @@
     return_content: yes
     validate_certs: no
   register: download_answer
+
+- name: Pause to let download start
+  pause:
+    seconds: 5
 
 - name: Check DATAGEN is downloaded
   uri:

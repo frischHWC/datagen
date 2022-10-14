@@ -263,9 +263,9 @@
       },
       "topology": {
         "minInstances": "1",
-        "maxInstances": 1000,
+        "maxInstances": "1000",
         "softMinInstances": "1",
-        "softMaxInstances": 100,
+        "softMaxInstances": "100",
         "requiresOddNumberOfInstances": "false"
       },
       "healthAggregation": {

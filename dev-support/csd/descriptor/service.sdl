@@ -90,8 +90,8 @@
     },
     {
       "name": "gen_sensor",
-      "label": "Generates 10 Millions Sensors Data to Hive",
-      "description": "Generates 10 Millions Sensors Data to Hive",
+      "label": "Generates 1 Million Sensors Data to Hive",
+      "description": "Generates 1 Million Sensors Data to Hive",
       "roleCommand": "gen_sensor_hive",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
@@ -381,8 +381,8 @@
         },
         {
           "name": "gen_sensor_hive",
-          "label": "Generates 10 Millions Sensors Data to Hive",
-          "description": "Generates 10 Millions Sensors Data to Hive",
+          "label": "Generates 1 Million Sensors Data to Hive",
+          "description": "Generates 1 Million Sensors Data to Hive",
           "expectedExitCodes": [
             0
           ],
@@ -577,7 +577,7 @@
         {
           "name": "ranger_url",
           "label": "Ranger URL",
-          "description": "Ranger URM, used to push policies to Ranger (needed only once at startup) in this format: http://<RANGER_HOST>:<RANGER_PORT>. if this is not set, it is required to create your own policies in Ranger. Default push policies are on 'datagen*' and does not include specific paths that custom model may required",
+          "description": "Ranger URM, used to push policies to Ranger (needed only once at startup) in this format: http://RANGER_HOST:RANGER_PORT. if this is not set, it is required to create your own policies in Ranger. Default push policies are on 'datagen*' and does not include specific paths that custom model may required",
           "required": true,
           "configurableInWizard": true,
           "default": "https://localhost:6182",
@@ -630,63 +630,63 @@
         {
           "name": "hdfs_uri",
           "label": "HDFS URI",
-          "description": "HDFS URI to connect to as: hdfs://<NAMESERVICE>:<PORT>/",
+          "description": "HDFS URI to connect to as: hdfs://NAMESERVICE:PORT/",
           "default": "",
           "type": "string"
         },
         {
           "name": "hbase_zk_quorum",
           "label": "HBASE Zookeeper Quorum",
-          "description": "Zookeeper to connect to as: <ZK_SERVER_1>,<ZK_SERVER_2>,<ZK_SERVER_3>",
+          "description": "Zookeeper to connect to as: ZK_SERVER_1,ZK_SERVER_2,ZK_SERVER_3",
           "default": "",
           "type": "string"
         },
         {
           "name": "hbase_zk_quorum_port",
           "label": "HBASE Zookeeper Quorum Port",
-          "description": "Zookeeper to connect to as: <ZK_PORT>",
+          "description": "Zookeeper to connect to as: ZK_PORT",
           "default": "",
           "type": "port"
         },
         {
           "name": "hbase_znode_parent",
           "label": "HBASE Zookeeper Znode",
-          "description": "Zookeeper znode as: <ZNODE>",
+          "description": "Zookeeper znode as: ZNODE",
           "default": "",
           "type": "string"
         },
         {
           "name": "ozone_service_id",
           "label": "Ozone Service ID",
-          "description": "Ozone service ID to connect to as: <SERVICEID>",
+          "description": "Ozone service ID to connect to as: SERVICEID",
           "default": "",
           "type": "string"
         },
         {
           "name": "hive_zk_quorum",
           "label": "Hive Zookeeper Quorum",
-          "description": "Zookeeper to connect to as: <ZK_SERVER_1>:<ZK_PORT>,<ZK_SERVER_2>:<ZK_PORT>,<ZK_SERVER_3>:<ZK_PORT>",
+          "description": "Zookeeper to connect to as: ZK_SERVER_1:ZK_PORT,ZK_SERVER_2:ZK_PORT,ZK_SERVER_3:ZK_PORT",
           "default": "",
           "type": "string"
         },
         {
           "name": "hive_znode",
           "label": "Hive Zookeeper Znode",
-          "description": "Zookeeper znode as: <ZNODE>",
+          "description": "Zookeeper znode as: ZNODE",
           "default": "",
           "type": "string"
         },
         {
           "name": "solr_zk_quorum",
           "label": "Solr Zookeepers",
-          "description": "SolR Zookeepers as: <ZK_SERVER_1>:<ZK_PORT>,<ZK_SERVER_2>:<ZK_PORT>",
+          "description": "SolR Zookeepers as: ZK_SERVER_1:ZK_PORT,ZK_SERVER_2:ZK_PORT",
           "default": "",
           "type": "string"
         },
         {
           "name": "solr_znode",
           "label": "Solr Zookeeper Znode",
-          "description": "SolR Zookeeper znode as: /<ZNODE>",
+          "description": "SolR Zookeeper znode as: /ZNODE",
           "default": "/solr",
           "type": "string"
         },
@@ -700,14 +700,14 @@
         {
           "name": "kafka_url",
           "label": "Kafka URL",
-          "description": "Kafka URL as: <KAFKA_SERVER_1>:<KAFKA_PORT>,<KAFKA_SERVER_2>:<KAFKA_PORT>",
+          "description": "Kafka URL as: KAFKA_SERVER_1:KAFKA_PORT,KAFKA_SERVER_2:KAFKA_PORT",
           "default": "",
           "type": "string"
         },
         {
           "name": "schema_registry_url",
           "label": "Schema Registry URL",
-          "description": "Schema Registry URL as: <SR_SERVER>:<SR_PORT>",
+          "description": "Schema Registry URL as: SR_SERVER:SR_PORT",
           "default": "",
           "type": "string"
         },
@@ -748,7 +748,7 @@
         {
           "name": "kudu_url",
           "label": "KUDU URL",
-          "description": "Kudu URL as: <KUDU_MASTER_1>,<KUDU_MASTER_2>,<KUDU_MASTER_3>",
+          "description": "Kudu URL as: KUDU_MASTER_1:KUDU_PORT,KUDU_MASTER_2:KUDU_PORT,KUDU_MASTER_3:KUDU_PORT",
           "default": "",
           "type": "string"
         },

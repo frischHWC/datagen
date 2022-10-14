@@ -150,7 +150,6 @@ There are various possible services where data can be generated, these are calle
 - HBASE
 - KAFKA : Generates an avro or json or csv message and send it to Kafka
 - KUDU
-- OZONE
 - OZONE-AVRO : generates an AVRO file sent to OZONE
 - OZONE-JSON : generates a JSON file sent to OZONE
 - OZONE-CSV : generates a CSV file sent to OZONE
@@ -182,21 +181,26 @@ All available types are:
 - STRING  is an alphaNumeric string (length represents length of string, by default 20 if not set) +
 - STRINGAZ  is an alpha non-numeric string (length represents length of string, by default 20 if not set) +
 - INTEGER (with length representing maximum value, by default Integer.MAX_VALUE) +
+- INCREMENT INTEGER An integer increment for each row +
+- INCREMENT LONG A long incremented for each row +
 - BOOLEAN +
 - FLOAT +
 - LONG +
 - TIMESTAMP (is timestamp of data generation) +
 - BYTES (length represents length of byte array, by default 20) +
 - HASHMD5   is the hash of a random string (length represents size of byte array, by default 32) +
-- BIRTHDATE  is a date between 1910 & 2020 +
-- NAME  is a first name taken from a dictionary of over 10,000+ names +
-- COUNTRY   is a country name taken from a dictionary +
 - BLOB   is a byte array of default 1MB (length represents length of byte array) (Use it carefully) +
+- BIRTHDATE  is a date between 1910 & 2020 (but you can set your own limits) +
+- NAME  is a first name taken from a dictionary of over 10,000+ names (can be filtered by country) +
+- COUNTRY   is a country name taken from a dictionary +
+- PHONE NUMBER A 10 digits with international indicator in front (can be filtered by country) +
 - EMAIL   is string as in form of (<name>.<name>|<AZ09><name>)@(gaagle.com|yahaa.com|uutlook.com|email.fr) +
-- IP   is a string representing an IP in form of Ipv4: 0-255.0-255.0-255.0-255
-- CITY  is an object representing an existing city (name, lat, long, country) made from a dictionary of over 10,000+ cities, only the name is taken for this field
-- LINK  is a string whose values is derived from another field, currently from a CITY or CSV field
-- CSV   is an object taken from a given CSV file
+- IP   is a string representing an IP in form of Ipv4: 0-255.0-255.0-255.0-255 +
+- UUID is an unique universal identifier: xxxx-xxxx-xxxx-xxxx +
+- CITY  is an object representing an existing city (name, lat, long, country) made from a dictionary of over 10,000+ cities, only the name is taken for this field (can be filtered by country) +
+- CSV   is an object taken from a given CSV file +
+- LINK  is a string whose values is derived from another field, currently from a CITY or CSV field +
+
 
 Fields values could be also more "deterministic" by providing manually values, or providing values and give them a weight to choose repartition,
 or even create conditions based on other columns values.
@@ -449,8 +453,6 @@ corresponding to the name of field (multiple fields could be provided separated 
 
 - KAFKA_MSG_KEY +
 - HBASE_PRIMARY_KEY +
-- OZONE_BUCKET +
-- OZONE_KEY +
 - KUDU_PRIMARY_KEYS +
 - KUDU_HASH_KEYS +
 - KUDU_RANGE_KEYS

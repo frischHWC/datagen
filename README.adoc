@@ -191,7 +191,7 @@ All available types are:
 - HASHMD5   is the hash of a random string (length represents size of byte array, by default 32) +
 - BLOB   is a byte array of default 1MB (length represents length of byte array) (Use it carefully) +
 - BIRTHDATE  is a date between 1910 & 2020 (but you can set your own limits) +
-- NAME  is a first name taken from a dictionary of over 10,000+ names (can be filtered by country) +
+- NAME  is a first name taken from a dictionary of over 20,000+ names (can be filtered by country) +
 - COUNTRY   is a country name taken from a dictionary +
 - PHONE NUMBER A 10 digits with international indicator in front (can be filtered by country) +
 - EMAIL   is string as in form of (<name>.<name>|<AZ09><name>)@(gaagle.com|yahaa.com|uutlook.com|email.fr) +

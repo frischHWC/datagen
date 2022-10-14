@@ -262,8 +262,10 @@
         "secureUrl": "https://${host}:${app_port}/swagger-ui.html"
       },
       "topology": {
-        "minInstances": "0",
+        "minInstances": "1",
+        "maxInstances": 1000,
         "softMinInstances": "1",
+        "softMaxInstances": 100,
         "requiresOddNumberOfInstances": "false"
       },
       "healthAggregation": {

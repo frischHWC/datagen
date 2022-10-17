@@ -10,11 +10,11 @@
     },
     {
       "name": "process_swap_memory_thresholds",
-      "value": "{\"warning\":\"any\",\"critical\":\"never\"}"
+      "value": "{\"warning\":\"any\",\"critical\":\"any\"}"
     },
     {
       "name": "process_swap_memory_rate_thresholds",
-      "value": "{\"warning\":\"any\",\"critical\":\"never\"}"
+      "value": "{\"warning\":\"any\",\"critical\":\"any\"}"
     }
   ]
 }

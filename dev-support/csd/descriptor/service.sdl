@@ -262,15 +262,11 @@
         "secureUrl": "https://${host}:${app_port}/swagger-ui.html"
       },
       "topology": {
-        "minInstances": "1",
-        "maxInstances": "1000",
-        "softMinInstances": "1",
-        "softMaxInstances": "100",
-        "requiresOddNumberOfInstances": "false"
+        "minInstances": "1"
       },
       "healthAggregation": {
         "type": "nonSingleton",
-        "percentGreenForGreen": 90.0,
+        "percentGreenForGreen": 99.0,
         "percentYellowGreenForYellow": 50.0
       },
       "commands": [

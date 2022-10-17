@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.cloudera.frisch</groupId>
-    <artifactId>datagen</artifactId>    
+    <artifactId>datagen</artifactId>
     <version>0.2.7</version>
 
     <parent>

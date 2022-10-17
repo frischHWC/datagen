@@ -2,9 +2,20 @@
 
 echo "STARTING INIT OF DATAGEN"
 
+echo "Creating required local files"
+
+mkdir -p /home/${DATAGEN_USER}/
+mkdir -p /home/${DATAGEN_USER}/jaas/
+mkdir -p ${DATA_MODEL_RECEIVED}
+touch ${SCHEDULER_FILE_PATH}
+chown -R ${DATAGEN_USER}:${DATAGEN_USER} /home/${DATAGEN_USER}/
+
+echo "Finished to create required local files"
+
 echo "RANGER_SERVICE: ${RANGER_SERVICE_NAME}"
 echo "RANGER_URL: ${RANGER_URL}"
 echo "RANGER_ADMIN_USER: ${RANGER_ADMIN_USER}"
+
 
 if [ "${RANGER_SERVICE_NAME}" != "" ] && [ "${RANGER_SERVICE_NAME}" != "none" ] && [ "${RANGER_URL}" != "" ] && [ "${RANGER_ADMIN_USER}" != "" ] && [ "${RANGER_ADMIN_PASSWORD}" != "" ]
 then

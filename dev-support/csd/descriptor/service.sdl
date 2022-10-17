@@ -2,7 +2,7 @@
   "name": "DATAGEN",
   "label": "Datagen",
   "description": "The service to generate Data into various services of CDP platform",
-  "version": "0.2.5",
+  "version": "0.2.8",
   "parcel": {
     "requiredTags": [
       "datagen"
@@ -285,6 +285,8 @@
             ],
             "environmentVariables": {
               "DATAGEN_USER": "${user}",
+              "DATA_MODEL_RECEIVED": "${data_model_received}",
+              "SCHEDULER_FILE_PATH": "${scheduler_file_path}",
               "RANGER_SERVICE_NAME": "${dependency:RANGER}",
               "RANGER_URL": "${ranger_url}",
               "RANGER_ADMIN_USER": "${ranger_user}",

@@ -12,7 +12,9 @@
     },
     {
       "name": "value",
-      "type": "LONG"
+      "type": "LONG",
+      "min": -1000,
+      "max": 1000
     }
   ],
   "Table_Names": [

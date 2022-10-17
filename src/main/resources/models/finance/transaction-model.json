@@ -14,7 +14,7 @@
     },
     {
       "name": "amount",
-      "type": "FLOAT",
+      "type": "INTEGER",
       "min": 0,
       "max": 5000
     },

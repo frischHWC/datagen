@@ -3,8 +3,10 @@ package com.cloudera.frisch.randomdatagen.controller;
 
 import com.cloudera.frisch.randomdatagen.service.Command;
 import com.cloudera.frisch.randomdatagen.service.CommandRunnerService;
+import com.cloudera.frisch.randomdatagen.service.CommandSoft;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,11 +23,11 @@ public class CommandRunnerController {
   @Autowired
   private CommandRunnerService commandRunnerService;
 
-  @PostMapping(value = "/getCommandStatus")
-  public String getStatusOfACommand(
+  @PostMapping(value = "/getCommandStatus", produces = {MediaType.APPLICATION_JSON_VALUE})
+  public CommandSoft getStatusOfACommand(
       @RequestParam(name = "commandUuid") UUID commandUUID
   ) {
-    return commandRunnerService.getCommandStatusAsString(commandUUID);
+    return commandRunnerService.getCommandStatusShort(commandUUID);
   }
 
   @PostMapping(value = "/get")
@@ -35,20 +37,20 @@ public class CommandRunnerController {
     return commandRunnerService.getCommandAsString(commandUUID);
   }
 
-  @PostMapping(value = "/getByStatus")
-  public List<String> getCommandsByStatus(
+  @PostMapping(value = "/getByStatus", produces = {MediaType.APPLICATION_JSON_VALUE})
+  public List<CommandSoft> getCommandsByStatus(
       @RequestParam(name = "status") Command.CommandStatus commandStatus
   ) {
     return commandRunnerService.getCommandsByStatus(commandStatus);
   }
 
-  @PostMapping(value = "/getAll")
-  public List<String> getAllCommands() {
+  @PostMapping(value = "/getAll", produces = {MediaType.APPLICATION_JSON_VALUE})
+  public List<CommandSoft> getAllCommands() {
     return commandRunnerService.getAllCommands();
   }
 
-  @PostMapping(value = "/getAllScheduled")
-  public List<String> getAllScheduledCommands() {
+  @PostMapping(value = "/getAllScheduled", produces = {MediaType.APPLICATION_JSON_VALUE})
+  public List<CommandSoft> getAllScheduledCommands() {
     return commandRunnerService.getAllScheduledCommands();
   }
 

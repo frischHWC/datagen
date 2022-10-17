@@ -51,18 +51,8 @@ public class CommandRunnerService {
     Utils.createLocalDirectory(propertiesLoader.getPropertiesCopy().get(ApplicationConfigs.DATA_MODEL_RECEIVED_PATH));
   }
 
-  public String getCommandStatusAsString(UUID uuid) {
-    Command command = commands.get(uuid) ;
-    if(command != null) {
-      return "{ \"commandUuid\": \"" + uuid + "\" ," +
-          " \"status\": \"" + command.getStatus().toString() + "\" ," +
-          " \"comment\": \"" + command.getCommandComment() + "\" , +" +
-          " \"progress\": \"" + command.getProgress() + "\" , " +
-          " \"duration\": \"" + Utils.formatTimetaken(command.getDurationSeconds()) + "\" " +
-          "}";
-    } else {
-      return "Not Found";
-    }
+  public CommandSoft getCommandStatusShort(UUID uuid) {
+     return new CommandSoft(commands.get(uuid));
   }
 
   public String getCommandAsString(UUID uuid) {
@@ -70,25 +60,25 @@ public class CommandRunnerService {
     return command != null ? command.toString() : "Not Found";
   }
 
-  public List<String> getAllCommands() {
-    List<String> commandsAsList = new ArrayList<>();
-    commands.forEach((u,c) -> commandsAsList.add(c.toString()));
+  public List<CommandSoft> getAllCommands() {
+    List<CommandSoft> commandsAsList = new ArrayList<>();
+    commands.forEach((u,c) -> commandsAsList.add(getCommandStatusShort(c.getCommandUuid())));
     return commandsAsList;
   }
 
-  public List<String> getCommandsByStatus(Command.CommandStatus status) {
-    List<String> commandsAsList = new ArrayList<>();
+  public List<CommandSoft> getCommandsByStatus(Command.CommandStatus status) {
+    List<CommandSoft> commandsAsList = new ArrayList<>();
     commands.forEach((u,c) -> {
       if(c.getStatus()==status) {
-        commandsAsList.add(getCommandStatusAsString(c.getCommandUuid()));
+        commandsAsList.add(getCommandStatusShort(c.getCommandUuid()));
       }
     });
     return commandsAsList;
   }
 
-  public List<String> getAllScheduledCommands() {
-    List<String> commandsAsList = new ArrayList<>();
-    scheduledCommands.forEach((u,c) -> commandsAsList.add(c.toString()));
+  public List<CommandSoft> getAllScheduledCommands() {
+    List<CommandSoft> commandsAsList = new ArrayList<>();
+    scheduledCommands.forEach((u,c) -> commandsAsList.add(getCommandStatusShort(c.getCommandUuid())));
     return commandsAsList;
   }
 

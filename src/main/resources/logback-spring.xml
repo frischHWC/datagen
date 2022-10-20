@@ -21,6 +21,26 @@
 
     </springProfile>
 
+    <springProfile name="test">
+
+        <appender name="Console"
+                  class="ch.qos.logback.core.ConsoleAppender">
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <Pattern>
+                    %black(%d{ISO8601}) %highlight(%-5level) [%blue(%t)] %yellow(%C{1.}): %msg%n%throwable
+                </Pattern>
+            </layout>
+        </appender>
+
+        <logger name="com.cloudera.frisch" level="DEBUG" />
+
+        <!-- LOG everything at INFO level -->
+        <root level="info">
+            <appender-ref ref="Console" />
+        </root>
+
+    </springProfile>
+
 
     <springProfile name="cdp">
 

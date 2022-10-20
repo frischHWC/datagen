@@ -2,7 +2,7 @@
   "name": "DATAGEN",
   "label": "Datagen",
   "description": "The service to generate Data into various services of CDP platform",
-  "version": "0.2.8",
+  "version": "0.3.0",
   "parcel": {
     "requiredTags": [
       "datagen"
@@ -50,88 +50,88 @@
   "commands": [
     {
       "name": "InitServiceCommand",
-      "label": "Initialize the service dirs and policies",
-      "description": "Initialize Service by creating local dirs and ranger required policies",
+      "label": "Initialize the service directories and policies",
+      "description": "Initialize Service by creating local directories and ranger required policies",
       "roleCommand": "init_service",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_customer",
-      "label": "Generates 1 Million Customers to HDFS, Ozone and Hive",
-      "description": "Generates 1 Million Customers to HDFS and Hive",
+      "label": "Generate 1 Million Customers to HDFS, Ozone and Hive",
+      "description": "Generate 1 Million Customers to HDFS and Hive",
       "roleCommand": "gen_customer_hdfs_ozone_hive",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_customer_hdfs",
-      "label": "Generates 1 Million Customers to HDFS",
-      "description": "Generates 1 Million Customers to HDFS",
+      "label": "Generate 1 Million Customers to HDFS",
+      "description": "Generate 1 Million Customers to HDFS",
       "roleCommand": "gen_customer_hdfs",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_customer_ozone",
-      "label": "Generates 1 Million Customers to Ozone",
-      "description": "Generates 1 Million Customers to Ozone",
+      "label": "Generate 1 Million Customers to Ozone",
+      "description": "Generate 1 Million Customers to Ozone",
       "roleCommand": "gen_customer_ozone",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_transaction",
-      "label": "Generates 1 Million Transactions to HBase",
-      "description": "Generates 1 Million Transactions to HBase",
+      "label": "Generate 1 Million Transactions to HBase",
+      "description": "Generate 1 Million Transactions to HBase",
       "roleCommand": "gen_transaction_hbase",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_sensor",
-      "label": "Generates 1 Million Sensors Data to Hive",
-      "description": "Generates 1 Million Sensors Data to Hive",
+      "label": "Generate 1 Million Sensors Data to Hive",
+      "description": "Generate 1 Million Sensors Data to Hive",
       "roleCommand": "gen_sensor_hive",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_public_service_kudu",
-      "label": "Generates 1 Million Public Service Data to Kudu",
-      "description": "Generates 1 Million Public Service Data to Kudu",
+      "label": "Generate 1 Million Public Service Data to Kudu",
+      "description": "Generate 1 Million Public Service Data to Kudu",
       "roleCommand": "gen_public_service_kudu",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_public_service_kafka",
-      "label": "Generates 1 Million Public Service Data to Kafka in Avro",
-      "description": "Generates 1 Million Public Service Data to Kafka in Avro",
+      "label": "Generate 1 Million Public Service Data to Kafka in Avro",
+      "description": "Generate 1 Million Public Service Data to Kafka in Avro",
       "roleCommand": "gen_public_service_kafka",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_weather_solr",
-      "label": "Generates 1 Million Weather Data to SolR ",
-      "description": "Generates 1 Million Weather Data to SolR",
+      "label": "Generate 1 Million Weather Data to SolR ",
+      "description": "Generate 1 Million Weather Data to SolR",
       "roleCommand": "gen_weather_solr",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_weather_kafka",
-      "label": "Generates 1 Million Weather Data to Kafka in JSON",
-      "description": "Generates 1 Million Weather Data to Kafka in JSON",
+      "label": "Generate 1 Million Weather Data to Kafka in JSON",
+      "description": "Generate 1 Million Weather Data to Kafka in JSON",
       "roleCommand": "gen_weather_kafka",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
     },
     {
       "name": "gen_local",
-      "label": "Generates Local Data as CSV, JSON, AVRO, ORC, PARQUET",
-      "description": "Generates Local Data as CSV, JSON, AVRO, ORC, PARQUET",
+      "label": "Generate Local Data as CSV, JSON, AVRO, ORC, PARQUET",
+      "description": "Generate Local Data as CSV, JSON, AVRO, ORC, PARQUET",
       "roleCommand": "gen_local_data",
       "roleName": "DATAGEN_SERVER",
       "runMode": "single"
@@ -178,12 +178,21 @@
       "name": "SCHEMAREGISTRY"
     }
   ],
+  "dependencyExtensions": [
+      {
+        "type": "clusterInfo",
+        "extensionId": "cluster_info"
+      }
+    ],
   "roles": [
     {
       "name": "DATAGEN_SERVER",
       "label": "Datagen Web Server",
       "pluralLabel": "Web Servers",
       "jvmBased": "true",
+      "internalCmUser": {
+          "userRole": "readOnly"
+      },
       "startRunner": {
         "program": "scripts/control.sh",
         "args": [
@@ -195,6 +204,8 @@
           "PRINCIPAL": "${principal}/${host}",
           "USER": "${user}",
           "HOST": "${host}",
+          "CM_URL": "${cm_internal_url}",
+          "CLUSTER_NAME": "${cluster_name}",
           "TRUSTSTORE_LOCATION": "${ssl_client_truststore_location}",
           "TRUSTSTORE_PASSWORD": "${ssl_client_truststore_password}",
           "KEYSTORE_PASSWORD": "${ssl_server_keystore_password}",
@@ -266,8 +277,8 @@
       },
       "healthAggregation": {
         "type": "nonSingleton",
-        "percentGreenForGreen": 99.0,
-        "percentYellowGreenForYellow": 50.0
+        "percentGreenForGreen": 99,
+        "percentYellowGreenForYellow": 49
       },
       "commands": [
         {
@@ -305,8 +316,8 @@
         },
         {
           "name": "gen_customer_hdfs_ozone_hive",
-          "label": "Generates 1 Million Customers to HDFS and Hive and Ozone",
-          "description": "Generates 1 Million Customers to HDFS and Hive and Ozone",
+          "label": "Generate 1 Million Customers to HDFS and Hive and Ozone",
+          "description": "Generate 1 Million Customers to HDFS and Hive and Ozone",
           "expectedExitCodes": [
             0
           ],
@@ -324,8 +335,8 @@
         },
         {
           "name": "gen_customer_hdfs",
-          "label": "Generates 1 Million Customer Data to HDFS in Parquet",
-          "description": "Generates 1 Million Customer Data to HDFS in Parquet",
+          "label": "Generate 1 Million Customer Data to HDFS in Parquet",
+          "description": "Generate 1 Million Customer Data to HDFS in Parquet",
           "expectedExitCodes": [
             0
           ],
@@ -343,8 +354,8 @@
         },
         {
           "name": "gen_customer_ozone",
-          "label": "Generates 1 Million Customer Data to Ozone in Parquet",
-          "description": "Generates 1 Million Customer Data to Ozone in Parquet",
+          "label": "Generate 1 Million Customer Data to Ozone in Parquet",
+          "description": "Generate 1 Million Customer Data to Ozone in Parquet",
           "expectedExitCodes": [
             0
           ],
@@ -362,8 +373,8 @@
         },
         {
           "name": "gen_transaction_hbase",
-          "label": "Generates 1 Million Transactions to HBase",
-          "description": "Generates 1 Million Transactions to HBase",
+          "label": "Generate 1 Million Transactions to HBase",
+          "description": "Generate 1 Million Transactions to HBase",
           "expectedExitCodes": [
             0
           ],
@@ -381,8 +392,8 @@
         },
         {
           "name": "gen_sensor_hive",
-          "label": "Generates 1 Million Sensors Data to Hive",
-          "description": "Generates 1 Million Sensors Data to Hive",
+          "label": "Generate 1 Million Sensors Data to Hive",
+          "description": "Generate 1 Million Sensors Data to Hive",
           "expectedExitCodes": [
             0
           ],
@@ -400,8 +411,8 @@
         },
         {
           "name": "gen_public_service_kafka",
-          "label": "Generates 1 Million Public Service Data to Kafka in Avro",
-          "description": "Generates 1 Million Public Service Data to Kafka in Avro",
+          "label": "Generate 1 Million Public Service Data to Kafka in Avro",
+          "description": "Generate 1 Million Public Service Data to Kafka in Avro",
           "expectedExitCodes": [
             0
           ],
@@ -419,8 +430,8 @@
         },
         {
           "name": "gen_public_service_kudu",
-          "label": "Generates 1 Million Public Service Data to Kudu",
-          "description": "Generates 1 Million Public Service Data to Kudu",
+          "label": "Generate 1 Million Public Service Data to Kudu",
+          "description": "Generate 1 Million Public Service Data to Kudu",
           "expectedExitCodes": [
             0
           ],
@@ -476,8 +487,8 @@
         },
         {
           "name": "gen_local_data",
-          "label": "Generates Local Data as CSV, JSON, AVRO, ORC, PARQUET",
-          "description": "Generates Local Data as CSV, JSON, AVRO, ORC, PARQUET",
+          "label": "Generate Local Data as CSV, JSON, AVRO, ORC, PARQUET",
+          "description": "Generate Local Data as CSV, JSON, AVRO, ORC, PARQUET",
           "expectedExitCodes": [
             0
           ],
@@ -808,9 +819,9 @@
         },
         {
           "name": "kafka_client_conf_path",
-          "label": "AUTO-DISCOVERY: Kafka client conf Path",
-          "description": "Path to kafka-client.conf. This is used to auto-discover services: KAFKA. (if settings are not explicitly set)",
-          "default": "/etc/kafka/conf/kafka-client.conf",
+          "label": "AUTO-DISCOVERY: Kafka client cluster config properties Path",
+          "description": "Path to kafka-cluster-config.properties This is used to auto-discover services: KAFKA. (if settings are not explicitly set)",
+          "default": "",
           "type": "path",
           "pathType": "serviceSpecific",
           "mode": "0755"
@@ -819,7 +830,7 @@
           "name": "schema_registry_conf_path",
           "label": "AUTO-DISCOVERY: Schema Registry Configuration Path",
           "description": "Path to schema_registry_client.properties. This is used to auto-discover services: KAFKA & SCHEMA REGISTRY. (if settings are not explicitly set)",
-          "default": "/etc/schemaregistry/conf/schema_registry_client.properties",
+          "default": "",
           "type": "path",
           "pathType": "serviceSpecific",
           "mode": "0755"
@@ -859,6 +870,13 @@
           "type": "path",
           "pathType": "serviceSpecific",
           "mode": "0700"
+        },
+        {
+          "name": "cm_auto_discovery",
+          "label": "Cloudera Manager Auto-discovery of services",
+          "description": "To use CM (with an internal readOnly user) to make auto-discovery of services",
+          "default": "true",
+          "type": "boolean"
         }
       ]
     }

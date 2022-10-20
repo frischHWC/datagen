@@ -277,13 +277,8 @@
       },
       "healthAggregation": {
         "type": "nonSingleton",
-<<<<<<< HEAD
-        "percentGreenForGreen": 99.0,
-        "percentYellowGreenForYellow": 50.0
-=======
         "percentGreenForGreen": 99,
         "percentYellowGreenForYellow": 49
->>>>>>> auto-discovery
       },
       "commands": [
         {
@@ -397,13 +392,8 @@
         },
         {
           "name": "gen_sensor_hive",
-<<<<<<< HEAD
-          "label": "Generates 1 Million Sensors Data to Hive",
-          "description": "Generates 1 Million Sensors Data to Hive",
-=======
           "label": "Generate 1 Million Sensors Data to Hive",
           "description": "Generate 1 Million Sensors Data to Hive",
->>>>>>> auto-discovery
           "expectedExitCodes": [
             0
           ],

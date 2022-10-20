@@ -77,61 +77,61 @@
     validate_certs: no
   when: tls_activated
 
-- name: Set SolR properties if needed
-  uri:
-    url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/services/datagen/roleConfigGroups/datagen-DATAGEN_SERVER-BASE/config"
-    user: "{{ cloudera_manager_user }}"
-    password: "{{ cloudera_manager_password }}"
-    method: PUT
-    body_format: json
-    body:  "{{ lookup('template', 'solr_config.json' ) }}"
-    force_basic_auth: yes
-    status_code: 200
-    return_content: yes
-    validate_certs: no
-  when: solr_exists
+# - name: Set SolR properties if needed
+#   uri:
+#     url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/services/datagen/roleConfigGroups/datagen-DATAGEN_SERVER-BASE/config"
+#     user: "{{ cloudera_manager_user }}"
+#     password: "{{ cloudera_manager_password }}"
+#     method: PUT
+#     body_format: json
+#     body:  "{{ lookup('template', 'solr_config.json' ) }}"
+#     force_basic_auth: yes
+#     status_code: 200
+#     return_content: yes
+#     validate_certs: no
+#   when: solr_exists
 
-- name: Set Kudu properties if needed
-  uri:
-    url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/services/datagen/roleConfigGroups/datagen-DATAGEN_SERVER-BASE/config"
-    user: "{{ cloudera_manager_user }}"
-    password: "{{ cloudera_manager_password }}"
-    method: PUT
-    body_format: json
-    body:  "{{ lookup('template', 'kudu_config.json' ) }}"
-    force_basic_auth: yes
-    status_code: 200
-    return_content: yes
-    validate_certs: no
-  when: kudu_exists
+# - name: Set Kudu properties if needed
+#   uri:
+#     url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/services/datagen/roleConfigGroups/datagen-DATAGEN_SERVER-BASE/config"
+#     user: "{{ cloudera_manager_user }}"
+#     password: "{{ cloudera_manager_password }}"
+#     method: PUT
+#     body_format: json
+#     body:  "{{ lookup('template', 'kudu_config.json' ) }}"
+#     force_basic_auth: yes
+#     status_code: 200
+#     return_content: yes
+#     validate_certs: no
+#   when: kudu_exists
 
-- name: Set Kafka properties if needed
-  uri:
-    url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/services/datagen/roleConfigGroups/datagen-DATAGEN_SERVER-BASE/config"
-    user: "{{ cloudera_manager_user }}"
-    password: "{{ cloudera_manager_password }}"
-    method: PUT
-    body_format: json
-    body:  "{{ lookup('template', 'kafka_config.json' ) }}"
-    force_basic_auth: yes
-    status_code: 200
-    return_content: yes
-    validate_certs: no
-  when: kafka_exists
+# - name: Set Kafka properties if needed
+#   uri:
+#     url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/services/datagen/roleConfigGroups/datagen-DATAGEN_SERVER-BASE/config"
+#     user: "{{ cloudera_manager_user }}"
+#     password: "{{ cloudera_manager_password }}"
+#     method: PUT
+#     body_format: json
+#     body:  "{{ lookup('template', 'kafka_config.json' ) }}"
+#     force_basic_auth: yes
+#     status_code: 200
+#     return_content: yes
+#     validate_certs: no
+#   when: kafka_exists
 
-- name: Set Schema Registry properties if needed
-  uri:
-    url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/services/datagen/roleConfigGroups/datagen-DATAGEN_SERVER-BASE/config"
-    user: "{{ cloudera_manager_user }}"
-    password: "{{ cloudera_manager_password }}"
-    method: PUT
-    body_format: json
-    body:  "{{ lookup('template', 'sr_config.json' ) }}"
-    force_basic_auth: yes
-    status_code: 200
-    return_content: yes
-    validate_certs: no
-  when: sr_exists
+# - name: Set Schema Registry properties if needed
+#   uri:
+#     url: "{{ cloudera_manager_api_url }}/clusters/{{ cluster_name }}/services/datagen/roleConfigGroups/datagen-DATAGEN_SERVER-BASE/config"
+#     user: "{{ cloudera_manager_user }}"
+#     password: "{{ cloudera_manager_password }}"
+#     method: PUT
+#     body_format: json
+#     body:  "{{ lookup('template', 'sr_config.json' ) }}"
+#     force_basic_auth: yes
+#     status_code: 200
+#     return_content: yes
+#     validate_certs: no
+#   when: sr_exists
 
 # Add dependency one by one
 - name: Set HDFS dependency if needed

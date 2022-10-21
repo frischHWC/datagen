@@ -14,63 +14,63 @@ case $CMD in
  (gen_customer_hdfs_ozone_hive)
      echo "Starting to Generate Customer data to HDFS in Parquet & Hive & Ozone in Parquet"
 
-     ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-china-model.json 10000 12 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
+     ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-china-model.json 120000 1 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-china-model.json"
        exit 1
      fi
 
-     ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-france-model.json 10000 9 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
+     ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-france-model.json 90000 1 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-france-model.json"
        exit 1
      fi
 
-     ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-germany-model.json 10000 9 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
+     ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-germany-model.json 90000 1 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-germany-model.json"
        exit 1
      fi
 
-     ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-india-model.json 10000 9 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
+     ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-india-model.json 90000 1 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-india-model.json"
        exit 1
      fi
 
-     ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-italy-model.json 10000 3 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
+     ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-italy-model.json 30000 1 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-italy-model.json"
        exit 1
      fi
 
-     ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-japan-model.json 10000 11 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
+     ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-japan-model.json 110000 1 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-japan-model.json"
        exit 1
      fi
 
-     ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-spain-model.json 10000 4 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
+     ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-spain-model.json 40000 1 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-spain-model.json"
        exit 1
      fi
 
-    ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-turkey-model.json 10000 12 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
+    ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-turkey-model.json 120000 1 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-turkey-model.json"
        exit 1
      fi
 
-    ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-usa-model.json 10000 21 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
+    ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-usa-model.json 210000 1 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-usa-model.json"
@@ -223,7 +223,7 @@ case $CMD in
 
   (gen_transaction_hbase)
     echo "Starting to Generate Transaction Data into HBase"
-    ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/finance/transaction-model.json 10000 100 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hbase
+    ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/finance/transaction-model.json 100000 10 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hbase
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for transaction-model.json"
@@ -249,7 +249,7 @@ case $CMD in
        exit 1
      fi
 
-    ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/industry/sensor-data-model.json 10000 100 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hive
+    ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/industry/sensor-data-model.json 100000 10 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hive
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for sensor-data-model.json"

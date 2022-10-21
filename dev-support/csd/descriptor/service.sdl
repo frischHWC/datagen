@@ -149,35 +149,7 @@
       "type": "boolean"
     }
   ],
-  "serviceDependencies": [
-    {
-      "name": "HDFS"
-    },
-    {
-      "name": "HBASE"
-    },
-    {
-      "name": "HIVE"
-    },
-    {
-      "name": "KAFKA"
-    },
-    {
-      "name": "KUDU"
-    },
-    {
-      "name": "OZONE"
-    },
-    {
-      "name": "SOLR"
-    },
-    {
-      "name": "RANGER"
-    },
-    {
-      "name": "SCHEMAREGISTRY"
-    }
-  ],
+  "serviceDependencies": [],
   "dependencyExtensions": [
       {
         "type": "clusterInfo",
@@ -512,7 +484,7 @@
           "description": "Maximum heap size specified as a JVM parameter to the application",
           "required": true,
           "configurableInWizard": true,
-          "default": 4,
+          "default": 8,
           "min": 1,
           "unit": "gigabytes",
           "type": "memory"
@@ -581,7 +553,7 @@
           "description": "The number of parallel thread to launch data generation",
           "required": true,
           "configurableInWizard": true,
-          "default": 1,
+          "default": 10,
           "min": 1,
           "type": "long"
         },

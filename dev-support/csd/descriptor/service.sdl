@@ -149,35 +149,7 @@
       "type": "boolean"
     }
   ],
-  "serviceDependencies": [
-    {
-      "name": "HDFS"
-    },
-    {
-      "name": "HBASE"
-    },
-    {
-      "name": "HIVE"
-    },
-    {
-      "name": "KAFKA"
-    },
-    {
-      "name": "KUDU"
-    },
-    {
-      "name": "OZONE"
-    },
-    {
-      "name": "SOLR"
-    },
-    {
-      "name": "RANGER"
-    },
-    {
-      "name": "SCHEMAREGISTRY"
-    }
-  ],
+  "serviceDependencies": [],
   "dependencyExtensions": [
       {
         "type": "clusterInfo",

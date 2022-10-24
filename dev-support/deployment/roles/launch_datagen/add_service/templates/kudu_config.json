@@ -1,9 +1,0 @@
-{
-  "items" :
-  [
-    {
-      "name": "kudu_url",
-      "value": "{{ kudu_url }}"
-    }
-  ]
-}

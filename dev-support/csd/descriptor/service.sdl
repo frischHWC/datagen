@@ -2,7 +2,7 @@
   "name": "DATAGEN",
   "label": "Datagen",
   "description": "The service to generate Data into various services of CDP platform",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "parcel": {
     "requiredTags": [
       "datagen"
@@ -149,7 +149,11 @@
       "type": "boolean"
     }
   ],
-  "serviceDependencies": [],
+  "serviceDependencies": [
+    {
+      "name": "RANGER"
+    }
+  ],
   "dependencyExtensions": [
       {
         "type": "clusterInfo",

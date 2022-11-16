@@ -451,7 +451,6 @@ public class Model<T extends Field> {
             partCols.forEach(name -> {
                 sb.append(name);
                 sb.append(" ");
-                sb.append(getFieldFromName(name).getHiveType());
                 sb.append(", ");
             });
             sb.deleteCharAt(sb.length() - 2);

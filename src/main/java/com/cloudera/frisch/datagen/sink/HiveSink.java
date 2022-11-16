@@ -145,7 +145,7 @@ public class HiveSink implements SinkInterface {
                 );
             }
 
-            log.info("SQL Insert schema for hive: " + model.getInsertSQLStatement());
+            log.info("SQL Insert schema for hive: " + model.getInsertSQLStatement() + this.extraInsert );
             insertStatement = "INSERT INTO " + tableName + model.getInsertSQLStatement() + this.extraInsert;
 
         } catch (SQLException e) {

@@ -140,7 +140,6 @@ public class HiveSink implements SinkInterface {
                 log.info("Creating temporary table: " + tableNameTemporary);
                 prepareAndExecuteStatement(
                         "CREATE EXTERNAL TABLE IF NOT EXISTS " + tableNameTemporary + model.getSQLSchema() +
-                                extraCreate +
                                 " STORED AS PARQUET " +
                                 " LOCATION '" + locationTemporaryTable + "'" //+
                 );

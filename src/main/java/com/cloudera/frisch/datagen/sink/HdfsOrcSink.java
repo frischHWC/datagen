@@ -41,6 +41,7 @@ public class HdfsOrcSink implements SinkInterface {
     private final short replicationFactor;
     private final Configuration conf;
     private String hdfsUri;
+    private Boolean useKerberos;
 
     /**
      * Initiate HDFS connection with Kerberos or not
@@ -57,12 +58,13 @@ public class HdfsOrcSink implements SinkInterface {
         this.conf = new Configuration();
         conf.set("dfs.replication", String.valueOf(replicationFactor));
         this.hdfsUri = properties.get(ApplicationConfigs.HDFS_URI);
+        this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS));
 
         org.apache.hadoop.conf.Configuration config = new org.apache.hadoop.conf.Configuration();
         Utils.setupHadoopEnv(config, properties);
 
         // Set all kerberos if needed (Note that connection will require a user and its appropriate keytab with right privileges to access folders and files on HDFSCSV)
-        if (Boolean.parseBoolean(properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS))) {
+        if (useKerberos) {
             Utils.loginUserWithKerberos(properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_USER),
                 properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_KEYTAB),config);
         }
@@ -94,6 +96,9 @@ public class HdfsOrcSink implements SinkInterface {
         try {
             if (!oneFilePerIteration) {
                 writer.close();
+            }
+            if(useKerberos) {
+                Utils.logoutUserWithKerberos();
             }
         } catch (IOException e) {
             log.error(" Unable to close ORC HDFS file with error :", e);

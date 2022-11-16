@@ -47,7 +47,8 @@ public class Injection {
     try {
       for(InjectedField fieldNameToReplace: injectedFieldNames) {
         if(fieldNameToReplace.toReplace) {
-          sb.append(rowValues.get(fieldNameToReplace.stringToPrint).toString());
+          sb.append(row.getModel().getFieldFromName(fieldNameToReplace.stringToPrint)
+              .toStringValue(rowValues.get(fieldNameToReplace.stringToPrint)));
         } else {
          sb.append(fieldNameToReplace.stringToPrint);
         }

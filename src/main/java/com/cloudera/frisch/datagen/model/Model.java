@@ -35,6 +35,9 @@ public class Model<T extends Field> {
     @Getter @Setter
     private LinkedHashMap<String, T> fields;
 
+    @Getter @Setter
+    private LinkedHashMap<String, T> fieldsToPrint;
+
     // This is for convenience when generating data
     @Getter @Setter
     private List<String> fieldsRandomName;
@@ -47,6 +50,7 @@ public class Model<T extends Field> {
     private Map<OptionsConverter.TableNames, String> tableNames;
     @Getter @Setter
     private Map<OptionsConverter.Options, Object> options;
+
 
     /**
      * Constructor that initializes the model and populates it completely
@@ -61,9 +65,18 @@ public class Model<T extends Field> {
         this.fields = fields;
         this.fieldsRandomName = fields.entrySet().stream().filter(f -> !f.getValue().computed).map(f -> f.getKey()).collect(Collectors.toList());
         this.fieldsComputedName = fields.entrySet().stream().filter(f -> f.getValue().computed).map(f -> f.getKey()).collect(Collectors.toList());
+        // Check which fields are needed to be printed and which are ghosts
+        this.fieldsToPrint = new LinkedHashMap<>();
+        this.fields.forEach((name, field) -> {
+            if(!field.ghost){
+                fieldsToPrint.put(name, field);
+            }
+        });
+
         this.primaryKeys = convertPrimaryKeys(primaryKeys);
         this.tableNames = convertTableNames(tableNames);
         this.options = convertOptions(options);
+
 
         // For all conditions passed, we need to check types used to prepare future comparisons
         this.fields.values().forEach(f -> {
@@ -315,7 +328,7 @@ public class Model<T extends Field> {
         for (String s : ops.split(";")) {
             String cq = s.split(":")[0];
             for (String c : s.split(":")[1].split(",")) {
-                T field = fields.get(c);
+                T field = fieldsToPrint.get(c);
                 if (field != null) {
                     hbaseFamilyColsMap.put(field, cq);
                 }
@@ -337,7 +350,7 @@ public class Model<T extends Field> {
 
     public Schema getKuduSchema() {
         List<ColumnSchema> columns = new LinkedList<>();
-        fields.forEach((name, f) -> {
+        fieldsToPrint.forEach((name, f) -> {
             boolean isaPK = false;
             for (String k : getKuduPrimaryKeys()) {
                 if (k.equalsIgnoreCase(name)) {isaPK = true;}
@@ -370,7 +383,7 @@ public class Model<T extends Field> {
     public String getSQLSchema() {
         StringBuilder sb = new StringBuilder();
         sb.append(" ( ");
-        fields.forEach((name, f) -> {
+        fieldsToPrint.forEach((name, f) -> {
             sb.append(name);
             sb.append(" ");
             sb.append(f.getHiveType());
@@ -385,7 +398,7 @@ public class Model<T extends Field> {
     public String getInsertSQLStatement() {
         StringBuilder sb = new StringBuilder();
         sb.append(" ( ");
-        fields.forEach((name, f) -> {
+        fieldsToPrint.forEach((name, f) -> {
             sb.append(name);
             sb.append(", ");
         });
@@ -400,7 +413,7 @@ public class Model<T extends Field> {
 
     public String getCsvHeader() {
         StringBuilder sb = new StringBuilder();
-        fields.forEach((name, f) -> {
+        fieldsToPrint.forEach((name, f) -> {
             sb.append(name);
             sb.append(",");
         });
@@ -414,7 +427,7 @@ public class Model<T extends Field> {
                 .namespace("org.apache.avro.ipc")
                 .fields();
 
-        for(T field: fields.values()) {
+        for(T field: fieldsToPrint.values()) {
             schemaBuilder = schemaBuilder.name(field.name).type(field.getGenericRecordType()).noDefault();
         }
 
@@ -423,14 +436,14 @@ public class Model<T extends Field> {
 
     public TypeDescription getOrcSchema() {
         TypeDescription typeDescription = TypeDescription.createStruct();
-        fields.forEach((name, f) -> typeDescription.addField(name, f.getTypeDescriptionOrc()));
+        fieldsToPrint.forEach((name, f) -> typeDescription.addField(name, f.getTypeDescriptionOrc()));
         return typeDescription;
     }
 
     public Map<String, ColumnVector> createOrcVectors(VectorizedRowBatch batch) {
         LinkedHashMap<String, ColumnVector> hashMap = new LinkedHashMap<>();
         int cols = 0;
-        for(T field: fields.values()) {
+        for(T field: fieldsToPrint.values()) {
             hashMap.put(field.getName(), field.getOrcColumnVector(batch, cols));
             cols++;
         }
@@ -449,6 +462,7 @@ public class Model<T extends Field> {
     // Column comparison in conditionals made should be on same column type
     // Conditionals should be made on existing columns
     // Conditionals should not have "nested" conditions (meaning relying on a computed column)
+    // Primary Keys fields should not be ghost fields
     public void verifyModel() { }
 
 }

@@ -38,6 +38,7 @@ public class OzoneCSVSink implements SinkInterface {
     private final String keyNamePrefix;
     private final ReplicationFactor replicationFactor;
     private final String localFileTempDir;
+    private Boolean useKerberos;
 
     private FileOutputStream outputStream;
     private final String lineSeparator;
@@ -57,12 +58,13 @@ public class OzoneCSVSink implements SinkInterface {
         this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(OptionsConverter.Options.ONE_FILE_PER_ITERATION);
         this.model = model;
         this.counter = 0;
+        this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS));
 
         try {
             OzoneConfiguration config = new OzoneConfiguration();
             Utils.setupHadoopEnv(config, properties);
 
-            if (Boolean.parseBoolean(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS))) {
+            if (useKerberos) {
                 Utils.loginUserWithKerberos(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_USER),
                     properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_KEYTAB), config);
             }
@@ -114,6 +116,9 @@ public class OzoneCSVSink implements SinkInterface {
             Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "csv");
         } catch (IOException e) {
             log.warn("Could not close properly Ozone connection, due to error: ", e);
+        }
+        if(useKerberos) {
+            Utils.logoutUserWithKerberos();
         }
     }
 
@@ -266,7 +271,7 @@ public class OzoneCSVSink implements SinkInterface {
     private void createLocalFileWithOverwrite(String path) {
         try {
             File file = new File(path);
-            if(!file.getParentFile().mkdirs()) { log.warn("Could not create parent dir");}
+            file.getParentFile().mkdirs();
             if(!file.createNewFile()) { log.warn("Could not create file");}
             outputStream = new FileOutputStream(path, false);
             log.debug("Successfully created local file : " + path);

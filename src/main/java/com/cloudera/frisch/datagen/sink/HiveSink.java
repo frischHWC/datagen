@@ -42,6 +42,7 @@ public class HiveSink implements SinkInterface {
     private String insertStatement;
     private final boolean hiveOnHDFS;
     private final String queue;
+    private Boolean useKerberos;
 
 
     HiveSink(Model model, Map<ApplicationConfigs, String> properties) {
@@ -56,11 +57,12 @@ public class HiveSink implements SinkInterface {
         this.hiveUri = "jdbc:hive2://" + properties.get(ApplicationConfigs.HIVE_ZK_QUORUM) + "/" +
             database + ";serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=" +
             properties.get(ApplicationConfigs.HIVE_ZK_ZNODE) + "?tez.queue.name=" + queue ;
+        this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS));
 
         Utils.setupHadoopEnv(new org.apache.hadoop.conf.Configuration(), properties);
 
         try {
-            if (Boolean.parseBoolean(properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS))) {
+            if (useKerberos) {
                 Utils.loginUserWithKerberos(properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS_USER),
                     properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS_KEYTAB), new Configuration());
             }
@@ -97,8 +99,7 @@ public class HiveSink implements SinkInterface {
 
             if (hiveOnHDFS) {
                 // If using an HDFS sink, we want it to use the Hive HDFS File path and not the Hdfs file path
-                model.getTableNames().put(OptionsConverter.TableNames.HDFS_FILE_PATH,
-                    model.getTableNames().get(OptionsConverter.TableNames.HIVE_HDFS_FILE_PATH));
+                properties.put(ApplicationConfigs.HDFS_FOR_HIVE, "true");
                 this.hdfsSink = new HdfsParquetSink(model, properties);
 
                 log.info("Creating temporary table: " + tableNameTemporary);
@@ -127,6 +128,10 @@ public class HiveSink implements SinkInterface {
             }
 
             hiveConnection.close();
+
+            if(useKerberos) {
+                Utils.logoutUserWithKerberos();
+            }
 
         } catch (SQLException e) {
             log.error("Could not close the Hive connection due to error: ", e);

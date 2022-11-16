@@ -82,6 +82,10 @@ public abstract class Field<T> {
     @Setter
     public String hbaseColumnQualifier = "cq";
 
+    @Getter
+    @Setter
+    public boolean ghost;
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -129,9 +133,20 @@ public abstract class Field<T> {
      * @param columnQualifier Hbase column qualifier if there is one
      * @return Field instantiated or null if type has not been recognized
      */
-    public static Field instantiateField(String name, String type, Integer length, String columnQualifier, List<JsonNode> possibleValues,
-                                         LinkedHashMap<String, Integer> possible_values_weighted, LinkedHashMap<String, String> conditionals,
-                                         String min, String max, List<JsonNode> filters, String file, String mainField) {
+    public static Field instantiateField(String name,
+                                         String type,
+                                         Integer length,
+                                         String columnQualifier,
+                                         List<JsonNode> possibleValues,
+                                         LinkedHashMap<String, Integer> possible_values_weighted,
+                                         LinkedHashMap<String, String> conditionals,
+                                         String min,
+                                         String max,
+                                         List<JsonNode> filters,
+                                         String file,
+                                         String separator,
+                                         Boolean ghost,
+                                         String mainField) {
         if(name == null || name.isEmpty()) {
             throw new IllegalStateException("Name can not be null or empty for field: " + name);
         }
@@ -205,7 +220,7 @@ public abstract class Field<T> {
                 field = new LinkField(name, length, possibleValues.stream().map(JsonNode::asText).collect(Collectors.toList()));
                 break;
             case "CSV":
-                field = new CsvField(name, length, filters.stream().map(JsonNode::asText).collect(Collectors.toList()), file, mainField);
+                field = new CsvField(name, length, filters.stream().map(JsonNode::asText).collect(Collectors.toList()), file, separator, mainField);
                 break;
             case "PHONE":
                 field = new PhoneField(name, length, filters.stream().map(JsonNode::asText).collect(Collectors.toList()));
@@ -222,6 +237,8 @@ public abstract class Field<T> {
         if (columnQualifier != null && !columnQualifier.isEmpty()) {
             field.setHbaseColumnQualifier(columnQualifier);
         }
+
+        field.setGhost(ghost);
 
         // If there are some conditions, we consider this field as computed (meaning it requires other fields' values to get its value)
         if (conditionals != null && !conditionals.isEmpty()) {

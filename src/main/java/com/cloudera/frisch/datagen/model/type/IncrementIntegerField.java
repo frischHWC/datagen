@@ -34,7 +34,7 @@ public class IncrementIntegerField extends Field<Integer> {
         this.possibleValues = possibleValues;
     }
 
-    public Integer generateRandomValue() {
+    public synchronized Integer generateRandomValue() {
         counter++;
         return counter;
     }

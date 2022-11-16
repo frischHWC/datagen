@@ -33,11 +33,13 @@ public class KafkaSink implements SinkInterface {
     private final String topic;
     private final Schema schema;
     private final MessageType messagetype;
+    private Boolean useKerberos;
 
     KafkaSink(Model model, Map<ApplicationConfigs, String> properties) {
         this.topic =  (String) model.getTableNames().get(OptionsConverter.TableNames.KAFKA_TOPIC);
         this.schema = model.getAvroSchema();
         this.messagetype = convertStringToMessageType((String) model.getOptionsOrDefault(OptionsConverter.Options.KAFKA_MESSAGE_TYPE));
+        this.useKerberos = Boolean.FALSE;
 
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.get(ApplicationConfigs.KAFKA_BROKERS));
@@ -79,6 +81,7 @@ public class KafkaSink implements SinkInterface {
 
         //Kerberos config
         if (securityProtocol.equalsIgnoreCase("SASL_PLAINTEXT") || securityProtocol.equalsIgnoreCase("SASL_SSL")) {
+            this.useKerberos = Boolean.TRUE;
             String jaasFilePath = (String) model.getOptionsOrDefault(OptionsConverter.Options.KAFKA_JAAS_FILE_PATH);
             Utils.createJaasConfigFile(jaasFilePath, "KafkaClient",
                 properties.get(ApplicationConfigs.KAFKA_AUTH_KERBEROS_KEYTAB), properties.get(ApplicationConfigs.KAFKA_AUTH_KERBEROS_USER),
@@ -126,6 +129,9 @@ public class KafkaSink implements SinkInterface {
             producer.close();
         } else {
             producerString.close();
+        }
+        if(useKerberos) {
+            Utils.logoutUserWithKerberos();
         }
     }
 

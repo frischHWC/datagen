@@ -68,7 +68,7 @@ public class Row<T extends Field> {
     public String toCSV() {
         StringBuilder sb = new StringBuilder();
         // Use of Model LinkedList of fields to keep order of fields
-        this.model.getFields().forEach((name, fieldtype) -> sb.append(
+        this.model.getFieldsToPrint().forEach((name, fieldtype) -> sb.append(
             model.getFieldFromName(
                 name.toString()).toCSVString(values.get(name.toString()))
             )
@@ -81,7 +81,7 @@ public class Row<T extends Field> {
         StringBuilder sb = new StringBuilder();
         sb.append("{ ");
         // Use of Model LinkedList of fields to keep order of fields
-        this.model.getFields().forEach((name, fieldtype) -> sb.append(
+        this.model.getFieldsToPrint().forEach((name, fieldtype) -> sb.append(
                 model.getFieldFromName(
                     name.toString()).toJSONString(values.get(name.toString()))
             )
@@ -95,7 +95,7 @@ public class Row<T extends Field> {
 
     public Map.Entry<String, GenericRecord> toKafkaMessage(Schema schema) {
         GenericRecord genericRecordRow = new GenericData.Record(schema);
-        this.model.getFields().forEach((name, fieldtype) ->
+        this.model.getFieldsToPrint().forEach((name, fieldtype) ->
             genericRecordRow.put(name.toString(), model.getFieldFromName(name.toString()).toAvroValue(values.get(name.toString())))
         );
         return new AbstractMap.SimpleEntry<>(getPrimaryKeysValues(OptionsConverter.PrimaryKeys.KAFKA_MSG_KEY), genericRecordRow);
@@ -113,20 +113,24 @@ public class Row<T extends Field> {
 
     public Put toHbasePut() {
         Put put = new Put(Bytes.toBytes(getPrimaryKeysValues(OptionsConverter.PrimaryKeys.HBASE_PRIMARY_KEY)));
-        values.forEach((f, o) -> model.getFieldFromName(f).toHbasePut(o, put));
+        this.model.getFieldsToPrint().forEach((name, fieldtype) ->
+                model.getFieldFromName(name.toString()).toHbasePut(values.get(name.toString()), put)
+        );
         return put;
     }
 
     public SolrInputDocument toSolRDoc() {
         SolrInputDocument doc = new SolrInputDocument();
-        values.forEach((f, o) -> model.getFieldFromName(f).toSolrDoc(o, doc));
+        this.model.getFieldsToPrint().forEach((name, fieldtype) ->
+            model.getFieldFromName(name.toString()).toSolrDoc(values.get(name.toString()), doc)
+        );
         return doc;
     }
 
     public OzoneObject toOzoneObject() {
         StringBuilder sb = new StringBuilder();
         // Use of Model LinkedList of fields to keep order of fields
-        this.model.getFields().forEach((name, fieldtype) ->
+        this.model.getFieldsToPrint().forEach((name, fieldtype) ->
             sb.append(model.getFieldFromName(name.toString()).toOzone(values.get(name.toString())))
         );
         // Bucket does not support upper case letter, so conversion to lower case is made
@@ -140,14 +144,16 @@ public class Row<T extends Field> {
     public Insert toKuduInsert(KuduTable table) {
         Insert insert = table.newInsert();
         PartialRow partialRow = insert.getRow();
-        values.forEach((f,value) -> model.getFieldFromName(f).toKudu(value, partialRow));
+        this.model.getFieldsToPrint().forEach((name, fieldtype) ->
+            model.getFieldFromName(name.toString()).toKudu(values.get(name.toString()), partialRow)
+        );
         return insert;
     }
 
     public HivePreparedStatement toHiveStatement(HivePreparedStatement hivePreparedStatement){
         int i = 1;
         // Use of Model LinkedList of fields to keep order of fields
-        LinkedHashMap<String, T> fieldsFromModel = this.model.getFields();
+        LinkedHashMap<String, T> fieldsFromModel = this.model.getFieldsToPrint();
         for(Map.Entry<String, T> entry: fieldsFromModel.entrySet()) {
             model.getFieldFromName(entry.getKey()).toHive(values.get(entry.getKey()), i, hivePreparedStatement);
             i++;
@@ -157,7 +163,9 @@ public class Row<T extends Field> {
 
     public GenericRecord toGenericRecord(Schema schema) {
         GenericRecord genericRecordRow = new GenericData.Record(schema);
-        values.forEach((f,o) -> genericRecordRow.put(f, model.getFieldFromName(f).toAvroValue(o)));
+        this.model.getFieldsToPrint().forEach((name, fieldtype) ->
+            genericRecordRow.put(name.toString(), model.getFieldFromName(name.toString()).toAvroValue(values.get(name.toString())))
+        );
         return genericRecordRow;
     }
 

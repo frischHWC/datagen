@@ -33,17 +33,19 @@ public class OzoneSink implements SinkInterface {
     private OzoneVolume volume;
     private final String volumeName;
     private final ReplicationFactor replicationFactor;
+    private Boolean useKerberos;
 
 
     OzoneSink(Model model, Map<ApplicationConfigs, String> properties) {
         this.volumeName = (String) model.getTableNames().get(OptionsConverter.TableNames.OZONE_VOLUME);
         this.replicationFactor = ReplicationFactor.valueOf((int) model.getOptionsOrDefault(OptionsConverter.Options.OZONE_REPLICATION_FACTOR));
+        this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS));
 
         try {
             OzoneConfiguration config = new OzoneConfiguration();
             Utils.setupHadoopEnv(config, properties);
 
-            if (Boolean.parseBoolean(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS))) {
+            if (useKerberos) {
                 Utils.loginUserWithKerberos(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_USER),
                     properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_KEYTAB), config);
             }
@@ -69,6 +71,9 @@ public class OzoneSink implements SinkInterface {
             ozClient.close();
         } catch (IOException e) {
             log.warn("Could not close properly Ozone connection, due to error: ", e);
+        }
+        if(useKerberos) {
+            Utils.logoutUserWithKerberos();
         }
     }
 

@@ -34,7 +34,7 @@ public class IncrementLongField extends Field<Long> {
         this.possibleValues = possibleValues;
     }
 
-    public Long generateRandomValue() {
+    public synchronized Long generateRandomValue() {
         counter++;
         return counter;
     }

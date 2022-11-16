@@ -129,8 +129,8 @@ public class HiveSink implements SinkInterface {
                 prepareAndExecuteStatement("DROP TABLE IF EXISTS " + tableName);
             }
 
-            log.info("SQL schema for hive: " + model.getSQLSchema());
-            prepareAndExecuteStatement("CREATE TABLE IF NOT EXISTS " + tableName + model.getSQLSchema() + extraCreate);
+            log.info("SQL schema for hive: " + model.getSQLSchema(partCols) + extraCreate );
+            prepareAndExecuteStatement("CREATE TABLE IF NOT EXISTS " + tableName + model.getSQLSchema(partCols) + extraCreate);
 
             if (hiveOnHDFS) {
                 // If using an HDFS sink, we want it to use the Hive HDFS File path and not the Hdfs file path
@@ -139,7 +139,7 @@ public class HiveSink implements SinkInterface {
 
                 log.info("Creating temporary table: " + tableNameTemporary);
                 prepareAndExecuteStatement(
-                        "CREATE EXTERNAL TABLE IF NOT EXISTS " + tableNameTemporary + model.getSQLSchema() +
+                        "CREATE EXTERNAL TABLE IF NOT EXISTS " + tableNameTemporary + model.getSQLSchema(null) +
                                 " STORED AS PARQUET " +
                                 " LOCATION '" + locationTemporaryTable + "'" //+
                 );

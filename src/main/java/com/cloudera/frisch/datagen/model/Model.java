@@ -385,14 +385,24 @@ public class Model<T extends Field> {
         return primaryKeys.get(OptionsConverter.PrimaryKeys.KUDU_HASH_KEYS);
     }
 
-    public String getSQLSchema() {
+    public String getSQLSchema(LinkedList<String> partCols) {
         StringBuilder sb = new StringBuilder();
         sb.append(" ( ");
         fieldsToPrint.forEach((name, f) -> {
-            sb.append(name);
-            sb.append(" ");
-            sb.append(f.getHiveType());
-            sb.append(", ");
+            boolean colToskip = false;
+            if(partCols!=null) {
+                for(String colname: partCols){
+                    if(name.equalsIgnoreCase(colname)) {
+                        colToskip = true;
+                }
+            }
+            }
+            if(!colToskip) {
+                sb.append(name);
+                sb.append(" ");
+                sb.append(f.getHiveType());
+                sb.append(", ");
+            }
         });
         sb.deleteCharAt(sb.length() - 2);
         sb.append(") ");

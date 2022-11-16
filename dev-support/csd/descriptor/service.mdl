@@ -312,6 +312,14 @@
           "name": "datagen_solr_rows",
           "type": "gauge",
           "numeratorUnit": "rows"
+        },
+        {
+          "context": "ANSWER_TIME",
+          "description": "Time to get metrics",
+          "label": "Time to get metrics",
+          "name": "datagen_answer_time",
+          "type": "gauge",
+          "numeratorUnit": "rows"
         }
 
       ]

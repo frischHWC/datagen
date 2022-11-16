@@ -2,7 +2,7 @@
   "name": "DATAGEN",
   "label": "Datagen",
   "description": "The service to generate Data into various services of CDP platform",
-  "version": "0.3.23",
+  "version": "0.3.24",
   "parcel": {
     "requiredTags": [
       "datagen"
@@ -263,7 +263,7 @@
         "label" : "Time to Answer requests",
         "description" : "Time taken to answer metrics",
         "metric" : "datagen_answer_time",
-        "timeWindowSec" : 60,
+        "timeWindowSec" : 120,
         "comparisonOperator" : "gt",
         "aggregationFunction" : "avg",
         "greenMessage" : "Time to get metrics is relatively low : ${metric.value} ms",

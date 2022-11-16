@@ -82,6 +82,7 @@
     {"HBASE_COLUMN_FAMILIES_MAPPING": "details:name,email,country,birthdate,phone_number;technicals:membership,id"},
     {"SOLR_SHARDS":  1},
     {"SOLR_REPLICAS":  1},
-    {"KUDU_REPLICAS":  1}
+    {"KUDU_REPLICAS":  1},
+    {"HIVE_TABLE_PARTITIONS_COLS": "country"}
   ]
 }

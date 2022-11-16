@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -43,6 +44,12 @@ public class HiveSink implements SinkInterface {
     private final boolean hiveOnHDFS;
     private final String queue;
     private Boolean useKerberos;
+    private Boolean isPartitioned;
+    private LinkedList<String> partCols;
+    private Boolean isBucketed;
+    private LinkedList<String> bucketCols;
+    private int bucketNumber;
+    private String extraCreate;
 
 
     HiveSink(Model model, Map<ApplicationConfigs, String> properties) {
@@ -58,6 +65,25 @@ public class HiveSink implements SinkInterface {
             database + ";serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=" +
             properties.get(ApplicationConfigs.HIVE_ZK_ZNODE) + "?tez.queue.name=" + queue ;
         this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS));
+
+        this.isPartitioned = !((String) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_PARTITIONS_COLS)).isEmpty();
+        this.partCols = new LinkedList<>();
+        if(isPartitioned) {
+            for(String colName: ((String) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_PARTITIONS_COLS)).split(",")) {
+                partCols.add(colName);
+            }
+        }
+
+        this.isBucketed = !((String) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_BUCKETS_COLS)).isEmpty();
+        this.bucketCols = new LinkedList<>();
+        if(isBucketed) {
+            this.bucketNumber = (Integer) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_BUCKETS_NUMBER);
+            for(String colName: ((String) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_BUCKETS_COLS)).split(",")) {
+                bucketCols.add(colName);
+            }
+        }
+
+        this.extraCreate = model.getSQLPartBucketClause(partCols, bucketCols, bucketNumber);
 
         Utils.setupHadoopEnv(new org.apache.hadoop.conf.Configuration(), properties);
 
@@ -78,6 +104,12 @@ public class HiveSink implements SinkInterface {
 
             java.util.Properties propertiesForHive = new Properties();
             propertiesForHive.put("tez.queue.name", queue);
+            if(isPartitioned) {
+                propertiesForHive.put("hive.exec.dynamic.partition.mode", "nonstrict");
+            }
+            if(isBucketed) {
+                propertiesForHive.put("hive.enforce.bucketing", true);
+            }
 
 
             String hiveUriWithNoDatabase = "jdbc:hive2://" + properties.get(ApplicationConfigs.HIVE_ZK_QUORUM) +
@@ -95,7 +127,7 @@ public class HiveSink implements SinkInterface {
             }
 
             log.info("SQL schema for hive: " + model.getSQLSchema());
-            prepareAndExecuteStatement("CREATE TABLE IF NOT EXISTS " + tableName + model.getSQLSchema());
+            prepareAndExecuteStatement("CREATE TABLE IF NOT EXISTS " + tableName + model.getSQLSchema() + extraCreate);
 
             if (hiveOnHDFS) {
                 // If using an HDFS sink, we want it to use the Hive HDFS File path and not the Hdfs file path
@@ -105,6 +137,7 @@ public class HiveSink implements SinkInterface {
                 log.info("Creating temporary table: " + tableNameTemporary);
                 prepareAndExecuteStatement(
                         "CREATE EXTERNAL TABLE IF NOT EXISTS " + tableNameTemporary + model.getSQLSchema() +
+                                extraCreate +
                                 " STORED AS PARQUET " +
                                 " LOCATION '" + locationTemporaryTable + "'" //+
                 );

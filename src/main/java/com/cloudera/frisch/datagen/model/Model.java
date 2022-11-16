@@ -283,6 +283,10 @@ public class Model<T extends Field> {
             case HIVE_TEZ_QUEUE_NAME:
                 optionResult = "root.default";
                 break;
+            case HIVE_TABLE_BUCKETS_COLS:
+            case HIVE_TABLE_PARTITIONS_COLS:
+                optionResult = "";
+                break;
             case DELETE_PREVIOUS:
                 optionResult = false;
                 break;
@@ -300,6 +304,7 @@ public class Model<T extends Field> {
             case HDFS_REPLICATION_FACTOR:
                 optionResult = (short) 3;
                 break;
+            case HIVE_TABLE_BUCKETS_NUMBER:
             case KUDU_BUCKETS:
                 optionResult= 32;
                 break;
@@ -392,6 +397,39 @@ public class Model<T extends Field> {
         sb.deleteCharAt(sb.length() - 2);
         sb.append(") ");
         log.debug("Schema is : " + sb.toString());
+        return sb.toString();
+    }
+
+    public String getSQLPartBucketClause(LinkedList<String> partCols, LinkedList<String> bucketCols, int bucketNumber) {
+        StringBuilder sb = new StringBuilder();
+
+        if(!partCols.isEmpty()) {
+            sb.append(" PARTITIONED BY ( ");
+            partCols.forEach(name -> {
+                sb.append(name);
+                sb.append(" ");
+                sb.append(getFieldFromName(name).getHiveType());
+                sb.append(", ");
+            });
+            sb.deleteCharAt(sb.length() - 2);
+            sb.append(") ");
+        }
+
+        if(!bucketCols.isEmpty()) {
+            sb.append(" CLUSTERED BY ( ");
+            bucketCols.forEach(name -> {
+                sb.append(name);
+                sb.append(" ");
+                sb.append(", ");
+            });
+            sb.deleteCharAt(sb.length() - 2);
+            sb.append(") ");
+            sb.append(" INTO ");
+            sb.append(bucketNumber);
+            sb.append(" BUCKETS ");
+        }
+
+        log.debug("Extra Create is : " + sb.toString());
         return sb.toString();
     }
 

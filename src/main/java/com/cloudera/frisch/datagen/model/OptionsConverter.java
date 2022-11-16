@@ -114,6 +114,9 @@ public class OptionsConverter {
         HIVE_THREAD_NUMBER,
         HIVE_ON_HDFS,
         HIVE_TEZ_QUEUE_NAME,
+        HIVE_TABLE_PARTITIONS_COLS,
+        HIVE_TABLE_BUCKETS_COLS,
+        HIVE_TABLE_BUCKETS_NUMBER,
         CSV_HEADER,
         DELETE_PREVIOUS,
         PARQUET_PAGE_SIZE,
@@ -154,6 +157,12 @@ public class OptionsConverter {
                 return Options.HIVE_ON_HDFS;
             case "HIVE_TEZ_QUEUE_NAME":
                 return Options.HIVE_TEZ_QUEUE_NAME;
+            case "HIVE_TABLE_PARTITIONS_COLS":
+                return Options.HIVE_TABLE_PARTITIONS_COLS;
+            case "HIVE_TABLE_BUCKETS_COLS":
+                return Options.HIVE_TABLE_BUCKETS_COLS;
+            case "HIVE_TABLE_BUCKETS_NUMBER":
+                return Options.HIVE_TABLE_BUCKETS_NUMBER;
             case "CSV_HEADER":
                 return Options.CSV_HEADER;
             case "DELETE_PREVIOUS":

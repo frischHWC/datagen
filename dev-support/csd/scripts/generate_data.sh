@@ -38,7 +38,7 @@ case $CMD in
        exit 1
      fi
 
-     ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-india-model.json 90000 1 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
+     ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/customer/customer-india-model.json 190000 1 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hdfs-parquet ozone-parquet hive
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-india-model.json"

@@ -400,7 +400,7 @@ public class Model<T extends Field> {
         return sb.toString();
     }
 
-    public String getSQLPartBucketClause(LinkedList<String> partCols, LinkedList<String> bucketCols, int bucketNumber) {
+    public String getSQLPartBucketCreate(LinkedList<String> partCols, LinkedList<String> bucketCols, int bucketNumber) {
         StringBuilder sb = new StringBuilder();
 
         if(!partCols.isEmpty()) {
@@ -427,6 +427,25 @@ public class Model<T extends Field> {
             sb.append(" INTO ");
             sb.append(bucketNumber);
             sb.append(" BUCKETS ");
+        }
+
+        log.debug("Extra Create is : " + sb.toString());
+        return sb.toString();
+    }
+
+    public String getSQLPartBucketInsert(LinkedList<String> partCols, LinkedList<String> bucketCols, int bucketNumber) {
+        StringBuilder sb = new StringBuilder();
+
+        if(!partCols.isEmpty()) {
+            sb.append(" PARTITION ( ");
+            partCols.forEach(name -> {
+                sb.append(name);
+                sb.append(" ");
+                sb.append(getFieldFromName(name).getHiveType());
+                sb.append(", ");
+            });
+            sb.deleteCharAt(sb.length() - 2);
+            sb.append(") ");
         }
 
         log.debug("Extra Create is : " + sb.toString());

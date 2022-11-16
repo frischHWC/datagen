@@ -50,6 +50,7 @@ public class HiveSink implements SinkInterface {
     private LinkedList<String> bucketCols;
     private int bucketNumber;
     private String extraCreate;
+    private String extraInsert;
 
 
     HiveSink(Model model, Map<ApplicationConfigs, String> properties) {
@@ -83,7 +84,8 @@ public class HiveSink implements SinkInterface {
             }
         }
 
-        this.extraCreate = model.getSQLPartBucketClause(partCols, bucketCols, bucketNumber);
+        this.extraCreate = model.getSQLPartBucketCreate(partCols, bucketCols, bucketNumber);
+        this.extraInsert =  model.getSQLPartBucketInsert(partCols, bucketCols, bucketNumber);
 
         Utils.setupHadoopEnv(new org.apache.hadoop.conf.Configuration(), properties);
 
@@ -106,6 +108,7 @@ public class HiveSink implements SinkInterface {
             propertiesForHive.put("tez.queue.name", queue);
             if(isPartitioned) {
                 propertiesForHive.put("hive.exec.dynamic.partition.mode", "nonstrict");
+                propertiesForHive.put("hive.exec.dynamic.partition", true);
             }
             if(isBucketed) {
                 propertiesForHive.put("hive.enforce.bucketing", true);
@@ -144,7 +147,7 @@ public class HiveSink implements SinkInterface {
             }
 
             log.info("SQL Insert schema for hive: " + model.getInsertSQLStatement());
-            insertStatement = "INSERT INTO " + tableName + model.getInsertSQLStatement();
+            insertStatement = "INSERT INTO " + tableName + model.getInsertSQLStatement() + this.extraInsert;
 
         } catch (SQLException e) {
             log.error("Could not connect to HS2 and create table due to error: ", e);
@@ -156,7 +159,7 @@ public class HiveSink implements SinkInterface {
         try {
             if (hiveOnHDFS) {
                 log.info("Starting to load data to final table");
-                prepareAndExecuteStatement("INSERT INTO " + tableName +
+                prepareAndExecuteStatement("INSERT INTO " + tableName + this.extraInsert +
                         " SELECT * FROM " + tableNameTemporary);
             }
 

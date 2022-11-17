@@ -117,7 +117,7 @@ public class ORCSink implements SinkInterface {
     private void creatFileWithOverwrite(String path) {
         try {
             Utils.deleteLocalFile(path);
-            if(!new File(path).getParentFile().mkdirs()) { log.warn("Could not create parent dir");}
+            new File(path).getParentFile().mkdirs();
             writer = OrcFile.createWriter(new Path(path),
                 OrcFile.writerOptions(new Configuration())
                     .setSchema(schema));

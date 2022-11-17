@@ -122,6 +122,20 @@ public class JsonParser<T extends Field> implements Parser {
             file = null;
         }
 
+        String separator;
+        try {
+            separator = jsonField.get("separator").asText();
+        } catch (NullPointerException e) {
+            separator = null;
+        }
+
+        Boolean ghost;
+        try {
+            ghost = jsonField.get("ghost").asBoolean();
+        } catch (NullPointerException e) {
+            ghost = false;
+        }
+
         String field;
         try {
             field = jsonField.get("field").asText();
@@ -175,7 +189,7 @@ public class JsonParser<T extends Field> implements Parser {
 
         return (T) Field.instantiateField(jsonField.get("name").asText(), jsonField.get("type").asText(), length,
                 opsMap.get(jsonField.get("name").asText()), possibleValues, possible_values_weighted, conditionals,
-                min, max, filters, file, field);
+                min, max, filters, file, separator, ghost, field);
     }
 
     private Map<String, String> mapColNameToColQual(String mapping) {

@@ -47,7 +47,7 @@ public class TimestampField extends Field<Long> {
 
     @Override
     public PartialRow toKudu(Long value, PartialRow partialRow) {
-        partialRow.addLong(name, value);
+        partialRow.addLong(name, value*1000000);
         return partialRow;
     }
 

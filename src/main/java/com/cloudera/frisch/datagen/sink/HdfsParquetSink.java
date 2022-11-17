@@ -38,13 +38,22 @@ public class HdfsParquetSink implements SinkInterface {
     private final short replicationFactor;
     private final Configuration conf;
     private String hdfsUri;
+    private Boolean useKerberos;
 
     /**
      * Initiate HDFS connection with Kerberos or not
      * @return filesystem connection to HDFS
      */
     public HdfsParquetSink(Model model, Map<ApplicationConfigs, String> properties) {
-        this.directoryName = (String) model.getTableNames().get(OptionsConverter.TableNames.HDFS_FILE_PATH);
+        // If using an HDFS sink, we want it to use the Hive HDFS File path and not the Hdfs file path
+        if(properties.get(ApplicationConfigs.HDFS_FOR_HIVE)!=null && properties.get(ApplicationConfigs.HDFS_FOR_HIVE).equalsIgnoreCase("true")) {
+            this.directoryName = (String) model.getTableNames()
+                .get(OptionsConverter.TableNames.HIVE_HDFS_FILE_PATH);
+        } else {
+            this.directoryName = (String) model.getTableNames()
+                .get(OptionsConverter.TableNames.HDFS_FILE_PATH);
+        }
+
         this.fileName = (String) model.getTableNames().get(OptionsConverter.TableNames.HDFS_FILE_NAME);
         this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(OptionsConverter.Options.ONE_FILE_PER_ITERATION);
         this.model = model;
@@ -53,12 +62,13 @@ public class HdfsParquetSink implements SinkInterface {
         this.conf = new Configuration();
         conf.set("dfs.replication", String.valueOf(replicationFactor));
         this.hdfsUri = properties.get(ApplicationConfigs.HDFS_URI);
+        this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS));
 
         org.apache.hadoop.conf.Configuration config = new org.apache.hadoop.conf.Configuration();
         Utils.setupHadoopEnv(config, properties);
 
         // Set all kerberos if needed (Note that connection will require a user and its appropriate keytab with right privileges to access folders and files on HDFSCSV)
-        if (Boolean.parseBoolean(properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS))) {
+        if (useKerberos) {
             Utils.loginUserWithKerberos(properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_USER),
                 properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_KEYTAB),config);
         }
@@ -88,6 +98,9 @@ public class HdfsParquetSink implements SinkInterface {
     public void terminate() {
         try {
         writer.close();
+        if(useKerberos) {
+            Utils.logoutUserWithKerberos();
+        }
         } catch (IOException e) {
             log.error(" Unable to close HDFS PARQUET file with error :", e);
         }

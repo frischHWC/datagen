@@ -44,6 +44,7 @@ public class OzoneParquetSink implements SinkInterface {
     private final String keyNamePrefix;
     private final ReplicationFactor replicationFactor;
     private final String localFileTempDir;
+    private Boolean useKerberos;
 
     private final Schema schema;
     private ParquetWriter<GenericRecord> writer;
@@ -63,12 +64,13 @@ public class OzoneParquetSink implements SinkInterface {
         this.model = model;
         this.counter = 0;
         this.schema = model.getAvroSchema();
+        this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS));
 
         try {
             OzoneConfiguration config = new OzoneConfiguration();
             Utils.setupHadoopEnv(config, properties);
 
-            if (Boolean.parseBoolean(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS))) {
+            if (useKerberos) {
                 Utils.loginUserWithKerberos(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_USER),
                     properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_KEYTAB), config);
             }
@@ -119,6 +121,9 @@ public class OzoneParquetSink implements SinkInterface {
             Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "parquet");
         } catch (IOException e) {
             log.warn("Could not close properly Ozone connection, due to error: ", e);
+        }
+        if(useKerberos) {
+            Utils.logoutUserWithKerberos();
         }
     }
 
@@ -252,7 +257,7 @@ public class OzoneParquetSink implements SinkInterface {
     private void createLocalFileWithOverwrite(String path) {
         try {
             Utils.deleteLocalFile(path);
-            if(!new File(path).getParentFile().mkdirs()) { log.warn("Could not create parent dir");}
+            new File(path).getParentFile().mkdirs();
             this.writer = AvroParquetWriter
                 .<GenericRecord>builder(new Path(path))
                 .withSchema(schema)

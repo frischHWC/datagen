@@ -40,7 +40,7 @@ def main(server_port, model_file_path, rows, batches, timeout, tls_enabled, admi
 
     command_uuid = response.json().get("commandUuid")
     print("Received UUID for command: " + command_uuid)
-    print("Follow command progression at: " + protocol + "://" + socket.gethostname() + ":" + server_port + "/command/getCommandStatus?commandUuid=" + command_uuid)
+    print("Follow command progression using a POST request: curl -X POST -H  \"accept: application/json\" \"" + protocol + "://" + socket.gethostname() + ":" + server_port + "/command/getCommandStatus?commandUuid=" + command_uuid +"\"")
 
     if command_uuid is None or command_uuid == "":
         print("UUID received for command is empty")

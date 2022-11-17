@@ -44,6 +44,7 @@ public class OzoneOrcSink implements SinkInterface {
     private final String keyNamePrefix;
     private final ReplicationFactor replicationFactor;
     private final String localFileTempDir;
+    private Boolean useKerberos;
 
     private final TypeDescription schema;
     private Writer writer;
@@ -67,12 +68,13 @@ public class OzoneOrcSink implements SinkInterface {
         this.schema = model.getOrcSchema();
         this.batch = schema.createRowBatch();
         this.vectors = model.createOrcVectors(batch);
+        this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS));
 
         try {
             OzoneConfiguration config = new OzoneConfiguration();
             Utils.setupHadoopEnv(config, properties);
 
-            if (Boolean.parseBoolean(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS))) {
+            if (useKerberos) {
                 Utils.loginUserWithKerberos(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_USER),
                     properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_KEYTAB), config);
             }
@@ -123,6 +125,9 @@ public class OzoneOrcSink implements SinkInterface {
             Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "orc");
         } catch (IOException e) {
             log.warn("Could not close properly Ozone connection, due to error: ", e);
+        }
+        if(useKerberos) {
+            Utils.logoutUserWithKerberos();
         }
     }
 
@@ -270,7 +275,7 @@ public class OzoneOrcSink implements SinkInterface {
     private void createLocalFileWithOverwrite(String path) {
         try {
             Utils.deleteLocalFile(path);
-            if(!new File(path).getParentFile().mkdirs()) { log.warn("Could not create parent dir");}
+            new File(path).getParentFile().mkdirs();
             writer = OrcFile.createWriter(new Path(path),
                 OrcFile.writerOptions(new Configuration())
                     .setSchema(schema));

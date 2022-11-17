@@ -26,18 +26,20 @@ public class KuduSink implements SinkInterface {
     private KuduClient client;
     private final String tableName;
     private final Model model;
+    private Boolean useKerberos;
 
 
     KuduSink(Model model, Map<ApplicationConfigs, String> properties) {
         this.tableName = (String) model.getTableNames().get(OptionsConverter.TableNames.KUDU_TABLE_NAME);
         this.model = model;
+        this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.KUDU_AUTH_KERBEROS));
 
         try {
 
             System.setProperty("javax.net.ssl.trustStore", properties.get(ApplicationConfigs.KUDU_TRUSTSTORE_LOCATION));
             System.setProperty("javax.net.ssl.trustStorePassword", properties.get(ApplicationConfigs.KUDU_TRUSTSTORE_PASSWORD));
 
-            if (Boolean.parseBoolean(properties.get(ApplicationConfigs.KUDU_AUTH_KERBEROS))) {
+            if (useKerberos) {
                 Utils.loginUserWithKerberos(properties.get(ApplicationConfigs.KUDU_AUTH_KERBEROS_USER),
                     properties.get(ApplicationConfigs.KUDU_AUTH_KERBEROS_KEYTAB), new Configuration());
 
@@ -80,6 +82,9 @@ public class KuduSink implements SinkInterface {
         try {
             session.close();
             client.shutdown();
+            if(useKerberos) {
+                Utils.logoutUserWithKerberos();
+            }
         } catch (Exception e) {
             log.error("Could not close connection to Kudu due to error: ", e);
         }

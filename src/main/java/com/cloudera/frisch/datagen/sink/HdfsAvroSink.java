@@ -40,6 +40,7 @@ public class HdfsAvroSink implements SinkInterface {
     private final Boolean oneFilePerIteration;
     private final short replicationFactor;
     private String hdfsUri;
+    private Boolean useKerberos;
 
     /**
      * Initiate HDFS-AVRO connection with Kerberos or not
@@ -53,12 +54,13 @@ public class HdfsAvroSink implements SinkInterface {
         this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(OptionsConverter.Options.ONE_FILE_PER_ITERATION);
         this.replicationFactor = (short) model.getOptionsOrDefault(OptionsConverter.Options.HDFS_REPLICATION_FACTOR);
         this.hdfsUri = properties.get(ApplicationConfigs.HDFS_URI);
+        this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS));
 
         org.apache.hadoop.conf.Configuration config = new org.apache.hadoop.conf.Configuration();
         Utils.setupHadoopEnv(config, properties);
 
         // Set all kerberos if needed (Note that connection will require a user and its appropriate keytab with right privileges to access folders and files on HDFSCSV)
-        if (Boolean.parseBoolean(properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS))) {
+        if (useKerberos) {
             Utils.loginUserWithKerberos(properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_USER),
                 properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_KEYTAB),config);
         }
@@ -90,6 +92,9 @@ public class HdfsAvroSink implements SinkInterface {
         try {
             dataFileWriter.close();
             fsDataOutputStream.close();
+            if(useKerberos) {
+                Utils.logoutUserWithKerberos();
+            }
         } catch (IOException e) {
             log.error(" Unable to close HDFSAVRO file with error :", e);
         }

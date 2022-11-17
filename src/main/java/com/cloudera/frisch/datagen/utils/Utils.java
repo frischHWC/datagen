@@ -134,7 +134,16 @@ public class Utils {
             } catch (IOException e) {
                 log.error("Could not load keytab file",e);
             }
+    }
 
+    public static void logoutUserWithKerberos() {
+        try {
+            UserGroupInformation.getCurrentUser().logoutUserFromKeytab();
+            UserGroupInformation.getLoginUser().logoutUserFromKeytab();
+            UserGroupInformation.reset();
+        } catch (Exception e) {
+            log.warn("Could not logout user from kerberos",e);
+        }
     }
 
     /**

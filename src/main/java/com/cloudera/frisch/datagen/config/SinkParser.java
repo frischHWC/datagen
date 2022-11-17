@@ -1,6 +1,9 @@
 package com.cloudera.frisch.datagen.config;
 
 
+import java.util.Comparator;
+
+
 public class SinkParser {
 
     private SinkParser() { throw new IllegalStateException("Could not initialize this class"); }
@@ -53,6 +56,39 @@ public class SinkParser {
         JSON,
         AVRO,
         PARQUET,
-        ORC
+        ORC;
+
+        public static Comparator<Sink> sinkInitPrecedence = new Comparator<>() {
+            @Override
+            public int compare(Sink s1, Sink s2) {
+                if(s1.equals(SinkParser.Sink.OZONE_AVRO) ||
+                    s1.equals(SinkParser.Sink.OZONE_JSON) ||
+                    s1.equals(SinkParser.Sink.OZONE_CSV) ||
+                    s1.equals(SinkParser.Sink.OZONE_PARQUET) ||
+                    s1.equals(SinkParser.Sink.OZONE_ORC)) {
+                    if(s2.equals(SinkParser.Sink.OZONE_AVRO) ||
+                        s2.equals(SinkParser.Sink.OZONE_JSON) ||
+                        s2.equals(SinkParser.Sink.OZONE_CSV) ||
+                        s2.equals(SinkParser.Sink.OZONE_PARQUET) ||
+                        s2.equals(SinkParser.Sink.OZONE_ORC)) {
+                        return 0;
+                    } else {
+                        return -1;
+                    }
+                } else if(s1.equals(SinkParser.Sink.HIVE)) {
+                    if(s2.equals(SinkParser.Sink.OZONE_AVRO) ||
+                        s2.equals(SinkParser.Sink.OZONE_JSON) ||
+                        s2.equals(SinkParser.Sink.OZONE_CSV) ||
+                        s2.equals(SinkParser.Sink.OZONE_PARQUET) ||
+                        s2.equals(SinkParser.Sink.OZONE_ORC)) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                } else {
+                    return 0;
+                }
+            }
+        } ;
     }
 }

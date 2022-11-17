@@ -26,15 +26,17 @@ public class CsvField extends Field<Map<String, String>> {
 
     // We suppose that each row of the CSV read will fit in a map of string to string (everything is converted to a string)
     private String file;
+    private String separator;
     @Getter
     private String mainField;
     private LinkedList<String> columnNames;
 
 
-    CsvField(String name, Integer length, List<String> filters, String file, String mainField) {
+    CsvField(String name, Integer length, List<String> filters, String file, String separator, String mainField) {
         this.name = name;
         this.length = length;
         this.file = file;
+        this.separator = separator;
         this.mainField = mainField;
         this.columnNames = new LinkedList<>();
         this.possibleValues = loadDico(filters);
@@ -46,12 +48,12 @@ public class CsvField extends Field<Map<String, String>> {
             InputStream is = new FileInputStream(this.file);
             BufferedReader bf = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
             String header = bf.readLine();
-            this.columnNames.addAll(Arrays.asList(header.split(";")));
+            this.columnNames.addAll(Arrays.asList(header.split(this.separator)));
 
             return bf.lines()
                 .map(l -> {
                         HashMap<String, String> map = new HashMap<>();
-                        String[] lineSplitted = l.split(";");
+                        String[] lineSplitted = l.split(this.separator);
                         int indexOfline = 0;
                         for(String colValue: lineSplitted) {
                             map.put(this.columnNames.get(indexOfline), colValue);

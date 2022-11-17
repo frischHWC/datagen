@@ -33,11 +33,13 @@ public class HbaseSink implements SinkInterface {
     private final String fullTableName;
     private final TableName tableName;
     private Admin admin;
+    private Boolean useKerberos;
 
     HbaseSink(Model model, Map<ApplicationConfigs, String> properties) {
         this.fullTableName = model.getTableNames().get(OptionsConverter.TableNames.HBASE_NAMESPACE) + ":" +
             model.getTableNames().get(OptionsConverter.TableNames.HBASE_TABLE_NAME);
         this.tableName = TableName.valueOf(fullTableName);
+        this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.HBASE_AUTH_KERBEROS));
 
         Configuration config = HBaseConfiguration.create();
         config.set("hbase.zookeeper.quorum", properties.get(ApplicationConfigs.HBASE_ZK_QUORUM));
@@ -46,7 +48,7 @@ public class HbaseSink implements SinkInterface {
         Utils.setupHadoopEnv(config, properties);
 
         // Setup Kerberos auth if needed
-        if (Boolean.parseBoolean(properties.get(ApplicationConfigs.HBASE_AUTH_KERBEROS))) {
+        if (useKerberos) {
             Utils.loginUserWithKerberos(properties.get(ApplicationConfigs.HBASE_AUTH_KERBEROS_USER),
                 properties.get(ApplicationConfigs.HBASE_AUTH_KERBEROS_KEYTAB), config);
             config.set("hbase.security.authentication", "kerberos");
@@ -88,6 +90,9 @@ public class HbaseSink implements SinkInterface {
         try {
             table.close();
             connection.close();
+            if(useKerberos) {
+                Utils.logoutUserWithKerberos();
+            }
         } catch (IOException e) {
             log.error("Impossible to close connection to HBase due to error: ", e);
             System.exit(1);

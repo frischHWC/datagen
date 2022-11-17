@@ -172,6 +172,15 @@
       "type": "CSV",
       "filters": ["country=France"],
       "file": "src/main/resources/dictionaries/person_test.csv",
+      "separator": ";",
+      "field": "name"
+    },
+    {
+      "name": "person_comma",
+      "type": "CSV",
+      "filters": ["country=France"],
+      "file": "src/main/resources/dictionaries/person_test_comma.csv",
+      "separator": ",",
       "field": "name"
     },
     {
@@ -195,6 +204,20 @@
       "type": "STRING",
       "conditionals": {
         "injection": "toto_${name}@our_company_name.${country}"
+      }
+    },
+    {
+      "name": "ghost_field",
+      "type": "INTEGER",
+      "min": 0,
+      "max": 10,
+      "ghost": true
+    },
+    {
+      "name": "print_ghost_field",
+      "type": "STRING",
+      "conditionals": {
+        "injection": "ghost_field value = ${ghost_field}"
       }
     }
   ],

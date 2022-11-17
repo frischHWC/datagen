@@ -473,6 +473,11 @@ This mapping must be in the form : "CF:col1,col2;CF2:col5" +
 - HIVE_THREAD_NUMBER +
 - HIVE_ON_HDFS +
 - HIVE_TEZ_QUEUE_NAME +
+- HIVE_TABLE_PARTITIONS_COLS +
+This is a just one string with a comma separated list of cols: "col1,col2" +
+- HIVE_TABLE_BUCKETS_COLS +
+This is a just one string with a comma separated list of cols: "col1,col2" +
+- HIVE_TABLE_BUCKETS_NUMBER +
 - CSV_HEADER +
 - DELETE_PREVIOUS +
 - PARQUET_PAGE_SIZE +

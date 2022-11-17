@@ -28,11 +28,13 @@ public class SolRSink implements SinkInterface {
     private CloudSolrClient cloudSolrClient;
     private final String collection;
     private final Model model;
+    private Boolean useKerberos;
 
 
     SolRSink(Model model, Map<ApplicationConfigs, String> properties) {
         this.collection = (String) model.getTableNames().get(OptionsConverter.TableNames.SOLR_COLLECTION);
         this.model = model;
+        this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS));
 
         List<String> zkHosts = Arrays.stream(properties.get(ApplicationConfigs.SOLR_ZK_QUORUM).split(",")).collect(Collectors.toList());
         String znode = properties.get(ApplicationConfigs.SOLR_ZK_NODE);
@@ -45,7 +47,7 @@ public class SolRSink implements SinkInterface {
         }
 
 
-        if (Boolean.parseBoolean(properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS))) {
+        if (useKerberos) {
             try {
                 String jaasFilePath = (String) model.getOptionsOrDefault(OptionsConverter.Options.SOLR_JAAS_FILE_PATH);
                 Utils.createJaasConfigFile(jaasFilePath, "SolrJClient",
@@ -101,6 +103,9 @@ public class SolRSink implements SinkInterface {
             cloudSolrClient.close();
         } catch (Exception e) {
             log.error("Could not close connection to SolR due to error: ", e);
+        }
+        if(useKerberos) {
+            Utils.logoutUserWithKerberos();
         }
     }
 

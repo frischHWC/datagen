@@ -55,6 +55,10 @@ public class CommandRunnerService {
      return new CommandSoft(commands.get(uuid));
   }
 
+  public CommandSoft getScheduledCommandStatusShort(UUID uuid) {
+    return new CommandSoft(scheduledCommands.get(uuid));
+  }
+
   public String getCommandAsString(UUID uuid) {
     Command command = commands.get(uuid) ;
     return command != null ? command.toString() : "Not Found";
@@ -78,7 +82,7 @@ public class CommandRunnerService {
 
   public List<CommandSoft> getAllScheduledCommands() {
     List<CommandSoft> commandsAsList = new ArrayList<>();
-    scheduledCommands.forEach((u,c) -> commandsAsList.add(getCommandStatusShort(c.getCommandUuid())));
+    scheduledCommands.forEach((u,c) -> commandsAsList.add(getScheduledCommandStatusShort(c.getCommandUuid())));
     return commandsAsList;
   }
 

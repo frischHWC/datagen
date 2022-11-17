@@ -52,6 +52,9 @@
     {"HIVE_THREAD_NUMBER":  1},
     {"HIVE_ON_HDFS":  true},
     {"HIVE_TEZ_QUEUE_NAME":  "root.default"},
+    {"HIVE_TABLE_PARTITIONS_COLS": "name"},
+    {"HIVE_TABLE_BUCKETS_COLS": "age"},
+    {"HIVE_TABLE_BUCKETS_NUMBER": 32},
 
     {"PARQUET_PAGE_SIZE":  1048576},
     {"PARQUET_ROW_GROUP_SIZE":  134217728},

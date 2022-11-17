@@ -42,6 +42,7 @@ public class OzoneAvroSink implements SinkInterface {
     private final String keyNamePrefix;
     private final ReplicationFactor replicationFactor;
     private final String localFileTempDir;
+    private Boolean useKerberos;
 
     private final Schema schema;
     private DataFileWriter<GenericRecord> dataFileWriter;
@@ -64,12 +65,13 @@ public class OzoneAvroSink implements SinkInterface {
         this.counter = 0;
         this.schema = model.getAvroSchema();
         this.datumWriter = new GenericDatumWriter<>(schema);
+        this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS));
 
         try {
             OzoneConfiguration config = new OzoneConfiguration();
             Utils.setupHadoopEnv(config, properties);
 
-            if (Boolean.parseBoolean(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS))) {
+            if (useKerberos) {
                 Utils.loginUserWithKerberos(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_USER),
                     properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_KEYTAB), config);
             }
@@ -122,6 +124,9 @@ public class OzoneAvroSink implements SinkInterface {
             Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "avro");
         } catch (IOException e) {
             log.warn("Could not close properly Ozone connection, due to error: ", e);
+        }
+        if(useKerberos) {
+            Utils.logoutUserWithKerberos();
         }
     }
 
@@ -262,7 +267,7 @@ public class OzoneAvroSink implements SinkInterface {
     void createLocalFileWithOverwrite(String path) {
         try {
             file = new File(path);
-            if(!file.getParentFile().mkdirs()) { log.warn("Could not create parent dir");}
+            file.getParentFile().mkdirs();
             if(!file.createNewFile()) { log.warn("Could not create file");}
             dataFileWriter = new DataFileWriter<>(datumWriter);
             log.debug("Successfully created local file : " + path);

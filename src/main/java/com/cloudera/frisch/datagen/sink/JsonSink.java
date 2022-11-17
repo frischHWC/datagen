@@ -91,8 +91,8 @@ public class JsonSink implements SinkInterface {
     void createFileWithOverwrite(String path) {
         try {
             File file = new File(path);
-            if(!file.getParentFile().mkdirs()) { log.warn("Could not create parent dir of {}", path);}
-            if(!file.createNewFile()) { log.warn("Could not create file: {}", path);}
+            file.getParentFile().mkdirs();
+            file.createNewFile();
             outputStream = new FileOutputStream(path, false);
             log.debug("Successfully created local file : " + path);
         } catch (IOException e) {

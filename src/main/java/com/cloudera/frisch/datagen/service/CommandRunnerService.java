@@ -1,7 +1,6 @@
 package com.cloudera.frisch.datagen.service;
 
 
-import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.config.PropertiesLoader;
 import com.cloudera.frisch.datagen.config.SinkParser;
@@ -10,6 +9,7 @@ import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.parsers.JsonParser;
 import com.cloudera.frisch.datagen.sink.SinkInterface;
 import com.cloudera.frisch.datagen.sink.SinkSender;
+import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -55,6 +55,10 @@ public class CommandRunnerService {
      return new CommandSoft(commands.get(uuid));
   }
 
+  public CommandSoft getScheduledCommandStatusShort(UUID uuid) {
+    return new CommandSoft(scheduledCommands.get(uuid));
+  }
+
   public String getCommandAsString(UUID uuid) {
     Command command = commands.get(uuid) ;
     return command != null ? command.toString() : "Not Found";
@@ -78,7 +82,7 @@ public class CommandRunnerService {
 
   public List<CommandSoft> getAllScheduledCommands() {
     List<CommandSoft> commandsAsList = new ArrayList<>();
-    scheduledCommands.forEach((u,c) -> commandsAsList.add(getCommandStatusShort(c.getCommandUuid())));
+    scheduledCommands.forEach((u,c) -> commandsAsList.add(getScheduledCommandStatusShort(c.getCommandUuid())));
     return commandsAsList;
   }
 
@@ -332,9 +336,18 @@ public class CommandRunnerService {
 
 
         log.info("Initialization of all Sinks");
-        List<SinkInterface> sinks =
-            SinkSender.sinksInit(command.getModel(), command.getProperties(),
-                command.getSinksListAsString());
+        /**
+         *  WARNING: If Hive is in the list of sinks, it should be initialized first as it is the only sink that has an impact on the model
+         *  WARNING 2: Having Ozone initiated after other sinks will corrupt Hadoop config and Hive or HDFS will not work, so need to initialize it first
+         *  Hence, we need to order sinks properly: Ozone first, Hive always before other (except for ozone) and then the rest
+         **/
+        List<SinkParser.Sink> sinkList = command.getSinksListAsString();
+        sinkList.sort(SinkParser.Sink.sinkInitPrecedence);
+
+        log.debug("Print sink in order: ");
+        sinkList.forEach(s -> log.debug("sink: {}", s.toString()));
+
+        List<SinkInterface> sinks = SinkSender.sinksInit(command.getModel(), command.getProperties(), sinkList);
 
         // Launch Generation of data
         command.setStatus(Command.CommandStatus.RUNNING);

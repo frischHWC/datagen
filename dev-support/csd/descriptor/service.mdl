@@ -1,11 +1,11 @@
 {
-  "version": "0.3.1",
+  "version": "0.4.0",
   "name": "DATAGEN",
   "nameForCrossEntityAggregateMetrics": "datagen",
   "compatibility": {
     "cdhVersion": {
       "min": "7.1.7",
-      "max": "7.1.8"
+      "max": "8.0.0"
     }
   },
   "roles": [
@@ -310,6 +310,14 @@
           "description": "SolR Rows Generated",
           "label": "SolR Rows Generated",
           "name": "datagen_solr_rows",
+          "type": "gauge",
+          "numeratorUnit": "rows"
+        },
+        {
+          "context": "ANSWER_TIME",
+          "description": "Time to get metrics",
+          "label": "Time to get metrics",
+          "name": "datagen_answer_time",
           "type": "gauge",
           "numeratorUnit": "rows"
         }

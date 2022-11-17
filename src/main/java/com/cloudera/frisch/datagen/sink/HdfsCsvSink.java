@@ -34,6 +34,7 @@ public class HdfsCsvSink implements SinkInterface {
     private final Boolean oneFilePerIteration;
     private final short replicationFactor;
     private String hdfsUri;
+    private Boolean useKerberos;
 
     /**
      * Initiate HDFSCSV connection with Kerberos or not
@@ -46,12 +47,13 @@ public class HdfsCsvSink implements SinkInterface {
         this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(OptionsConverter.Options.ONE_FILE_PER_ITERATION);
         this.replicationFactor = (short) model.getOptionsOrDefault(OptionsConverter.Options.HDFS_REPLICATION_FACTOR);
         this.hdfsUri = properties.get(ApplicationConfigs.HDFS_URI);
+        this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS));
 
         Configuration config = new Configuration();
         Utils.setupHadoopEnv(config, properties);
 
         // Set all kerberos if needed (Note that connection will require a user and its appropriate keytab with right privileges to access folders and files on HDFSCSV)
-        if (Boolean.parseBoolean(properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS))) {
+        if (useKerberos) {
             Utils.loginUserWithKerberos(properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_USER),
                 properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_KEYTAB),config);
         }
@@ -78,7 +80,10 @@ public class HdfsCsvSink implements SinkInterface {
     @Override
     public void terminate() {
         try {
-        fsDataOutputStream.close();
+            fsDataOutputStream.close();
+            if(useKerberos) {
+                Utils.logoutUserWithKerberos();
+            }
         } catch (IOException e) {
             log.error(" Unable to close HDFSCSV file with error :", e);
         }

@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -42,6 +43,14 @@ public class HiveSink implements SinkInterface {
     private String insertStatement;
     private final boolean hiveOnHDFS;
     private final String queue;
+    private Boolean useKerberos;
+    private Boolean isPartitioned;
+    private LinkedList<String> partCols;
+    private Boolean isBucketed;
+    private LinkedList<String> bucketCols;
+    private int bucketNumber;
+    private String extraCreate;
+    private String extraInsert;
 
 
     HiveSink(Model model, Map<ApplicationConfigs, String> properties) {
@@ -56,11 +65,33 @@ public class HiveSink implements SinkInterface {
         this.hiveUri = "jdbc:hive2://" + properties.get(ApplicationConfigs.HIVE_ZK_QUORUM) + "/" +
             database + ";serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=" +
             properties.get(ApplicationConfigs.HIVE_ZK_ZNODE) + "?tez.queue.name=" + queue ;
+        this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS));
+
+        this.isPartitioned = !((String) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_PARTITIONS_COLS)).isEmpty();
+        this.partCols = new LinkedList<>();
+        if(isPartitioned) {
+            for(String colName: ((String) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_PARTITIONS_COLS)).split(",")) {
+                partCols.add(colName);
+            }
+            model.reorderColumnsWithPartCols(partCols);
+        }
+
+        this.isBucketed = !((String) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_BUCKETS_COLS)).isEmpty();
+        this.bucketCols = new LinkedList<>();
+        if(isBucketed) {
+            this.bucketNumber = (Integer) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_BUCKETS_NUMBER);
+            for(String colName: ((String) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_BUCKETS_COLS)).split(",")) {
+                bucketCols.add(colName);
+            }
+        }
+
+        this.extraCreate = model.getSQLPartBucketCreate(partCols, bucketCols, bucketNumber);
+        this.extraInsert =  model.getSQLPartBucketInsert(partCols, bucketCols, bucketNumber);
 
         Utils.setupHadoopEnv(new org.apache.hadoop.conf.Configuration(), properties);
 
         try {
-            if (Boolean.parseBoolean(properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS))) {
+            if (useKerberos) {
                 Utils.loginUserWithKerberos(properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS_USER),
                     properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS_KEYTAB), new Configuration());
             }
@@ -76,6 +107,13 @@ public class HiveSink implements SinkInterface {
 
             java.util.Properties propertiesForHive = new Properties();
             propertiesForHive.put("tez.queue.name", queue);
+            if(isPartitioned) {
+                propertiesForHive.put("hive.exec.dynamic.partition.mode", "nonstrict");
+                propertiesForHive.put("hive.exec.dynamic.partition", true);
+            }
+            if(isBucketed) {
+                propertiesForHive.put("hive.enforce.bucketing", true);
+            }
 
 
             String hiveUriWithNoDatabase = "jdbc:hive2://" + properties.get(ApplicationConfigs.HIVE_ZK_QUORUM) +
@@ -92,25 +130,26 @@ public class HiveSink implements SinkInterface {
                 prepareAndExecuteStatement("DROP TABLE IF EXISTS " + tableName);
             }
 
-            log.info("SQL schema for hive: " + model.getSQLSchema());
-            prepareAndExecuteStatement("CREATE TABLE IF NOT EXISTS " + tableName + model.getSQLSchema());
+            log.info("SQL schema for hive: " + model.getSQLSchema(partCols) + this.extraCreate );
+            prepareAndExecuteStatement("CREATE TABLE IF NOT EXISTS " + tableName + model.getSQLSchema(partCols) + this.extraCreate);
 
             if (hiveOnHDFS) {
                 // If using an HDFS sink, we want it to use the Hive HDFS File path and not the Hdfs file path
-                model.getTableNames().put(OptionsConverter.TableNames.HDFS_FILE_PATH,
-                    model.getTableNames().get(OptionsConverter.TableNames.HIVE_HDFS_FILE_PATH));
+                properties.put(ApplicationConfigs.HDFS_FOR_HIVE, "true");
                 this.hdfsSink = new HdfsParquetSink(model, properties);
 
                 log.info("Creating temporary table: " + tableNameTemporary);
                 prepareAndExecuteStatement(
-                        "CREATE EXTERNAL TABLE IF NOT EXISTS " + tableNameTemporary + model.getSQLSchema() +
+                        "CREATE EXTERNAL TABLE IF NOT EXISTS " + tableNameTemporary + model.getSQLSchema(null) +
                                 " STORED AS PARQUET " +
-                                " LOCATION '" + locationTemporaryTable + "'" //+
+                                " LOCATION '" + locationTemporaryTable + "'"
                 );
+                // Reset it to false, so if another sink is hdfs, it does not initialize like Hive
+                properties.put(ApplicationConfigs.HDFS_FOR_HIVE, "false");
             }
 
-            log.info("SQL Insert schema for hive: " + model.getInsertSQLStatement());
-            insertStatement = "INSERT INTO " + tableName + model.getInsertSQLStatement();
+            log.info("SQL Insert schema for hive: " + model.getInsertSQLStatement() + this.extraInsert );
+            insertStatement = "INSERT INTO " + tableName + model.getInsertSQLStatement() + this.extraInsert;
 
         } catch (SQLException e) {
             log.error("Could not connect to HS2 and create table due to error: ", e);
@@ -122,11 +161,15 @@ public class HiveSink implements SinkInterface {
         try {
             if (hiveOnHDFS) {
                 log.info("Starting to load data to final table");
-                prepareAndExecuteStatement("INSERT INTO " + tableName +
+                prepareAndExecuteStatement("INSERT INTO " + tableName + this.extraInsert +
                         " SELECT * FROM " + tableNameTemporary);
             }
 
             hiveConnection.close();
+
+            if(useKerberos) {
+                Utils.logoutUserWithKerberos();
+            }
 
         } catch (SQLException e) {
             log.error("Could not close the Hive connection due to error: ", e);

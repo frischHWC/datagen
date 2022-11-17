@@ -2,7 +2,7 @@
   "name": "DATAGEN",
   "label": "Datagen",
   "description": "The service to generate Data into various services of CDP platform",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "parcel": {
     "requiredTags": [
       "datagen"
@@ -21,7 +21,7 @@
     "generation": 2,
     "cdhVersion": {
       "min": "7.1.7",
-      "max": "7.2.0"
+      "max": "8.0.0"
     }
   },
   "rolesWithExternalLinks": [
@@ -253,9 +253,27 @@
       },
       "healthAggregation": {
         "type": "nonSingleton",
-        "percentGreenForGreen": 99,
+        "percentGreenForGreen": 90,
         "percentYellowGreenForYellow": 49
       },
+      "healthTests" : [
+       {
+        "type" : "metric",
+        "name" : "ANSWER_TIME",
+        "label" : "Time to Answer requests",
+        "description" : "Time taken to answer metrics",
+        "metric" : "datagen_answer_time",
+        "timeWindowSec" : 120,
+        "comparisonOperator" : "gt",
+        "aggregationFunction" : "avg",
+        "greenMessage" : "Time to get metrics is relatively low : ${metric.value} ms",
+        "yellowThreshold" : 1000,
+        "yellowMessage" : "Time to get metrics is high on average, consider check Datagen's health : ${metric.value} ms",
+        "redThreshold" : 30000,
+        "redMessage" : "Time to get metrics is way too high on average, consider check Datagen's health : ${metric.value} ms",
+        "missingDataColor" : "yellow"
+       }
+      ],
       "commands": [
         {
           "name": "init_service",

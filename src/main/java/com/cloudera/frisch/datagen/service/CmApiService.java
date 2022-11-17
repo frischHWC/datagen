@@ -146,7 +146,8 @@ public class CmApiService {
         }
 
       } catch (Exception e) {
-        log.warn("Could not parse json response from CM due to error: ", e);
+        log.info("Could not call CM API: {} - Activate debug to get full error", cmapiUrl+"/clusters/"+cmClusterName+"/services/"+endpoint);
+        log.debug("Error: ", e);
       }
 
       return configValue;
@@ -168,7 +169,8 @@ public class CmApiService {
       }
 
     } catch (Exception e) {
-      log.warn("Could not parse json response from CM due to error: ", e);
+      log.info("Could not get hdfs uri - Check HDFS exists or activate debug to get full error");
+      log.debug("Error: ", e);
     }
 
     return hdfsUri;
@@ -188,7 +190,8 @@ public class CmApiService {
       }
 
     } catch (Exception e) {
-      log.warn("Could not parse json response from CM due to error: ", e);
+      log.info("Could not get zookeeper quorum - Check ZK exists or activate debug to get full error");
+      log.debug("Error: ", e);
     }
 
     return zkHosts;
@@ -224,7 +227,8 @@ public class CmApiService {
       }
 
     } catch (Exception e) {
-      log.warn("Could not parse json response from CM due to error: ", e);
+      log.info("Could not get kafka brokers - Check Kafka exists or activate debug to get full error");
+      log.debug("Error: ", e);
     }
 
     return brokers;
@@ -254,7 +258,8 @@ public class CmApiService {
       }
 
     } catch (Exception e) {
-      log.warn("Could not parse json response from CM due to error: ", e);
+      log.info("Could not get kafka Protocol - Check Kafka exists or activate debug to get full error");
+      log.debug("Error: ", e);
     }
 
     return protocol;
@@ -291,7 +296,8 @@ public class CmApiService {
       }
 
     } catch (Exception e) {
-      log.warn("Could not parse json response from CM due to error: ", e);
+      log.info("Could not get Schema Registry URL - Check SR exists or activate debug to get full error");
+      log.debug("Error: ", e);
     }
 
     return servers;
@@ -325,7 +331,8 @@ public class CmApiService {
       }
 
     } catch (Exception e) {
-      log.warn("Could not parse json response from CM due to error: ", e);
+      log.info("Could not get kudu servers - Check Kudu exists or activate debug to get full error");
+      log.debug("Error: ", e);
     }
 
     return servers;

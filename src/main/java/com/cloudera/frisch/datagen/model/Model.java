@@ -33,7 +33,10 @@ public class Model<T extends Field> {
 
     // This is to keep right order of fields
     @Getter @Setter
-    private LinkedHashMap<String, T> fields;
+    private final LinkedHashMap<String, T> fields;
+
+    @Getter @Setter
+    private final LinkedHashMap<String, T> fieldsToPrint;
 
     // This is for convenience when generating data
     @Getter @Setter
@@ -48,6 +51,7 @@ public class Model<T extends Field> {
     @Getter @Setter
     private Map<OptionsConverter.Options, Object> options;
 
+
     /**
      * Constructor that initializes the model and populates it completely
      * (it only assumes that Field objects are already created, probably using instantiateField() from Field class)
@@ -61,9 +65,18 @@ public class Model<T extends Field> {
         this.fields = fields;
         this.fieldsRandomName = fields.entrySet().stream().filter(f -> !f.getValue().computed).map(f -> f.getKey()).collect(Collectors.toList());
         this.fieldsComputedName = fields.entrySet().stream().filter(f -> f.getValue().computed).map(f -> f.getKey()).collect(Collectors.toList());
+        // Check which fields are needed to be printed and which are ghosts
+        this.fieldsToPrint = new LinkedHashMap<>();
+        this.fields.forEach((name, field) -> {
+            if(!field.ghost){
+                fieldsToPrint.put(name, field);
+            }
+        });
+
         this.primaryKeys = convertPrimaryKeys(primaryKeys);
         this.tableNames = convertTableNames(tableNames);
         this.options = convertOptions(options);
+
 
         // For all conditions passed, we need to check types used to prepare future comparisons
         this.fields.values().forEach(f -> {
@@ -270,6 +283,10 @@ public class Model<T extends Field> {
             case HIVE_TEZ_QUEUE_NAME:
                 optionResult = "root.default";
                 break;
+            case HIVE_TABLE_BUCKETS_COLS:
+            case HIVE_TABLE_PARTITIONS_COLS:
+                optionResult = "";
+                break;
             case DELETE_PREVIOUS:
                 optionResult = false;
                 break;
@@ -287,6 +304,7 @@ public class Model<T extends Field> {
             case HDFS_REPLICATION_FACTOR:
                 optionResult = (short) 3;
                 break;
+            case HIVE_TABLE_BUCKETS_NUMBER:
             case KUDU_BUCKETS:
                 optionResult= 32;
                 break;
@@ -315,7 +333,7 @@ public class Model<T extends Field> {
         for (String s : ops.split(";")) {
             String cq = s.split(":")[0];
             for (String c : s.split(":")[1].split(",")) {
-                T field = fields.get(c);
+                T field = fieldsToPrint.get(c);
                 if (field != null) {
                     hbaseFamilyColsMap.put(field, cq);
                 }
@@ -337,7 +355,7 @@ public class Model<T extends Field> {
 
     public Schema getKuduSchema() {
         List<ColumnSchema> columns = new LinkedList<>();
-        fields.forEach((name, f) -> {
+        fieldsToPrint.forEach((name, f) -> {
             boolean isaPK = false;
             for (String k : getKuduPrimaryKeys()) {
                 if (k.equalsIgnoreCase(name)) {isaPK = true;}
@@ -367,14 +385,55 @@ public class Model<T extends Field> {
         return primaryKeys.get(OptionsConverter.PrimaryKeys.KUDU_HASH_KEYS);
     }
 
-    public String getSQLSchema() {
+    /**
+     * This is a dangerous but needed operation to make Hive works well with partitions
+     * Partition columns should be generated at the end, hence the linkedHashMap order should be changed
+     * This could mess up with other sinks if they initialize before this function is made
+     * @param partCols
+     */
+    public void reorderColumnsWithPartCols(LinkedList<String> partCols) {
+        synchronized (fieldsToPrint) {
+            LinkedHashMap<String, T> partColsFields = new LinkedHashMap<>();
+            partCols.forEach(p -> {
+                partColsFields.put(p, fieldsToPrint.get(p));
+                fieldsToPrint.remove(p);
+            });
+            fieldsToPrint.putAll(partColsFields);
+        }
+
+        synchronized (fields) {
+            LinkedHashMap<String, T> partColsFields = new LinkedHashMap<>();
+            partCols.forEach(p -> {
+                partColsFields.put(p, fields.get(p));
+                fields.remove(p);
+            });
+            fields.putAll(partColsFields);
+        }
+    }
+
+    /**
+     * SQL Schema for Hive should not include partition columns
+     * @param partCols
+     * @return
+     */
+    public String getSQLSchema(LinkedList<String> partCols) {
         StringBuilder sb = new StringBuilder();
         sb.append(" ( ");
-        fields.forEach((name, f) -> {
-            sb.append(name);
-            sb.append(" ");
-            sb.append(f.getHiveType());
-            sb.append(", ");
+        fieldsToPrint.forEach((name, f) -> {
+            boolean colToskip = false;
+            if(partCols!=null) {
+                for(String colname: partCols){
+                    if(name.equalsIgnoreCase(colname)) {
+                        colToskip = true;
+                }
+            }
+            }
+            if(!colToskip) {
+                sb.append(name);
+                sb.append(" ");
+                sb.append(f.getHiveType());
+                sb.append(", ");
+            }
         });
         sb.deleteCharAt(sb.length() - 2);
         sb.append(") ");
@@ -382,10 +441,61 @@ public class Model<T extends Field> {
         return sb.toString();
     }
 
+    public String getSQLPartBucketCreate(LinkedList<String> partCols, LinkedList<String> bucketCols, int bucketNumber) {
+        StringBuilder sb = new StringBuilder();
+
+        if(!partCols.isEmpty()) {
+            sb.append(" PARTITIONED BY ( ");
+            partCols.forEach(name -> {
+                sb.append(name);
+                sb.append(" ");
+                sb.append(getFieldFromName(name).getHiveType());
+                sb.append(", ");
+            });
+            sb.deleteCharAt(sb.length() - 2);
+            sb.append(") ");
+        }
+
+        if(!bucketCols.isEmpty()) {
+            sb.append(" CLUSTERED BY ( ");
+            bucketCols.forEach(name -> {
+                sb.append(name);
+                sb.append(" ");
+                sb.append(", ");
+            });
+            sb.deleteCharAt(sb.length() - 2);
+            sb.append(") ");
+            sb.append(" INTO ");
+            sb.append(bucketNumber);
+            sb.append(" BUCKETS ");
+        }
+
+        log.debug("Extra Create is : " + sb.toString());
+        return sb.toString();
+    }
+
+    public String getSQLPartBucketInsert(LinkedList<String> partCols, LinkedList<String> bucketCols, int bucketNumber) {
+        StringBuilder sb = new StringBuilder();
+
+        if(!partCols.isEmpty()) {
+            sb.append(" PARTITION ( ");
+            partCols.forEach(name -> {
+                sb.append(name);
+                sb.append(" ");
+                sb.append(", ");
+            });
+            sb.deleteCharAt(sb.length() - 2);
+            sb.append(") ");
+        }
+
+        log.debug("Extra Create is : " + sb.toString());
+        return sb.toString();
+    }
+
     public String getInsertSQLStatement() {
         StringBuilder sb = new StringBuilder();
         sb.append(" ( ");
-        fields.forEach((name, f) -> {
+        fieldsToPrint.forEach((name, f) -> {
             sb.append(name);
             sb.append(", ");
         });
@@ -400,7 +510,7 @@ public class Model<T extends Field> {
 
     public String getCsvHeader() {
         StringBuilder sb = new StringBuilder();
-        fields.forEach((name, f) -> {
+        fieldsToPrint.forEach((name, f) -> {
             sb.append(name);
             sb.append(",");
         });
@@ -414,7 +524,7 @@ public class Model<T extends Field> {
                 .namespace("org.apache.avro.ipc")
                 .fields();
 
-        for(T field: fields.values()) {
+        for(T field: fieldsToPrint.values()) {
             schemaBuilder = schemaBuilder.name(field.name).type(field.getGenericRecordType()).noDefault();
         }
 
@@ -423,14 +533,14 @@ public class Model<T extends Field> {
 
     public TypeDescription getOrcSchema() {
         TypeDescription typeDescription = TypeDescription.createStruct();
-        fields.forEach((name, f) -> typeDescription.addField(name, f.getTypeDescriptionOrc()));
+        fieldsToPrint.forEach((name, f) -> typeDescription.addField(name, f.getTypeDescriptionOrc()));
         return typeDescription;
     }
 
     public Map<String, ColumnVector> createOrcVectors(VectorizedRowBatch batch) {
         LinkedHashMap<String, ColumnVector> hashMap = new LinkedHashMap<>();
         int cols = 0;
-        for(T field: fields.values()) {
+        for(T field: fieldsToPrint.values()) {
             hashMap.put(field.getName(), field.getOrcColumnVector(batch, cols));
             cols++;
         }
@@ -449,6 +559,7 @@ public class Model<T extends Field> {
     // Column comparison in conditionals made should be on same column type
     // Conditionals should be made on existing columns
     // Conditionals should not have "nested" conditions (meaning relying on a computed column)
+    // Primary Keys fields should not be ghost fields
     public void verifyModel() { }
 
 }

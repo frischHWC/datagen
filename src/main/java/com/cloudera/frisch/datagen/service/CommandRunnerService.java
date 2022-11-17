@@ -1,7 +1,6 @@
 package com.cloudera.frisch.datagen.service;
 
 
-import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.config.PropertiesLoader;
 import com.cloudera.frisch.datagen.config.SinkParser;
@@ -10,6 +9,7 @@ import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.parsers.JsonParser;
 import com.cloudera.frisch.datagen.sink.SinkInterface;
 import com.cloudera.frisch.datagen.sink.SinkSender;
+import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -336,19 +336,42 @@ public class CommandRunnerService {
 
 
         log.info("Initialization of all Sinks");
-        // WARNING: If Hive is in the list of sinks, it should be initialized first as it is the only sink that has an impact on the model
-        List<SinkInterface> sinks = new ArrayList<>();
-        if(command.getSinksListAsString().contains(SinkParser.Sink.HIVE)) {
-          sinks.addAll(SinkSender.sinksInit(command.getModel(), command.getProperties(), List.of(SinkParser.Sink.HIVE)));
-          List<SinkParser.Sink> sinkListWithNoHive = new ArrayList<>();
-          command.getSinksListAsString().forEach(sink -> {
-            if(sink!=SinkParser.Sink.HIVE) { sinkListWithNoHive.add(sink);}
-          });
-          sinks.addAll(SinkSender.sinksInit(command.getModel(), command.getProperties(), sinkListWithNoHive));
-        } else {
-          sinks = SinkSender.sinksInit(command.getModel(), command.getProperties(),
-                  command.getSinksListAsString());
-        }
+        /**
+         *  WARNING: If Hive is in the list of sinks, it should be initialized first as it is the only sink that has an impact on the model
+         *  WARNING 2: Having Ozone initiated after other sinks will corrupt Hadoop config and Hive or HDFS will not work, so need to initialize it first
+         *  Hence, we need to order sinks properly: Ozone first, Hive always before other (except for ozone) and then the rest
+         **/
+        command.getSinksListAsString().sort((s1,s2) -> {
+          if(s1.equals(SinkParser.Sink.OZONE_AVRO) ||
+              s1.equals(SinkParser.Sink.OZONE_JSON) ||
+              s1.equals(SinkParser.Sink.OZONE_CSV) ||
+              s1.equals(SinkParser.Sink.OZONE_PARQUET) ||
+              s1.equals(SinkParser.Sink.OZONE_ORC)) {
+            if(s2.equals(SinkParser.Sink.OZONE_AVRO) ||
+                s2.equals(SinkParser.Sink.OZONE_JSON) ||
+                s2.equals(SinkParser.Sink.OZONE_CSV) ||
+                s2.equals(SinkParser.Sink.OZONE_PARQUET) ||
+                s2.equals(SinkParser.Sink.OZONE_ORC)) {
+              return 0;
+            } else {
+              return 1;
+            }
+          } else if(s1.equals(SinkParser.Sink.HIVE)) {
+            if(s2.equals(SinkParser.Sink.OZONE_AVRO) ||
+                s2.equals(SinkParser.Sink.OZONE_JSON) ||
+                s2.equals(SinkParser.Sink.OZONE_CSV) ||
+                s2.equals(SinkParser.Sink.OZONE_PARQUET) ||
+                s2.equals(SinkParser.Sink.OZONE_ORC)) {
+              return -1;
+            } else {
+              return 1;
+            }
+          } else {
+            return 0;
+          }
+        });
+
+        List<SinkInterface> sinks = SinkSender.sinksInit(command.getModel(), command.getProperties(), command.getSinksListAsString());
 
         // Launch Generation of data
         command.setStatus(Command.CommandStatus.RUNNING);

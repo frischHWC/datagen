@@ -332,9 +332,19 @@ public class CommandRunnerService {
 
 
         log.info("Initialization of all Sinks");
-        List<SinkInterface> sinks =
-            SinkSender.sinksInit(command.getModel(), command.getProperties(),
-                command.getSinksListAsString());
+        // WARNING: If Hive is in the list of sinks, it should be initialized first as it is the only sink that has an impact on the model
+        List<SinkInterface> sinks = new ArrayList<>();
+        if(command.getSinksListAsString().contains(SinkParser.Sink.HIVE)) {
+          sinks.addAll(SinkSender.sinksInit(command.getModel(), command.getProperties(),
+              Arrays.asList(SinkParser.Sink.HIVE)));
+          List<SinkParser.Sink> sinkListWithNoHive = command.getSinksListAsString();
+          sinkListWithNoHive.remove(SinkParser.Sink.HIVE);
+          sinks.addAll(SinkSender.sinksInit(command.getModel(), command.getProperties(),
+              sinkListWithNoHive));
+        } else {
+          sinks = SinkSender.sinksInit(command.getModel(), command.getProperties(),
+                  command.getSinksListAsString());
+        }
 
         // Launch Generation of data
         command.setStatus(Command.CommandStatus.RUNNING);

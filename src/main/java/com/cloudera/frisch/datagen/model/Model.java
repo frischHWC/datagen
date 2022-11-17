@@ -33,10 +33,10 @@ public class Model<T extends Field> {
 
     // This is to keep right order of fields
     @Getter @Setter
-    private LinkedHashMap<String, T> fields;
+    private final LinkedHashMap<String, T> fields;
 
     @Getter @Setter
-    private LinkedHashMap<String, T> fieldsToPrint;
+    private final LinkedHashMap<String, T> fieldsToPrint;
 
     // This is for convenience when generating data
     @Getter @Setter
@@ -385,6 +385,37 @@ public class Model<T extends Field> {
         return primaryKeys.get(OptionsConverter.PrimaryKeys.KUDU_HASH_KEYS);
     }
 
+    /**
+     * This is a dangerous but needed operation to make Hive works well with partitions
+     * Partition columns should be generated at the end, hence the linkedHashMap order should be changed
+     * This could mess up with other sinks if they initialize before this function is made
+     * @param partCols
+     */
+    public void reorderColumnsWithPartCols(LinkedList<String> partCols) {
+        synchronized (fieldsToPrint) {
+            LinkedHashMap<String, T> partColsFields = new LinkedHashMap<>();
+            partCols.forEach(p -> {
+                partColsFields.put(p, fieldsToPrint.get(p));
+                fieldsToPrint.remove(p);
+            });
+            fieldsToPrint.putAll(partColsFields);
+        }
+
+        synchronized (fields) {
+            LinkedHashMap<String, T> partColsFields = new LinkedHashMap<>();
+            partCols.forEach(p -> {
+                partColsFields.put(p, fields.get(p));
+                fields.remove(p);
+            });
+            fields.putAll(partColsFields);
+        }
+    }
+
+    /**
+     * SQL Schema for Hive should not include partition columns
+     * @param partCols
+     * @return
+     */
     public String getSQLSchema(LinkedList<String> partCols) {
         StringBuilder sb = new StringBuilder();
         sb.append(" ( ");

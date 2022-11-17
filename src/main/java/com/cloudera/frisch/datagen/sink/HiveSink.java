@@ -73,6 +73,7 @@ public class HiveSink implements SinkInterface {
             for(String colName: ((String) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_PARTITIONS_COLS)).split(",")) {
                 partCols.add(colName);
             }
+            model.reorderColumnsWithPartCols(partCols);
         }
 
         this.isBucketed = !((String) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_BUCKETS_COLS)).isEmpty();
@@ -129,8 +130,8 @@ public class HiveSink implements SinkInterface {
                 prepareAndExecuteStatement("DROP TABLE IF EXISTS " + tableName);
             }
 
-            log.info("SQL schema for hive: " + model.getSQLSchema(partCols) + extraCreate );
-            prepareAndExecuteStatement("CREATE TABLE IF NOT EXISTS " + tableName + model.getSQLSchema(partCols) + extraCreate);
+            log.info("SQL schema for hive: " + model.getSQLSchema(partCols) + this.extraCreate );
+            prepareAndExecuteStatement("CREATE TABLE IF NOT EXISTS " + tableName + model.getSQLSchema(partCols) + this.extraCreate);
 
             if (hiveOnHDFS) {
                 // If using an HDFS sink, we want it to use the Hive HDFS File path and not the Hdfs file path
@@ -141,7 +142,7 @@ public class HiveSink implements SinkInterface {
                 prepareAndExecuteStatement(
                         "CREATE EXTERNAL TABLE IF NOT EXISTS " + tableNameTemporary + model.getSQLSchema(null) +
                                 " STORED AS PARQUET " +
-                                " LOCATION '" + locationTemporaryTable + "'" //+
+                                " LOCATION '" + locationTemporaryTable + "'"
                 );
             }
 

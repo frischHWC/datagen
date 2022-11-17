@@ -92,7 +92,7 @@ public class JsonSink implements SinkInterface {
         try {
             File file = new File(path);
             file.getParentFile().mkdirs();
-            if(!file.createNewFile()) { log.warn("Could not create file: {}", path);}
+            file.createNewFile();
             outputStream = new FileOutputStream(path, false);
             log.debug("Successfully created local file : " + path);
         } catch (IOException e) {

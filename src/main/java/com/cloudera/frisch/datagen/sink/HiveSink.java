@@ -144,6 +144,8 @@ public class HiveSink implements SinkInterface {
                                 " STORED AS PARQUET " +
                                 " LOCATION '" + locationTemporaryTable + "'"
                 );
+                // Reset it to false, so if another sink is hdfs, it does not initialize like Hive
+                properties.put(ApplicationConfigs.HDFS_FOR_HIVE, "false");
             }
 
             log.info("SQL Insert schema for hive: " + model.getInsertSQLStatement() + this.extraInsert );

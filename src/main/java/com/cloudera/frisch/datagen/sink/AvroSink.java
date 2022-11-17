@@ -104,7 +104,7 @@ public class AvroSink implements SinkInterface {
         try {
             file = new File(path);
             file.getParentFile().mkdirs();
-            if(!file.createNewFile()) { log.warn("Could not create file");}
+            file.createNewFile();
             dataFileWriter = new DataFileWriter<>(datumWriter);
             log.debug("Successfully created local file : " + path);
         } catch (IOException e) {

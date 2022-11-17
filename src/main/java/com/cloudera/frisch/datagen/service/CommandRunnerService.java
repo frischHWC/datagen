@@ -341,37 +341,13 @@ public class CommandRunnerService {
          *  WARNING 2: Having Ozone initiated after other sinks will corrupt Hadoop config and Hive or HDFS will not work, so need to initialize it first
          *  Hence, we need to order sinks properly: Ozone first, Hive always before other (except for ozone) and then the rest
          **/
-        command.getSinksListAsString().sort((s1,s2) -> {
-          if(s1.equals(SinkParser.Sink.OZONE_AVRO) ||
-              s1.equals(SinkParser.Sink.OZONE_JSON) ||
-              s1.equals(SinkParser.Sink.OZONE_CSV) ||
-              s1.equals(SinkParser.Sink.OZONE_PARQUET) ||
-              s1.equals(SinkParser.Sink.OZONE_ORC)) {
-            if(s2.equals(SinkParser.Sink.OZONE_AVRO) ||
-                s2.equals(SinkParser.Sink.OZONE_JSON) ||
-                s2.equals(SinkParser.Sink.OZONE_CSV) ||
-                s2.equals(SinkParser.Sink.OZONE_PARQUET) ||
-                s2.equals(SinkParser.Sink.OZONE_ORC)) {
-              return 0;
-            } else {
-              return 1;
-            }
-          } else if(s1.equals(SinkParser.Sink.HIVE)) {
-            if(s2.equals(SinkParser.Sink.OZONE_AVRO) ||
-                s2.equals(SinkParser.Sink.OZONE_JSON) ||
-                s2.equals(SinkParser.Sink.OZONE_CSV) ||
-                s2.equals(SinkParser.Sink.OZONE_PARQUET) ||
-                s2.equals(SinkParser.Sink.OZONE_ORC)) {
-              return -1;
-            } else {
-              return 1;
-            }
-          } else {
-            return 0;
-          }
-        });
+        List<SinkParser.Sink> sinkList = command.getSinksListAsString();
+        sinkList.sort(SinkParser.Sink.sinkInitPrecedence);
 
-        List<SinkInterface> sinks = SinkSender.sinksInit(command.getModel(), command.getProperties(), command.getSinksListAsString());
+        log.debug("Print sink in order: ");
+        sinkList.forEach(s -> log.debug("sink: {}", s.toString()));
+
+        List<SinkInterface> sinks = SinkSender.sinksInit(command.getModel(), command.getProperties(), sinkList);
 
         // Launch Generation of data
         command.setStatus(Command.CommandStatus.RUNNING);

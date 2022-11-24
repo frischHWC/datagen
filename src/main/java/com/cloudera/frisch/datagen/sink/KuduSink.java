@@ -1,16 +1,18 @@
 package com.cloudera.frisch.datagen.sink;
 
-import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
+import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.kudu.client.*;
 
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -113,7 +115,27 @@ public class KuduSink implements SinkInterface {
 
         if(!model.getKuduRangeKeys().isEmpty()) {
             cto.setRangePartitionColumns(model.getKuduRangeKeys());
+            // Foreach Kudu range col, we need to identify its possible values and partition with it or split it between min and max
+            model.getKuduRangeKeys().forEach(colname -> {
+                Field field = model.getFieldFromName((String) colname);
+
+                if(!field.getPossible_values_weighted().isEmpty()) {
+                    log.info("For column: {}, found non-empty possible_values_weighted to use for range partitions", (String) colname);
+                    List<String> listOfPossibleValues = new ArrayList<>();
+                    listOfPossibleValues.addAll(field.getPossible_values_weighted().keySet());
+                    createPartitionsFromListOfValues((String) colname, listOfPossibleValues, cto);
+                } else if (!field.getPossibleValues().isEmpty()) {
+                    log.info("For column: {}, found non-empty possible_values  to use for range partitions", (String) colname);
+                    createPartitionsFromListOfValues((String) colname, field.getPossibleValues(), cto);
+                } else if(field.getMin()!=null & field.getMax()!=null) {
+                    log.info("For column: {}, will use minimum and maximum", (String) colname);
+                    createPartitionsFromMinAndMax((String) colname, field.getMin(), field.getMax(), cto);
+                } else {
+                    log.warn("You should NOT PARTITION BY RANGE this column: {}", (String) colname);
+                }
+            });
         }
+
         if(!model.getKuduHashKeys().isEmpty()) {
             cto.addHashPartitions(model.getKuduHashKeys(), (int) model.getOptionsOrDefault(OptionsConverter.Options.KUDU_BUCKETS));
         }
@@ -128,6 +150,36 @@ public class KuduSink implements SinkInterface {
             }
         }
 
+    }
+
+    private void createPartitionsFromListOfValues(String colName, List<String> possibleValues, CreateTableOptions cto) {
+        possibleValues.forEach(value -> {
+            PartialRow partialRow = new PartialRow(model.getKuduSchema());
+            partialRow.addString(colName, value);
+            cto.addRangePartition(partialRow,partialRow);
+            }
+        );
+    }
+
+    private void createPartitionsFromMinAndMax(String colName, Long min, Long max, CreateTableOptions cto) {
+        // By default, we will try to split by 32, if not, by the difference between min & max
+        Long difference = max-min;
+        Long numOfPartitions = difference > 32 ? 32 : difference;
+        Long step = difference/numOfPartitions;
+
+        for(int i=0;i<numOfPartitions-1;i++){
+            PartialRow partialRowLower = new PartialRow(model.getKuduSchema());
+            partialRowLower.addLong(colName,min+(i*step));
+            PartialRow partialRowUpper = new PartialRow(model.getKuduSchema());
+            partialRowUpper.addLong(colName,min+((i+1)*step));
+            cto.addRangePartition(partialRowLower,partialRowUpper);
+        }
+        // Last Partition should be until max (max being included)
+        PartialRow partialRowLower = new PartialRow(model.getKuduSchema());
+        partialRowLower.addLong(colName,min+((numOfPartitions-1)*step));
+        PartialRow partialRowUpper = new PartialRow(model.getKuduSchema());
+        partialRowUpper.addLong(colName,max);
+        cto.addRangePartition(partialRowLower, partialRowUpper, RangePartitionBound.INCLUSIVE_BOUND, RangePartitionBound.INCLUSIVE_BOUND);
     }
 
 }

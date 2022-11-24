@@ -21,6 +21,7 @@ data.model.default={{ globals['data_model'] }}
 custom.data.model={{ globals['custom_model_path'] }}
 scheduler.file.path={{ globals['scheduler_file_path'] }}
 
+{% if {{ globals['tls_enabled'] }} = 'true' %}
 # Spring internal TLS settings
 server.ssl.key-store={{ globals['keystore_file'] }}
 server.ssl.key-store-password=${KEYSTORE_PASSWORD}
@@ -29,6 +30,7 @@ server.ssl.key-alias=${HOST}
 server.ssl.key-password=${KEYSTORE_KEYPASSWORD}
 server.ssl.trust-store={{ globals['truststore_location'] }}
 server.ssl.trust-store-password=${TRUSTSTORE_PASSWORD}
+{% endif %}
 
 # Auth config
 security.basic.enabled=false

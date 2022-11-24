@@ -155,8 +155,9 @@ public class KuduSink implements SinkInterface {
     private void createPartitionsFromListOfValues(String colName, List<String> possibleValues, CreateTableOptions cto) {
         possibleValues.forEach(value -> {
             PartialRow partialRow = new PartialRow(model.getKuduSchema());
+            PartialRow partialRowEmpty = new PartialRow(model.getKuduSchema());
             partialRow.addString(colName, value);
-            cto.addRangePartition(partialRow,partialRow);
+            cto.addRangePartition(partialRow, partialRowEmpty);
             }
         );
     }

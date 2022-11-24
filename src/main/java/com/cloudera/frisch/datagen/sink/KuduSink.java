@@ -113,7 +113,7 @@ public class KuduSink implements SinkInterface {
         CreateTableOptions cto = new CreateTableOptions();
         cto.setNumReplicas((int) model.getOptionsOrDefault(OptionsConverter.Options.KUDU_REPLICAS));
 
-        if(!model.getKuduRangeKeys().isEmpty()) {
+        if(model.getKuduRangeKeys()!=null && !model.getKuduRangeKeys().isEmpty()) {
             cto.setRangePartitionColumns(model.getKuduRangeKeys());
             // Foreach Kudu range col, we need to identify its possible values and partition with it or split it between min and max
             model.getKuduRangeKeys().forEach(colname -> {
@@ -136,7 +136,7 @@ public class KuduSink implements SinkInterface {
             });
         }
 
-        if(!model.getKuduHashKeys().isEmpty()) {
+        if(model.getKuduHashKeys()!=null && !model.getKuduHashKeys().isEmpty()) {
             cto.addHashPartitions(model.getKuduHashKeys(), (int) model.getOptionsOrDefault(OptionsConverter.Options.KUDU_BUCKETS));
         }
 

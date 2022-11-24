@@ -119,12 +119,12 @@ public class KuduSink implements SinkInterface {
             model.getKuduRangeKeys().forEach(colname -> {
                 Field field = model.getFieldFromName((String) colname);
 
-                if(!field.getPossible_values_weighted().isEmpty()) {
+                if(field.getPossible_values_weighted()!= null && !field.getPossible_values_weighted().isEmpty()) {
                     log.info("For column: {}, found non-empty possible_values_weighted to use for range partitions", (String) colname);
                     List<String> listOfPossibleValues = new ArrayList<>();
                     listOfPossibleValues.addAll(field.getPossible_values_weighted().keySet());
                     createPartitionsFromListOfValues((String) colname, listOfPossibleValues, cto);
-                } else if (!field.getPossibleValues().isEmpty()) {
+                } else if (field.getPossibleValues()!= null && !field.getPossibleValues().isEmpty()) {
                     log.info("For column: {}, found non-empty possible_values  to use for range partitions", (String) colname);
                     createPartitionsFromListOfValues((String) colname, field.getPossibleValues(), cto);
                 } else if(field.getMin()!=null & field.getMax()!=null) {

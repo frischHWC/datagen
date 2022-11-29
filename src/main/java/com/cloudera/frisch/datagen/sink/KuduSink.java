@@ -127,7 +127,7 @@ public class KuduSink implements SinkInterface {
                 } else if (field.getPossibleValues()!= null && !field.getPossibleValues().isEmpty()) {
                     log.info("For column: {}, found non-empty possible_values  to use for range partitions", (String) colname);
                     createPartitionsFromListOfValues((String) colname, field.getPossibleValues(), cto);
-                } else if(field.getMin()!=null & field.getMax()!=null) {
+                } else if(field.getMin()!=null && field.getMax()!=null) {
                     log.info("For column: {}, will use minimum and maximum", (String) colname);
                     createPartitionsFromMinAndMax((String) colname, field.getMin(), field.getMax(), cto);
                 } else {
@@ -154,9 +154,12 @@ public class KuduSink implements SinkInterface {
 
     private void createPartitionsFromListOfValues(String colName, List<String> possibleValues, CreateTableOptions cto) {
         possibleValues.forEach(value -> {
-            PartialRow partialRow = new PartialRow(model.getKuduSchema());
-            partialRow.addString(colName, value);
-            cto.addRangePartition(partialRow, partialRow, RangePartitionBound.INCLUSIVE_BOUND, RangePartitionBound.INCLUSIVE_BOUND);
+            log.debug("Create Part col: {} with value: {}", colName, value);
+            PartialRow partialRowLower = new PartialRow(model.getKuduSchema());
+            partialRowLower.addString(colName, value);
+            PartialRow partialRowUpper = new PartialRow(model.getKuduSchema());
+            partialRowUpper.addString(colName, value);
+            cto.addRangePartition(partialRowLower, partialRowUpper, RangePartitionBound.INCLUSIVE_BOUND, RangePartitionBound.INCLUSIVE_BOUND);
             }
         );
     }
@@ -168,6 +171,7 @@ public class KuduSink implements SinkInterface {
         Long step = difference/numOfPartitions;
 
         for(int i=0;i<numOfPartitions-1;i++){
+            log.debug("Create Part col: {} with value min: {} (Inclusive) ; and value max: {} (Exclusive)", colName, min+(i*step), min+((i+1)*step));
             PartialRow partialRowLower = new PartialRow(model.getKuduSchema());
             partialRowLower.addLong(colName,min+(i*step));
             PartialRow partialRowUpper = new PartialRow(model.getKuduSchema());
@@ -175,6 +179,7 @@ public class KuduSink implements SinkInterface {
             cto.addRangePartition(partialRowLower,partialRowUpper);
         }
         // Last Partition should be until max (max being included)
+        log.debug("Create Part col: {} with value min: {} (Inclusive) ; and value max: {} (Inclusive)", colName, min+((numOfPartitions-1)*step), max);
         PartialRow partialRowLower = new PartialRow(model.getKuduSchema());
         partialRowLower.addLong(colName,min+((numOfPartitions-1)*step));
         PartialRow partialRowUpper = new PartialRow(model.getKuduSchema());

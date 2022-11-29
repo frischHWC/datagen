@@ -30,6 +30,11 @@ public class IncrementLongField extends Field<Long> {
         } else {
             this.min = Long.parseLong(min);
         }
+        if(max==null) {
+            this.max = Long.MAX_VALUE;
+        } else {
+            this.max = Long.parseLong(max);
+        }
         counter = this.min;
         this.possibleValues = possibleValues;
     }

@@ -30,6 +30,11 @@ public class IncrementIntegerField extends Field<Integer> {
         } else {
             this.min = Long.parseLong(min);
         }
+        if(max==null) {
+            this.max = Long.MAX_VALUE;
+        } else {
+            this.max = Long.parseLong(max);
+        }
         counter = this.min.intValue();
         this.possibleValues = possibleValues;
     }

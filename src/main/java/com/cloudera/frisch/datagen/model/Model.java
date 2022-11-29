@@ -560,6 +560,7 @@ public class Model<T extends Field> {
     // Conditionals should be made on existing columns
     // Conditionals should not have "nested" conditions (meaning relying on a computed column)
     // Primary Keys fields should not be ghost fields
+    // If hive and kudu are set, make sure part cols are the same as there is a re-order of columns
     public void verifyModel() { }
 
 }

@@ -58,6 +58,7 @@ public class SinkParser {
         PARQUET,
         ORC;
 
+        // TODO: Add Kudu first
         public static Comparator<Sink> sinkInitPrecedence = new Comparator<>() {
             @Override
             public int compare(Sink s1, Sink s2) {
@@ -75,13 +76,15 @@ public class SinkParser {
                     } else {
                         return -1;
                     }
-                } else if(s1.equals(SinkParser.Sink.HIVE)) {
+                } else if(s1.equals(SinkParser.Sink.HIVE) || s1.equals(Sink.KUDU)) {
                     if(s2.equals(SinkParser.Sink.OZONE_AVRO) ||
                         s2.equals(SinkParser.Sink.OZONE_JSON) ||
                         s2.equals(SinkParser.Sink.OZONE_CSV) ||
                         s2.equals(SinkParser.Sink.OZONE_PARQUET) ||
                         s2.equals(SinkParser.Sink.OZONE_ORC)) {
                         return 1;
+                    } else if(s2.equals(SinkParser.Sink.HIVE) || s2.equals(Sink.KUDU)) {
+                        return 0;
                     } else {
                         return -1;
                     }

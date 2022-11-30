@@ -373,15 +373,15 @@ public class Model<T extends Field> {
         return new Schema(columns);
     }
 
-    public List<String> getKuduPrimaryKeys() {
+    public LinkedList<String> getKuduPrimaryKeys() {
         return primaryKeys.get(OptionsConverter.PrimaryKeys.KUDU_PRIMARY_KEYS);
     }
 
-    public List<String> getKuduRangeKeys() {
+    public LinkedList<String> getKuduRangeKeys() {
         return primaryKeys.get(OptionsConverter.PrimaryKeys.KUDU_RANGE_KEYS);
     }
 
-    public List<String> getKuduHashKeys() {
+    public LinkedList<String> getKuduHashKeys() {
         return primaryKeys.get(OptionsConverter.PrimaryKeys.KUDU_HASH_KEYS);
     }
 

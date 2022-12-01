@@ -412,6 +412,34 @@ public class Model<T extends Field> {
     }
 
     /**
+     * This is a dangerous but needed operation to make Kudu works well with partitions
+     * Partition columns should be generated at first hence the linkedHashMap order should be changed
+     * This could mess up with other sinks if they initialize before this function is made
+     * @param keyCols
+     */
+    public void reorderColumnsWithKeyCols(LinkedList<String> keyCols) {
+        synchronized (fieldsToPrint) {
+            LinkedHashMap<String, T> fieldToPrintClone = (LinkedHashMap<String, T>) fieldsToPrint.clone();
+            fieldsToPrint.clear();
+            keyCols.forEach(p -> {
+                fieldsToPrint.put(p, fieldToPrintClone.get(p));
+                fieldToPrintClone.remove(p);
+            });
+            fieldsToPrint.putAll(fieldToPrintClone);
+        }
+
+        synchronized (fields) {
+            LinkedHashMap<String, T> fieldToPrintClone = (LinkedHashMap<String, T>) fieldsToPrint.clone();
+            fields.clear();
+            keyCols.forEach(p -> {
+                fields.put(p, fieldToPrintClone.get(p));
+                fieldToPrintClone.remove(p);
+            });
+            fields.putAll(fieldToPrintClone);
+        }
+    }
+
+    /**
      * SQL Schema for Hive should not include partition columns
      * @param partCols
      * @return

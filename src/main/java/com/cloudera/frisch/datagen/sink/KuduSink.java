@@ -59,14 +59,14 @@ public class KuduSink implements SinkInterface {
 
             // If some columns are range keys or partitions keys, we need to re-order them to be first
             if(model.getKuduHashKeys()!=null && !model.getKuduHashKeys().isEmpty()) {
-                model.reorderColumnsWithPartCols(model.getKuduHashKeys());
+                model.reorderColumnsWithKeyCols(model.getKuduHashKeys());
             }
             if(model.getKuduRangeKeys()!=null && !model.getKuduRangeKeys().isEmpty()) {
-                model.reorderColumnsWithPartCols(model.getKuduRangeKeys());
+                model.reorderColumnsWithKeyCols(model.getKuduRangeKeys());
             }
 
             // We should then set primary keys columns as first
-            model.reorderColumnsWithPartCols(model.getKuduPrimaryKeys());
+            model.reorderColumnsWithKeyCols(model.getKuduPrimaryKeys());
 
             createTableIfNotExists();
 

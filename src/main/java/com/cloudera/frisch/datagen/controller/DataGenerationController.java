@@ -143,8 +143,6 @@ public class DataGenerationController {
         Collections.singletonList("ORC"), null);
   }
 
-  // TODO: Add extra properties optional for below sinks
-
   @PostMapping(value = "/hdfs-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoHdfsCsv(

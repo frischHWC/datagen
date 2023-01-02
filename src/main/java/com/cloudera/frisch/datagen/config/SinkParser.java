@@ -75,7 +75,6 @@ public class SinkParser {
         PARQUET,
         ORC;
 
-        // TODO: Add Kudu first
         public static Comparator<Sink> sinkInitPrecedence = new Comparator<>() {
             @Override
             public int compare(Sink s1, Sink s2) {

@@ -33,13 +33,13 @@
     name: git
     state: present    
 
-- name: Install Maven 3.8.6
+- name: Install Maven 3.8.7
   command: 
-    cmd: wget --no-check-certificate https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+    cmd: "wget --no-check-certificate https://dlcdn.apache.org/maven/maven-3/{{ maven_version }}/binaries/apache-maven-{{ maven_version }}-bin.tar.gz"
     chdir: /opt/
 
-- name: Untar Maven 3.8.6
+- name: Untar Maven 3.8.7
   command: 
-    cmd: tar -xvzf apache-maven-3.8.6-bin.tar.gz
+    cmd: "tar -xvzf apache-maven-{{ maven_version }}-bin.tar.gz"
     chdir: /opt/
     

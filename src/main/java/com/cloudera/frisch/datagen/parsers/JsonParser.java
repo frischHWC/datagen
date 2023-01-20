@@ -143,7 +143,7 @@ public class JsonParser<T extends Field> implements Parser {
         try {
             separator = jsonField.get("separator").asText();
         } catch (NullPointerException e) {
-            separator = null;
+            separator = ",";
         }
 
         Boolean ghost;

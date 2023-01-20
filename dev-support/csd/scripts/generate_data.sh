@@ -28,8 +28,6 @@ set -x
 . ${COMMON_SCRIPT}
 PYTHON_COMMAND_INVOKER=${PYTHON_COMMAND_INVOKER:-/usr/bin/python}
 
-echo "Make sure python dependencies are already installed"
-pip install urllib3
 
 case $CMD in
  (gen_customer_hdfs_ozone_hive)

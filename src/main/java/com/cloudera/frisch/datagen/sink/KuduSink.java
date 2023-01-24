@@ -1,16 +1,35 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.cloudera.frisch.datagen.sink;
 
-import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
+import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.kudu.client.*;
 
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -54,6 +73,17 @@ public class KuduSink implements SinkInterface {
             } else {
                 this.client = new KuduClient.KuduClientBuilder(properties.get(ApplicationConfigs.KUDU_URL)).build();
             }
+
+            // If some columns are range keys or partitions keys, we need to re-order them to be first
+            if(model.getKuduHashKeys()!=null && !model.getKuduHashKeys().isEmpty()) {
+                model.reorderColumnsWithKeyCols(model.getKuduHashKeys());
+            }
+            if(model.getKuduRangeKeys()!=null && !model.getKuduRangeKeys().isEmpty()) {
+                model.reorderColumnsWithKeyCols(model.getKuduRangeKeys());
+            }
+
+            // We should then set primary keys columns as first
+            model.reorderColumnsWithKeyCols(model.getKuduPrimaryKeys());
 
             createTableIfNotExists();
 
@@ -111,10 +141,30 @@ public class KuduSink implements SinkInterface {
         CreateTableOptions cto = new CreateTableOptions();
         cto.setNumReplicas((int) model.getOptionsOrDefault(OptionsConverter.Options.KUDU_REPLICAS));
 
-        if(!model.getKuduRangeKeys().isEmpty()) {
+        if(model.getKuduRangeKeys()!=null && !model.getKuduRangeKeys().isEmpty()) {
             cto.setRangePartitionColumns(model.getKuduRangeKeys());
+            // Foreach Kudu range col, we need to identify its possible values and partition with it or split it between min and max
+            model.getKuduRangeKeys().forEach(colname -> {
+                Field field = model.getFieldFromName((String) colname);
+
+                if(field.getPossible_values_weighted()!= null && !field.getPossible_values_weighted().isEmpty()) {
+                    log.info("For column: {}, found non-empty possible_values_weighted to use for range partitions", (String) colname);
+                    List<String> listOfPossibleValues = new ArrayList<>();
+                    listOfPossibleValues.addAll(field.getPossible_values_weighted().keySet());
+                    createPartitionsFromListOfValues((String) colname, listOfPossibleValues, cto);
+                } else if (field.getPossibleValues()!= null && !field.getPossibleValues().isEmpty()) {
+                    log.info("For column: {}, found non-empty possible_values  to use for range partitions", (String) colname);
+                    createPartitionsFromListOfValues((String) colname, field.getPossibleValues(), cto);
+                } else if(field.getMin()!=null && field.getMax()!=null) {
+                    log.info("For column: {}, will use minimum and maximum", (String) colname);
+                    createPartitionsFromMinAndMax((String) colname, field.getMin(), field.getMax(), cto);
+                } else {
+                    log.warn("You should NOT PARTITION BY RANGE this column: {}", (String) colname);
+                }
+            });
         }
-        if(!model.getKuduHashKeys().isEmpty()) {
+
+        if(model.getKuduHashKeys()!=null && !model.getKuduHashKeys().isEmpty()) {
             cto.addHashPartitions(model.getKuduHashKeys(), (int) model.getOptionsOrDefault(OptionsConverter.Options.KUDU_BUCKETS));
         }
 
@@ -128,6 +178,41 @@ public class KuduSink implements SinkInterface {
             }
         }
 
+    }
+
+    private void createPartitionsFromListOfValues(String colName, List<String> possibleValues, CreateTableOptions cto) {
+        possibleValues.forEach(value -> {
+            log.debug("Create Part col: {} with value: {}", colName, value);
+            PartialRow partialRowLower = new PartialRow(model.getKuduSchema());
+            partialRowLower.addString(colName, value);
+            PartialRow partialRowUpper = new PartialRow(model.getKuduSchema());
+            partialRowUpper.addString(colName, value);
+            cto.addRangePartition(partialRowLower, partialRowUpper, RangePartitionBound.INCLUSIVE_BOUND, RangePartitionBound.INCLUSIVE_BOUND);
+            }
+        );
+    }
+
+    private void createPartitionsFromMinAndMax(String colName, Long min, Long max, CreateTableOptions cto) {
+        // By default, we will try to split by 32, if not, by the difference between min & max
+        Long difference = max-min;
+        Long numOfPartitions = difference > 32 ? 32 : difference;
+        Long step = difference/numOfPartitions;
+
+        for(int i=0;i<numOfPartitions-1;i++){
+            log.debug("Create Part col: {} with value min: {} (Inclusive) ; and value max: {} (Exclusive)", colName, min+(i*step), min+((i+1)*step));
+            PartialRow partialRowLower = new PartialRow(model.getKuduSchema());
+            partialRowLower.addLong(colName,min+(i*step));
+            PartialRow partialRowUpper = new PartialRow(model.getKuduSchema());
+            partialRowUpper.addLong(colName,min+((i+1)*step));
+            cto.addRangePartition(partialRowLower,partialRowUpper);
+        }
+        // Last Partition should be until max (max being included)
+        log.debug("Create Part col: {} with value min: {} (Inclusive) ; and value max: {} (Inclusive)", colName, min+((numOfPartitions-1)*step), max);
+        PartialRow partialRowLower = new PartialRow(model.getKuduSchema());
+        partialRowLower.addLong(colName,min+((numOfPartitions-1)*step));
+        PartialRow partialRowUpper = new PartialRow(model.getKuduSchema());
+        partialRowUpper.addLong(colName,max);
+        cto.addRangePartition(partialRowLower, partialRowUpper, RangePartitionBound.INCLUSIVE_BOUND, RangePartitionBound.INCLUSIVE_BOUND);
     }
 
 }

@@ -1,3 +1,20 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.cloudera.frisch.datagen.service;
 
 
@@ -337,8 +354,9 @@ public class CommandRunnerService {
 
         log.info("Initialization of all Sinks");
         /**
-         *  WARNING: If Hive is in the list of sinks, it should be initialized first as it is the only sink that has an impact on the model
-         *  WARNING 2: Having Ozone initiated after other sinks will corrupt Hadoop config and Hive or HDFS will not work, so need to initialize it first
+         *  WARNING 1 : Having Ozone initiated after other sinks will corrupt Hadoop config and Hive or HDFS will not work, so need to initialize it first
+         *  WARNING 2 : If Hive is in the list of sinks, it should be initialized first as it changes columns orders if there are partitions
+         *  WARNING 3 : If Kudu is in the list of sinks, it should be initialized first as it changes columns orders if there are partitions
          *  Hence, we need to order sinks properly: Ozone first, Hive always before other (except for ozone) and then the rest
          **/
         List<SinkParser.Sink> sinkList = command.getSinksListAsString();

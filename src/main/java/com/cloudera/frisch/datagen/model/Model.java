@@ -1,3 +1,20 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.cloudera.frisch.datagen.model;
 
 
@@ -373,15 +390,15 @@ public class Model<T extends Field> {
         return new Schema(columns);
     }
 
-    public List<String> getKuduPrimaryKeys() {
+    public LinkedList<String> getKuduPrimaryKeys() {
         return primaryKeys.get(OptionsConverter.PrimaryKeys.KUDU_PRIMARY_KEYS);
     }
 
-    public List<String> getKuduRangeKeys() {
+    public LinkedList<String> getKuduRangeKeys() {
         return primaryKeys.get(OptionsConverter.PrimaryKeys.KUDU_RANGE_KEYS);
     }
 
-    public List<String> getKuduHashKeys() {
+    public LinkedList<String> getKuduHashKeys() {
         return primaryKeys.get(OptionsConverter.PrimaryKeys.KUDU_HASH_KEYS);
     }
 
@@ -408,6 +425,34 @@ public class Model<T extends Field> {
                 fields.remove(p);
             });
             fields.putAll(partColsFields);
+        }
+    }
+
+    /**
+     * This is a dangerous but needed operation to make Kudu works well with partitions
+     * Partition columns should be generated at first hence the linkedHashMap order should be changed
+     * This could mess up with other sinks if they initialize before this function is made
+     * @param keyCols
+     */
+    public void reorderColumnsWithKeyCols(LinkedList<String> keyCols) {
+        synchronized (fieldsToPrint) {
+            LinkedHashMap<String, T> fieldToPrintClone = (LinkedHashMap<String, T>) fieldsToPrint.clone();
+            fieldsToPrint.clear();
+            keyCols.forEach(p -> {
+                fieldsToPrint.put(p, fieldToPrintClone.get(p));
+                fieldToPrintClone.remove(p);
+            });
+            fieldsToPrint.putAll(fieldToPrintClone);
+        }
+
+        synchronized (fields) {
+            LinkedHashMap<String, T> fieldToPrintClone = (LinkedHashMap<String, T>) fieldsToPrint.clone();
+            fields.clear();
+            keyCols.forEach(p -> {
+                fields.put(p, fieldToPrintClone.get(p));
+                fieldToPrintClone.remove(p);
+            });
+            fields.putAll(fieldToPrintClone);
         }
     }
 
@@ -560,6 +605,7 @@ public class Model<T extends Field> {
     // Conditionals should be made on existing columns
     // Conditionals should not have "nested" conditions (meaning relying on a computed column)
     // Primary Keys fields should not be ghost fields
+    // If hive and kudu are set, make sure part cols are the same as there is a re-order of columns
     public void verifyModel() { }
 
 }

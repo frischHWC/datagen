@@ -17,7 +17,6 @@
  */
 package com.cloudera.frisch.datagen.model.type;
 
-import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.client.Put;
@@ -35,7 +34,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -74,14 +76,11 @@ public class CityField extends Field<CityField.City> {
     }
 
     private List<City> cityDico;
-    private Map<String, City> cityMap;
-
 
     CityField(String name, Integer length, List<String> filters) {
         this.name = name;
         this.length = length;
         this.cityDico = loadCityDico();
-        this.cityMap = new HashMap<>();
 
         List<City> possibleCities = new ArrayList<>();
         filters.forEach(filterOnCountry -> {
@@ -98,9 +97,8 @@ public class CityField extends Field<CityField.City> {
         }
 
         this.sumOfWeights = this.possibleValues.stream().mapToLong(City::getPopulation).reduce((c1,c2) -> c1+c2).getAsLong();
-        this.possible_values_weighted = new LinkedHashMap<>();
-        this.possibleValues.forEach(city -> this.possible_values_weighted.put(city.name, city.population));
-        this.possibleValues.forEach(city -> this.cityMap.put(city.name, city));
+        this.possibleValuesWeighted = new LinkedHashMap<>();
+        this.possibleValues.forEach(city -> this.possibleValuesWeighted.put(city, city.population));
 
     }
 
@@ -123,9 +121,7 @@ public class CityField extends Field<CityField.City> {
     }
 
     public City generateRandomValue() {
-        return this.cityMap.get(
-            Utils.getRandomValueWithWeights(random, this.possible_values_weighted, this.sumOfWeights)
-        );
+        return getRandomValueWithWeights(random, possibleValuesWeighted, sumOfWeights);
     }
 
     @Override

@@ -17,7 +17,6 @@
  */
 package com.cloudera.frisch.datagen.model.type;
 
-import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -53,16 +52,16 @@ public class IntegerField extends Field<Integer> {
             this.min = Long.parseLong(min);
         }
         this.possibleValues = possibleValues;
-        this.possible_values_weighted = possible_values_weighted;
+        this.possibleValuesWeighted = new LinkedHashMap<>();
+        possible_values_weighted.forEach((s, l) -> this.possibleValuesWeighted.put(Integer.valueOf(s), l));
         this.sumOfWeights = possible_values_weighted.values().stream().reduce(Long::sum).get();
     }
 
     public Integer generateRandomValue() {
         if(!possibleValues.isEmpty()) {
             return possibleValues.get(random.nextInt(possibleValues.size()));
-        } else if (!possible_values_weighted.isEmpty()){
-            String result = Utils.getRandomValueWithWeights(random, possible_values_weighted, sumOfWeights);
-            return result.isEmpty() ? 0 :  Integer.parseInt(result);
+        } else if (!possibleValuesWeighted.isEmpty()){
+            return getRandomValueWithWeights(random, possibleValuesWeighted, sumOfWeights);
         } else if(min != Integer.MIN_VALUE) {
             return random.nextInt(Math.toIntExact(max - min + 1 )) + Math.toIntExact(min);
         } else {

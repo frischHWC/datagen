@@ -34,9 +34,7 @@ import org.apache.orc.TypeDescription;
 import org.apache.solr.common.SolrInputDocument;
 
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -72,7 +70,7 @@ public abstract class Field<T> {
 
     @Getter
     @Setter
-    public LinkedHashMap<String, Long> possible_values_weighted;
+    public LinkedHashMap<T, Long> possibleValuesWeighted;
 
     @Getter
     @Setter
@@ -124,6 +122,29 @@ public abstract class Field<T> {
     }
 
     public abstract T generateRandomValue();
+
+    /**
+     * Using map of possible values weighted (between 0 and 100), it gives possible value
+     * @param random
+     * @param weights
+     * @return
+     */
+    public T getRandomValueWithWeights(Random random, LinkedHashMap<T, Long> weights, Long totalSumWeights) {
+        Long randomLongBounded = random.longs(1 , 0L, totalSumWeights)
+            .findFirst()
+            .orElseGet(() -> 1L);
+        Long sumOfWeight = 0L;
+        for(Map.Entry<T, Long> entry : weights.entrySet()) {
+            sumOfWeight = sumOfWeight + entry.getValue();
+            if(randomLongBounded < sumOfWeight) {
+                return entry.getKey();
+            }
+        }
+        // If no value found, pick a random one inside the stream
+        T[] keys = (T[]) weights.keySet().toArray();
+        return keys[random.nextInt(keys.length-1)];
+
+    }
 
     public T generateComputedValue(Row row) {
         return toCastValue(conditional.evaluateConditions(row));

@@ -1,5 +1,5 @@
 {
-  "version": "0.4.61",
+  "version": "0.4.62",
   "name": "DATAGEN",
   "nameForCrossEntityAggregateMetrics": "datagen",
   "compatibility": {

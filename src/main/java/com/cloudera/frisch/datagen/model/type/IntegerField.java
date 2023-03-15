@@ -35,7 +35,7 @@ import java.util.List;
 @Slf4j
 public class IntegerField extends Field<Integer> {
 
-    IntegerField(String name, Integer length, List<Integer> possibleValues, LinkedHashMap<String, Integer> possible_values_weighted, String min, String max) {
+    IntegerField(String name, Integer length, List<Integer> possibleValues, LinkedHashMap<String, Long> possible_values_weighted, String min, String max) {
         this.name = name;
         if(length==null || length==-1) {
             this.length = Integer.MAX_VALUE;
@@ -54,13 +54,14 @@ public class IntegerField extends Field<Integer> {
         }
         this.possibleValues = possibleValues;
         this.possible_values_weighted = possible_values_weighted;
+        this.sumOfWeights = possible_values_weighted.values().stream().reduce(Long::sum).get();
     }
 
     public Integer generateRandomValue() {
         if(!possibleValues.isEmpty()) {
             return possibleValues.get(random.nextInt(possibleValues.size()));
         } else if (!possible_values_weighted.isEmpty()){
-            String result = Utils.getRandomValueWithWeights(random, possible_values_weighted);
+            String result = Utils.getRandomValueWithWeights(random, possible_values_weighted, sumOfWeights);
             return result.isEmpty() ? 0 :  Integer.parseInt(result);
         } else if(min != Integer.MIN_VALUE) {
             return random.nextInt(Math.toIntExact(max - min + 1 )) + Math.toIntExact(min);

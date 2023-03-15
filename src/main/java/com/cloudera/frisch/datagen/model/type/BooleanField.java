@@ -35,18 +35,19 @@ import java.util.List;
 @Slf4j
 public class BooleanField extends Field<Boolean> {
 
-    BooleanField(String name, Integer length, List<Boolean> possibleValues, LinkedHashMap<String, Integer> possible_values_weighted) {
+    BooleanField(String name, Integer length, List<Boolean> possibleValues, LinkedHashMap<String, Long> possible_values_weighted) {
         this.name = name;
         this.length = length;
         this.possibleValues = possibleValues;
         this.possible_values_weighted = possible_values_weighted;
+        this.sumOfWeights = possible_values_weighted.values().stream().reduce(Long::sum).get();
     }
 
     public Boolean generateRandomValue() {
         if(!possibleValues.isEmpty()) {
             return possibleValues.get(random.nextInt(possibleValues.size()));
         } else if (!possible_values_weighted.isEmpty()){
-            String result = Utils.getRandomValueWithWeights(random, possible_values_weighted);
+            String result = Utils.getRandomValueWithWeights(random, possible_values_weighted, sumOfWeights);
             return result.isEmpty() ? false :  Boolean.parseBoolean(result);
         } else {
             return random.nextBoolean();

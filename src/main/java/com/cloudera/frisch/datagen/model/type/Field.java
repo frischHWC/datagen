@@ -72,7 +72,11 @@ public abstract class Field<T> {
 
     @Getter
     @Setter
-    public LinkedHashMap<String, Integer> possible_values_weighted;
+    public LinkedHashMap<String, Long> possible_values_weighted;
+
+    @Getter
+    @Setter
+    public Long sumOfWeights;
 
     // This is a conditional evaluator holding all complexity (parsing, preparing comparison, evaluating it)
     @Getter
@@ -155,7 +159,7 @@ public abstract class Field<T> {
                                          Integer length,
                                          String columnQualifier,
                                          List<JsonNode> possibleValues,
-                                         LinkedHashMap<String, Integer> possible_values_weighted,
+                                         LinkedHashMap<String, Long> possible_values_weighted,
                                          LinkedHashMap<String, String> conditionals,
                                          String min,
                                          String max,

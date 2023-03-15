@@ -35,7 +35,7 @@ import java.util.List;
 @Slf4j
 public class LongField extends Field<Long> {
 
-    LongField(String name, Integer length, List<Long> possibleValues, LinkedHashMap<String, Integer> possible_values_weighted, String min, String max) {
+    LongField(String name, Integer length, List<Long> possibleValues, LinkedHashMap<String, Long> possible_values_weighted, String min, String max) {
         if(length==null || length==-1) {
             this.length = Integer.MAX_VALUE;
         } else {
@@ -54,13 +54,14 @@ public class LongField extends Field<Long> {
         this.name = name;
         this.possibleValues = possibleValues;
         this.possible_values_weighted = possible_values_weighted;
+        this.sumOfWeights = possible_values_weighted.values().stream().reduce(Long::sum).get();
     }
 
     public Long generateRandomValue() {
         if(!possibleValues.isEmpty()) {
             return possibleValues.get(random.nextInt(possibleValues.size()));
         } else if (!possible_values_weighted.isEmpty()){
-            String result = Utils.getRandomValueWithWeights(random, possible_values_weighted);
+            String result = Utils.getRandomValueWithWeights(random, possible_values_weighted, sumOfWeights);
             return result.isEmpty() ? 0L :  Long.parseLong(result);
         } else {
             return random.longs(1, min, max+1).findFirst().orElse(0L);

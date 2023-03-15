@@ -136,6 +136,28 @@ public class Utils {
     }
 
     /**
+     * Using map of possible values weighted (between 0 and 100), it gives possible value
+     * @param random
+     * @param weights
+     * @return
+     */
+    public static String getRandomValueWithWeights(Random random, LinkedHashMap<String, Long> weights, Long totalSumWeights) {
+        Long randomLongBounded = random.longs(1 , 0L, totalSumWeights)
+            .findFirst()
+            .orElseGet(() -> 1L);
+        Long sumOfWeight = 0L;
+        for(Map.Entry<String, Long> entry : weights.entrySet()) {
+            sumOfWeight = sumOfWeight + entry.getValue();
+            if(randomLongBounded < sumOfWeight) {
+                return entry.getKey();
+            }
+        }
+        // If no value found, pick a random one inside the stream
+        Long[] longValues = weights.values().toArray(new Long[0]);
+        return String.valueOf(longValues[random.nextInt(longValues.length)]);
+    }
+
+    /**
      * Login to kerberos using a given user and its associated keytab
      * @param kerberosUser is the kerberos user
      * @param pathToKeytab path to the keytab associated with the user, note that unix read-right are needed to access it

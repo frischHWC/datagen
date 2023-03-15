@@ -35,7 +35,7 @@ import java.util.List;
 @Slf4j
 public class StringField extends Field<String> {
 
-    StringField(String name, Integer length, List<String> possibleValues, LinkedHashMap<String, Integer> possible_values_weighted) {
+    StringField(String name, Integer length, List<String> possibleValues, LinkedHashMap<String, Long> possible_values_weighted) {
         this.name = name;
         if(length==null || length<1) {
             this.length = 20;
@@ -44,13 +44,14 @@ public class StringField extends Field<String> {
         }
         this.possibleValues = possibleValues;
         this.possible_values_weighted = possible_values_weighted;
+        this.sumOfWeights = possible_values_weighted.values().stream().reduce(Long::sum).orElseGet(() -> 1L);
     }
 
     public String generateRandomValue() {
         if(!possibleValues.isEmpty()) {
             return possibleValues.get(random.nextInt(possibleValues.size()));
         } else if (!possible_values_weighted.isEmpty()){
-            return Utils.getRandomValueWithWeights(random, possible_values_weighted);
+            return Utils.getRandomValueWithWeights(random, possible_values_weighted, sumOfWeights);
         } else {
             return Utils.getAlphaNumericString(this.length, random);
         }

@@ -44,7 +44,11 @@ public class StringField extends Field<String> {
         }
         this.possibleValues = possibleValues;
         this.possibleValuesWeighted = possible_values_weighted;
-        this.sumOfWeights = possible_values_weighted.values().stream().reduce(Long::sum).orElseGet(() -> 1L);
+        if(possible_values_weighted != null && !possible_values_weighted.isEmpty()) {
+            this.sumOfWeights =
+                possible_values_weighted.values().stream().reduce(Long::sum)
+                    .orElse(100L);
+        }
     }
 
     public String generateRandomValue() {

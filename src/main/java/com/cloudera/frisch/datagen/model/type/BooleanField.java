@@ -39,8 +39,14 @@ public class BooleanField extends Field<Boolean> {
         this.length = length;
         this.possibleValues = possibleValues;
         this.possibleValuesWeighted = new LinkedHashMap<>();
-        possible_values_weighted.forEach((s, l) -> this.possibleValuesWeighted.put(Boolean.valueOf(s), l));
-        this.sumOfWeights = possible_values_weighted.values().stream().reduce(Long::sum).get();
+        if(possible_values_weighted != null && !possible_values_weighted.isEmpty()) {
+            possible_values_weighted.forEach(
+                (s, l) -> this.possibleValuesWeighted.put(Boolean.valueOf(s),
+                    l));
+            this.sumOfWeights =
+                possible_values_weighted.values().stream().reduce(Long::sum)
+                    .orElse(1000L);
+        }
     }
 
     public Boolean generateRandomValue() {

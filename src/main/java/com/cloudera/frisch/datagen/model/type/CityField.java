@@ -36,6 +36,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,12 +52,15 @@ public class CityField extends Field<CityField.City> {
         String longitude;
         @Getter
         String country;
+        @Getter
+        Long population;
 
-        public City(String name, String lat, String lon, String country) {
+        public City(String name, String lat, String lon, String country, Long population) {
             this.name = name;
             this.latitude = lat;
             this.longitude = lon;
             this.country = country;
+            this.population = population;
         }
 
         @Override
@@ -66,12 +70,12 @@ public class CityField extends Field<CityField.City> {
                 ", latitude='" + latitude + '\'' +
                 ", longitude='" + longitude + '\'' +
                 ", country='" + country + '\'' +
+                ", population='" + population + '\'' +
                 '}';
         }
     }
 
     private List<City> cityDico;
-
 
     CityField(String name, Integer length, List<String> filters) {
         this.name = name;
@@ -86,7 +90,16 @@ public class CityField extends Field<CityField.City> {
                 .collect(Collectors.toList()));
             }
         );
-        this.possibleValues = possibleCities;
+        if(possibleCities.isEmpty()) {
+            this.possibleValues = this.cityDico;
+        } else {
+            this.possibleValues = possibleCities;
+        }
+
+        this.sumOfWeights = this.possibleValues.stream().mapToLong(City::getPopulation).reduce((c1,c2) -> c1+c2).getAsLong();
+        this.possibleValuesWeighted = new LinkedHashMap<>();
+        this.possibleValues.forEach(city -> this.possibleValuesWeighted.put(city, city.population));
+
     }
 
     private List<City> loadCityDico() {
@@ -95,23 +108,20 @@ public class CityField extends Field<CityField.City> {
                 "dictionaries/worldcities.csv");
             return new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
                     .lines()
+                    .filter(l -> !l.startsWith("name"))
                     .map(l -> {
                         String[] lineSplitted = l.split(";");
-                        return new City(lineSplitted[0], lineSplitted[1], lineSplitted[2], lineSplitted[3]);
+                        return new City(lineSplitted[0], lineSplitted[1], lineSplitted[2], lineSplitted[3], Long.valueOf(lineSplitted[4]));
                     })
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            log.warn("Could not load world cities, error : " + e);
-            return Collections.singletonList(new City("world", "0", "0", "world"));
+            log.warn("Could not load world cities, error : ", e);
+            return Collections.singletonList(new City("world", "0", "0", "world", 8000000000L));
         }
     }
 
     public City generateRandomValue() {
-        if(this.possibleValues.isEmpty()) {
-            return cityDico.get(random.nextInt(cityDico.size()));
-        } else {
-            return possibleValues.get(random.nextInt(possibleValues.size()));
-        }
+        return getRandomValueWithWeights(random, possibleValuesWeighted, sumOfWeights);
     }
 
     @Override
@@ -139,7 +149,7 @@ public class CityField extends Field<CityField.City> {
     @Override
     public City toCastValue(String value) {
         String[] valueSplitted = value.split(";");
-        return new City(valueSplitted[0], valueSplitted[1], valueSplitted[2], valueSplitted[3]);
+        return new City(valueSplitted[0], valueSplitted[1], valueSplitted[2], valueSplitted[3], Long.valueOf(valueSplitted[4]));
     }
 
     @Override

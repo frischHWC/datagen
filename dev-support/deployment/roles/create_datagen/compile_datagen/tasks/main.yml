@@ -27,5 +27,5 @@
   shell:
     cmd: |
       export JAVA_HOME='/usr/lib/jvm/java-11/' ;
-      /opt/apache-maven-3.8.7/bin/mvn clean package
+      /opt/apache-maven-3.8.8/bin/mvn clean package
     chdir: "{{ target_dir }}/git-repo/"

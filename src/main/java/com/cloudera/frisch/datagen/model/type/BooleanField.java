@@ -17,7 +17,6 @@
  */
 package com.cloudera.frisch.datagen.model.type;
 
-import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -35,19 +34,26 @@ import java.util.List;
 @Slf4j
 public class BooleanField extends Field<Boolean> {
 
-    BooleanField(String name, Integer length, List<Boolean> possibleValues, LinkedHashMap<String, Integer> possible_values_weighted) {
+    BooleanField(String name, Integer length, List<Boolean> possibleValues, LinkedHashMap<String, Long> possible_values_weighted) {
         this.name = name;
         this.length = length;
         this.possibleValues = possibleValues;
-        this.possible_values_weighted = possible_values_weighted;
+        this.possibleValuesWeighted = new LinkedHashMap<>();
+        if(possible_values_weighted != null && !possible_values_weighted.isEmpty()) {
+            possible_values_weighted.forEach(
+                (s, l) -> this.possibleValuesWeighted.put(Boolean.valueOf(s),
+                    l));
+            this.sumOfWeights =
+                possible_values_weighted.values().stream().reduce(Long::sum)
+                    .orElse(1000L);
+        }
     }
 
     public Boolean generateRandomValue() {
         if(!possibleValues.isEmpty()) {
             return possibleValues.get(random.nextInt(possibleValues.size()));
-        } else if (!possible_values_weighted.isEmpty()){
-            String result = Utils.getRandomValueWithWeights(random, possible_values_weighted);
-            return result.isEmpty() ? false :  Boolean.parseBoolean(result);
+        } else if (!possibleValuesWeighted.isEmpty()){
+            return getRandomValueWithWeights(random, possibleValuesWeighted, sumOfWeights);
         } else {
             return random.nextBoolean();
         }

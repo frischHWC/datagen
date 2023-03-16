@@ -116,25 +116,6 @@ public class Utils {
         return sb.toString();
     }
 
-
-    /**
-     * Using map of possible values weighted (between 0 and 100), it gives possible value
-     * @param random
-     * @param weights
-     * @return
-     */
-    public static String getRandomValueWithWeights(Random random, LinkedHashMap<String, Integer> weights) {
-        int randomIntPercentage = random.nextInt(100);
-        int sumOfWeight = 0;
-        for(Map.Entry<String, Integer> entry : weights.entrySet()) {
-            sumOfWeight = sumOfWeight + entry.getValue();
-            if(randomIntPercentage < sumOfWeight) {
-                return entry.getKey();
-            }
-        }
-        return "";
-    }
-
     /**
      * Login to kerberos using a given user and its associated keytab
      * @param kerberosUser is the kerberos user

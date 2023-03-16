@@ -185,12 +185,12 @@ public class JsonParser<T extends Field> implements Parser {
         }
 
         JsonNode weightsObject = jsonField.get("possible_values_weighted");
-        LinkedHashMap<String, Integer> possible_values_weighted = new LinkedHashMap<>();
+        LinkedHashMap<String, Long> possible_values_weighted = new LinkedHashMap<>();
         if(weightsObject!=null) {
             Iterator<Map.Entry<String, JsonNode>> weightsIterator = weightsObject.fields();
             while (weightsIterator.hasNext()) {
                 Map.Entry<String, JsonNode> weight = weightsIterator.next();
-                possible_values_weighted.put(weight.getKey(), weight.getValue().asInt());
+                possible_values_weighted.put(weight.getKey(), weight.getValue().asLong());
             }
         }
 

@@ -211,8 +211,9 @@ Each field could have defined a set of "possible_values" that will limit values 
 
 ===== Possible values weighted
 
-A weight (choose between 0 & 100 and whose sums of all weights must be 100) could also be defined
-to make it less random and make each value having a percentage of appearance. (Only String, Boolean, Integer and Long supports weight).
+A weight could also be defined to make it less random and make each value having a percentage of appearance. (Only String, Boolean, Integer and Long supports weight).
+Sum of weights is made internally and probability of appearance of a value will be its weight divided by sum of weights.
+
 
 ===== Minimum & Maximum
 

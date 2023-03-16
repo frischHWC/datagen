@@ -44,8 +44,8 @@ export CM_PASSWORD="admin"
 export RANGER_PASSWORD="admin"
 
 # Version of RD to create (to inject datagen-env.sh)
-export CDP_VERSION="7.1.7.1000"
-export DATAGEN_VERSION="0.1.5"
+export CDP_VERSION="7.1.7.2000"
+export DATAGEN_VERSION="0.4.61"
 export DISTRO_SUFFIX="el7"
 
 # Steps to launch

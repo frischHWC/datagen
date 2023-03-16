@@ -56,7 +56,7 @@ data_gen_git_url: ${DATA_GEN_GIT_URL}
 data_gen_git_branch: ${DATA_GEN_GIT_BRANCH}
 
 # Other settings
-maven_version: 3.8.7
+maven_version: 3.8.8
 
 
 

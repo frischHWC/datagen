@@ -17,7 +17,6 @@
  */
 package com.cloudera.frisch.datagen.model.type;
 
-import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -35,7 +34,7 @@ import java.util.List;
 @Slf4j
 public class LongField extends Field<Long> {
 
-    LongField(String name, Integer length, List<Long> possibleValues, LinkedHashMap<String, Integer> possible_values_weighted, String min, String max) {
+    LongField(String name, Integer length, List<Long> possibleValues, LinkedHashMap<String, Long> possible_values_weighted, String min, String max) {
         if(length==null || length==-1) {
             this.length = Integer.MAX_VALUE;
         } else {
@@ -53,15 +52,21 @@ public class LongField extends Field<Long> {
         }
         this.name = name;
         this.possibleValues = possibleValues;
-        this.possible_values_weighted = possible_values_weighted;
+        this.possibleValuesWeighted = new LinkedHashMap<>();
+        if(possible_values_weighted != null && !possible_values_weighted.isEmpty()) {
+            possible_values_weighted.forEach(
+                (s, l) -> this.possibleValuesWeighted.put(Long.valueOf(s), l));
+            this.sumOfWeights =
+                possible_values_weighted.values().stream().reduce(Long::sum)
+                    .orElse(100L);
+        }
     }
 
     public Long generateRandomValue() {
         if(!possibleValues.isEmpty()) {
             return possibleValues.get(random.nextInt(possibleValues.size()));
-        } else if (!possible_values_weighted.isEmpty()){
-            String result = Utils.getRandomValueWithWeights(random, possible_values_weighted);
-            return result.isEmpty() ? 0L :  Long.parseLong(result);
+        } else if (!possibleValuesWeighted.isEmpty()){
+            return getRandomValueWithWeights(random, possibleValuesWeighted, sumOfWeights);
         } else {
             return random.longs(1, min, max+1).findFirst().orElse(0L);
         }

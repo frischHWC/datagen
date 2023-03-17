@@ -52,22 +52,19 @@ public class IntegerField extends Field<Integer> {
             this.min = Long.parseLong(min);
         }
         this.possibleValues = possibleValues;
-        this.possibleValuesWeighted = new LinkedHashMap<>();
         if(possible_values_weighted != null && !possible_values_weighted.isEmpty()) {
-            possible_values_weighted.forEach(
-                (s, l) -> this.possibleValuesWeighted.put(Integer.valueOf(s),
-                    l));
-            this.sumOfWeights =
-                possible_values_weighted.values().stream().reduce(Long::sum)
-                    .orElse(100L);
+            possible_values_weighted.forEach((value, probability) -> {
+                for(long i=0;i<probability;i++){
+                    this.possibleValues.add(Integer.valueOf(value));
+                }
+            });
         }
+        this.possibleValueSize = this.possibleValues.size();
     }
 
     public Integer generateRandomValue() {
         if(!possibleValues.isEmpty()) {
             return possibleValues.get(random.nextInt(possibleValues.size()));
-        } else if (!possibleValuesWeighted.isEmpty()){
-            return getRandomValueWithWeights(random, possibleValuesWeighted, sumOfWeights);
         } else if(min != Integer.MIN_VALUE) {
             return random.nextInt(Math.toIntExact(max - min + 1 )) + Math.toIntExact(min);
         } else {

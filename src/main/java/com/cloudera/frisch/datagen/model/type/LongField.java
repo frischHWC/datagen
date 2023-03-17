@@ -52,21 +52,19 @@ public class LongField extends Field<Long> {
         }
         this.name = name;
         this.possibleValues = possibleValues;
-        this.possibleValuesWeighted = new LinkedHashMap<>();
         if(possible_values_weighted != null && !possible_values_weighted.isEmpty()) {
-            possible_values_weighted.forEach(
-                (s, l) -> this.possibleValuesWeighted.put(Long.valueOf(s), l));
-            this.sumOfWeights =
-                possible_values_weighted.values().stream().reduce(Long::sum)
-                    .orElse(100L);
+            possible_values_weighted.forEach((value, probability) -> {
+                for(long i=0;i<probability;i++){
+                    this.possibleValues.add(Long.valueOf(value));
+                }
+            });
         }
+        this.possibleValueSize = this.possibleValues.size();
     }
 
     public Long generateRandomValue() {
         if(!possibleValues.isEmpty()) {
             return possibleValues.get(random.nextInt(possibleValues.size()));
-        } else if (!possibleValuesWeighted.isEmpty()){
-            return getRandomValueWithWeights(random, possibleValuesWeighted, sumOfWeights);
         } else {
             return random.longs(1, min, max+1).findFirst().orElse(0L);
         }

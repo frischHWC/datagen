@@ -43,19 +43,19 @@ public class StringField extends Field<String> {
             this.length = length;
         }
         this.possibleValues = possibleValues;
-        this.possibleValuesWeighted = possible_values_weighted;
         if(possible_values_weighted != null && !possible_values_weighted.isEmpty()) {
-            this.sumOfWeights =
-                possible_values_weighted.values().stream().reduce(Long::sum)
-                    .orElse(100L);
+            possible_values_weighted.forEach((value, probability) -> {
+                for(long i=0;i<probability;i++){
+                    this.possibleValues.add(value);
+                }
+            });
         }
+        this.possibleValueSize = this.possibleValues.size();
     }
 
     public String generateRandomValue() {
         if(!possibleValues.isEmpty()) {
             return possibleValues.get(random.nextInt(possibleValues.size()));
-        } else if (!possibleValuesWeighted.isEmpty()){
-            return getRandomValueWithWeights(random, possibleValuesWeighted, sumOfWeights);
         } else {
             return Utils.getAlphaNumericString(this.length, random);
         }

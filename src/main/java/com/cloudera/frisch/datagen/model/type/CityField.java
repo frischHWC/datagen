@@ -36,7 +36,6 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -90,15 +89,21 @@ public class CityField extends Field<CityField.City> {
                 .collect(Collectors.toList()));
             }
         );
+        List<City> possibleCitiesAfterLambda = possibleCities;
         if(possibleCities.isEmpty()) {
-            this.possibleValues = this.cityDico;
-        } else {
-            this.possibleValues = possibleCities;
+            possibleCitiesAfterLambda = this.cityDico;
         }
 
-        this.sumOfWeights = this.possibleValues.stream().mapToLong(City::getPopulation).reduce((c1,c2) -> c1+c2).getAsLong();
-        this.possibleValuesWeighted = new LinkedHashMap<>();
-        this.possibleValues.forEach(city -> this.possibleValuesWeighted.put(city, city.population));
+        this.possibleValues = new ArrayList<>();
+        City minPop = possibleCitiesAfterLambda.stream().min((c1,c2) -> (int) (c1.population-c2.population)).get();
+
+        possibleCitiesAfterLambda.forEach(city -> {
+           long occurencesToCreate = city.population/minPop.population;
+           for(long i=0;i<=occurencesToCreate;i++){
+               this.possibleValues.add(city);
+           }
+        });
+        this.possibleValueSize = this.possibleValues.size();
 
     }
 
@@ -121,7 +126,7 @@ public class CityField extends Field<CityField.City> {
     }
 
     public City generateRandomValue() {
-        return getRandomValueWithWeights(random, possibleValuesWeighted, sumOfWeights);
+        return this.possibleValues.get(random.nextInt(this.possibleValueSize));
     }
 
     @Override

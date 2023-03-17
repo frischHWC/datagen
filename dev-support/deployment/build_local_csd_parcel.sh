@@ -18,7 +18,8 @@
 #
 #!/bin/bash
 
-export DATAGEN_VERSION="0.4.7"
+
+export DATAGEN_VERSION="0.4.8"
 export CDP_VERSION="7.1.8.1"
 
 export DATAGEN_FULL_VERSION="${DATAGEN_VERSION}.${CDP_VERSION}"

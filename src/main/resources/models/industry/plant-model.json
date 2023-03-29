@@ -8,7 +8,8 @@
     },
     {
       "name": "city",
-      "type": "CITY"
+      "type": "CITY",
+      "filters": ["USA", "UK", "France", "Chile", "Canada", "India", "Japan"]
     },
     {
       "name": "lat",

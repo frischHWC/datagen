@@ -91,18 +91,23 @@ public class CityField extends Field<CityField.City> {
         );
         List<City> possibleCitiesAfterLambda = possibleCities;
         if(possibleCities.isEmpty()) {
-            possibleCitiesAfterLambda = this.cityDico;
+            this.possibleValues.addAll(this.cityDico);
+        } else {
+
+            this.possibleValues = new ArrayList<>();
+            City minPop = possibleCitiesAfterLambda.stream()
+                .min((c1, c2) -> (int) (c1.population - c2.population))
+                .orElse(new City("", "", "", "", 1L));
+
+            possibleCitiesAfterLambda.forEach(city -> {
+                long occurencesToCreate = city.population / minPop.population;
+                for (long i = 0; i <= occurencesToCreate; i++) {
+                    this.possibleValues.add(city);
+                }
+            });
+
         }
 
-        this.possibleValues = new ArrayList<>();
-        City minPop = possibleCitiesAfterLambda.stream().min((c1,c2) -> (int) (c1.population-c2.population)).get();
-
-        possibleCitiesAfterLambda.forEach(city -> {
-           long occurencesToCreate = city.population/minPop.population;
-           for(long i=0;i<=occurencesToCreate;i++){
-               this.possibleValues.add(city);
-           }
-        });
         this.possibleValueSize = this.possibleValues.size();
 
     }

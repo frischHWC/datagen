@@ -167,9 +167,13 @@ public class Utils {
     public static void deleteAllLocalFiles(String directory, String name, String extension) {
         File folder = new File(directory);
         File[] files = folder.listFiles((dir,f) -> f.matches(name + ".*[.]" + extension));
-        for(File f: files){
-            log.debug("Will delete local file: " + f);
-            if(!f.delete()) { log.warn("Could not delete file: " + f);}
+        if(files!=null) {
+            for (File f : files) {
+                log.debug("Will delete local file: " + f);
+                if (!f.delete()) {
+                    log.warn("Could not delete file: " + f);
+                }
+            }
         }
     }
 

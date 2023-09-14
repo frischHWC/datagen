@@ -217,6 +217,7 @@ then
   # Tar all this tmp dir in one with owner/group being root
   cd ${TEMP_DIR}
   rm -rf ${PARCEL_DIR}/*.parcel
+  export COPYFILE_DISABLE=true
   tar -czvf ${PARCEL_DIR}/${PARCEL_NAME}-XXX.parcel ${PARCEL_NAME}/
 
   for i in "${DISTRIBUTIONS[@]}"

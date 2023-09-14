@@ -22,6 +22,7 @@ export CDP_VERSION="7.1.9.0"
 
 export DISTRIBUTIONS_TO_BUILD="el7 el8 el9 sles12 sles15"
 
+export BUILD_DATAGEN_JAR="true"
 export BUILD_CSD="true"
 export BUILD_PARCEL="true"
 
@@ -52,6 +53,7 @@ function usage()
     echo "  --datagen-version=$DATAGEN_VERSION : Version of Datagen that will be set for this deployment  (Default) $DATAGEN_VERSION"
     echo "  --distributions-to-build=$DISTRIBUTIONS_TO_BUILD : Space separated list of distributions to build (Default) $DISTRIBUTIONS_TO_BUILD"
     echo ""
+    echo "  --build-datagen-jar=$BUILD_DATAGEN_JAR : To build the Datagen jar file or not (Default) $BUILD_DATAGEN_JAR "
     echo "  --build-csd=$BUILD_CSD : To build the CSD or not (Default) $BUILD_CSD "
     echo "  --build-parcel=$BUILD_PARCEL : To build the parcels or not (Default) $BUILD_PARCEL "
     echo ""
@@ -80,6 +82,9 @@ while [ "$1" != "" ]; do
             ;;
         --distributions-to-build)
             DISTRIBUTIONS_TO_BUILD=$VALUE
+            ;;
+        --build-datagen-jar)
+            BUILD_DATAGEN_JAR=$VALUE
             ;;
         --build-csd)
             BUILD_CSD=$VALUE
@@ -126,6 +131,16 @@ fi
 rm -rf ${CSD_DIR}
 rm -rf ${PARCEL_DIR}
 rm -rf ${TEMP_DIR}
+
+################# Build Datagen Jar #################
+if [ "${BUILD_DATAGEN_JAR}" = "true" ]
+then
+  cd ../../../
+
+  mvn clean package
+
+  cd $DEPLOY_DIR
+fi
 
 ################# CSD #################
 if [ "${BUILD_CSD}" = "true" ]

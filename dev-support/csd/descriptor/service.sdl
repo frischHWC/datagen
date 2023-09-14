@@ -97,6 +97,14 @@
       "runMode": "single"
     },
     {
+      "name": "gen_sensor_iceberg",
+      "label": "Generate 1 Million Sensors Data to Hive in Iceberg Format",
+      "description": "Generate 1 Million Sensors Data to Hive in Iceberg Format",
+      "roleCommand": "gen_sensor_hive_iceberg",
+      "roleName": "DATAGEN_SERVER",
+      "runMode": "single"
+    },
+    {
       "name": "gen_public_service_kudu",
       "label": "Generate 1 Million Public Service Data to Kudu",
       "description": "Generate 1 Million Public Service Data to Kudu",
@@ -396,6 +404,25 @@
             "program": "scripts/generate_data.sh",
             "args": [
               "gen_sensor_hive",
+              "${app_port}",
+              "${ssl_enabled}",
+              "${admin_user}",
+              "${admin_password}"
+            ]
+          }
+        },
+        {
+          "name": "gen_sensor_hive_iceberg",
+          "label": "Generate 1 Million Sensors Data to Hive in Iceberg Format",
+          "description": "Generate 1 Million Sensors Data to Hive in Iceberg Format",
+          "expectedExitCodes": [
+            0
+          ],
+          "requiredRoleState": "running",
+          "commandRunner": {
+            "program": "scripts/generate_data.sh",
+            "args": [
+              "gen_sensor_hive_iceberg",
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",

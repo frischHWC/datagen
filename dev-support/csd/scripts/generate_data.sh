@@ -278,6 +278,32 @@ case $CMD in
     exit 0
     ;;
 
+  (gen_sensor_hive_iceberg)
+    echo "Starting to Generate sensor Data into Hive in Iceberg Format"
+    ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/industry/plant-model-iceberg.json 100 1 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hive
+     ret=$?
+     if [ $ret -ne 0 ]; then
+       echo " Unable to generate data for plant-model-iceberg.json"
+       exit 1
+     fi
+
+    ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/industry/sensor-model-iceberg.json 10000 10 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hive
+     ret=$?
+     if [ $ret -ne 0 ]; then
+       echo " Unable to generate data for sensor-model-iceberg.json"
+       exit 1
+     fi
+
+    ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/industry/sensor-data-model-iceberg.json 100000 10 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} hive
+     ret=$?
+     if [ $ret -ne 0 ]; then
+       echo " Unable to generate data for sensor-data-model-iceberg.json"
+       exit 1
+     fi
+    echo "Finished to Generate sensor Data into Hive in Iceberg Format"
+    exit 0
+    ;;
+
   (gen_public_service_kudu)
     echo "Starting to Generate public service Data into Kudu"
     ${PYTHON_COMMAND_INVOKER} ${CONF_DIR}/scripts/generate_data.py ${SERVER_PORT} /opt/cloudera/parcels/DATAGEN/models/public_service/intervention-team-model.json 50000 20 3600 ${TLS_ENABLED} ${ADMIN_USER} ${ADMIN_PASSWORD} kudu

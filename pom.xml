@@ -6,7 +6,7 @@
 
     <groupId>com.cloudera.frisch</groupId>
     <artifactId>datagen</artifactId>
-    <version>0.4.10</version>
+    <version>0.4.13</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>

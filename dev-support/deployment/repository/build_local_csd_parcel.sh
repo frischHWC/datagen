@@ -26,19 +26,9 @@ export BUILD_DATAGEN_JAR="true"
 export BUILD_CSD="true"
 export BUILD_PARCEL="true"
 
-# Output Directories
-export TEMP_DIR="/tmp/datagen_parcel_files-${DATAGEN_VERSION}-${CDP_VERSION}"
-export PARCEL_DIR="/tmp/datagen_parcel-${DATAGEN_VERSION}-${CDP_VERSION}"
-export CSD_DIR="/tmp/datagen_csd-${DATAGEN_VERSION}-${CDP_VERSION}"
-
 # DEBUG
 export DEBUG=false
 export LOG_DIR="/tmp/datagen-build-csd-parcel-logs/"$(date +%m-%d-%Y-%H-%M-%S)
-
-# INTERNAL: Do not touch these
-export DEPLOY_DIR=$(pwd)
-export DATAGEN_FULL_VERSION="${DATAGEN_VERSION}.${CDP_VERSION}"
-export DATAGEN_FULL_NAME="DATAGEN-${DATAGEN_VERSION}.${CDP_VERSION}"
 
 function usage()
 {
@@ -112,6 +102,25 @@ while [ "$1" != "" ]; do
     esac
     shift
 done
+
+# Output Directories
+if [ -z ${TEMP_DIR} ]
+then
+  export TEMP_DIR="/tmp/datagen_parcel_files-${DATAGEN_VERSION}-${CDP_VERSION}"
+fi
+if [ -z ${PARCEL_DIR} ]
+then
+  export PARCEL_DIR="/tmp/datagen_parcel-${DATAGEN_VERSION}-${CDP_VERSION}"
+fi
+if [ -z ${CSD_DIR} ]
+then
+  export CSD_DIR="/tmp/datagen_csd-${DATAGEN_VERSION}-${CDP_VERSION}"
+fi
+
+# INTERNAL: Do not touch these
+export DEPLOY_DIR=$(pwd)
+export DATAGEN_FULL_VERSION="${DATAGEN_VERSION}.${CDP_VERSION}"
+export DATAGEN_FULL_NAME="DATAGEN-${DATAGEN_VERSION}.${CDP_VERSION}"
 
 echo " Start building CSD & Parcels for Datagen $DATAGEN_VERSION for CDP version $CDP_VERSION"
 export DISTRIBUTIONS_LIST=$( echo ${DISTRIBUTIONS_TO_BUILD} | uniq )

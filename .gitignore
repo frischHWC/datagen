@@ -14,6 +14,7 @@ dev-support/parcel/install_parcel.sh
 dev-support/parcel/overall_launch.sh
 dev-support/csd/install_csd.sh
 dev-support/deployment/launch.sh
+dev-support/deployment/launch_build.sh
 dev-support/deployment/build_local_csd_parcel.sh
 dev-support/deployment/deploy_to_aws_remotely.sh
 dev-support/deployment/repository/launch.sh

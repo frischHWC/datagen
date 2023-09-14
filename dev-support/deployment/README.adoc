@@ -1,22 +1,113 @@
 # Deployment
 
-This directory intents to provide some ansible playbooks to easily deploy this project (CSD + Parcel) to a running Cloudera cluster
+This directory intents to provide some ansible playbooks to easily deploy & Build this project.
 
-## How to launch it ?
+## Build CSD & Parcels and Push it to S3 repository
 
 
-## Steps
+### Build CSD & Parcels
 
-Given a CM host / user / password + ssh key and unix user
-+ github branch / repo
+Script: link:repository/build_local_csd_parcel.sh[repository/build_local_csd_parcel.sh].
 
-- Clone this repo on remote host
-- mvn clean package
-- Remove the DATAGEN service from CM
-- Remove the DATAGEN parcel
-- Create the csd
-- Install It
-- Create the Parcel
-- Install it
-- Add the DATAGEN service
-- Run whatever is needed with the DATAGEN
+Based on a versions of Datagen and a version of CDP provided, it builds the CSD and the Parcels.
+
+Usage Example:
+[source,bash]
+----
+./build_local_csd_parcel.sh \
+    --cdp-version="7.1.9.0" \
+    --datagen-version="0.4.10"
+----
+
+Use this command to get all possibile parameters:
+
+[source,bash]
+----
+./build_local_csd_parcel.sh --help
+----
+
+
+### Push CSD & Parcels
+
+Script: link:repository/push_parcel_csd_to_s3.sh[repository/push_parcel_csd_to_s3.sh].
+
+Based on a versions of Datagen and a version of CDP provided, it pushes to a S3 bucket the CSD & Parcels already generated.
+
+Usage Example:
+[source,bash]
+----
+./push_parcel_csd_to_s3.sh \
+      --aws-access-key="XXXXXXXX" \
+      --aws-secret-access-key="XXXXXXXX" \
+      --cdp-version="7.1.9.0" \
+      --datagen-version="0.4.10" \
+      --csd-dir="/tmp/datagen_csd" \
+      --parcel-dir="/tmp/datagen_parcel" \
+----
+
+Use this command to get all possibile parameters:
+
+[source,bash]
+----
+./push_parcel_csd_to_s3.sh --help
+----
+
+
+Then use these steps with new versions to build and deploy it on a CDP cluster: link:https://frischhwc.github.io/datagen/installation/1-installation-csd-parcel.html[https://frischhwc.github.io/datagen/installation/1-installation-csd-parcel.html]
+or here: link:https://community.cloudera.com/t5/Community-Articles/Datagen-Data-Generator-tool-built-for-CDP/ta-p/357561[https://community.cloudera.com/t5/Community-Articles/Datagen-Data-Generator-tool-built-for-CDP/ta-p/357561]
+
+
+
+## Build and Deploy to a running CDP Cluster
+
+Script : link:deploy.sh[deploy.sh].
+
+Here is an example on how to launch it:
+
+[source,bash]
+ ./deploy.sh \
+    --cluster-name=my-cluster \
+    --cm-host=my.cm.host \
+    --edge-host=my.edge.host.where.datagen.will.be.deployed \
+    --datagen-version="1.0.0"
+
+See the helper command of the script to get more details on what customization are possible:
+
+[source,bash]
+----
+This script launches full deployment of Datagen on a running CDP Cluster
+
+Usage is the following :
+
+./deploy.sh
+  -h --help
+
+  --cluster-name= The name of the cluster to interact with (Default)
+  --edge-host= : To create data generation from this node and install the service on it (Default)
+  --ssh-key= : To connect to clusters host or provide a password (Default)
+  --ssh-password= : To connect to clusters host or provide a ssh-key (Default)
+
+  --cm-host= : Cloudera Manger Host  (Default)
+  --cm-port=7183 : Cloudera Manger Host  (Default) 7183
+  --cm-protocol=https : Cloudera Manger Host  (Default) https
+  --cm-user=admin : Cloudera Manger User (Default) admin
+  --cm-password=admin : Cloudera Manger Password (associated to the above user) (Default) admin
+
+  --ranger-password=admin : Ranger Password (associated to the admin user) (Default) admin
+
+  --cdp-version=7.1.7.1000 : Version of CDP on which Datagen is deployed (Default) 7.1.7.1000
+  --datagen-version=0.1.5 : Version of Datagen that will be set for this deployment  (Default) 0.1.5
+  --distro-suffix=el7 : Version of OS to deploy datagen  (Default) el7
+
+  --cluster-name-streaming= The name of the streaming cluster to interact with (that contains Kafka) (Default)
+
+  --debug=true : To set DEBUG log-level (Default) true
+  --log-dir=/tmp/datagen-deploy-logs/09-30-2022-18-59-24 : Log directory (Default) /tmp/datagen-deploy-logs/09-30-2022-18-59-24
+  --launch-generation=true : To launch API calls to generate data after installation (Default) true
+
+  --target-dir=/tmp/datagen : Target directory on edge machine (Default) /tmp/datagen
+
+  --data-gen-git-url=https://github.infra.cloudera.com/frisch/datagen : Datagen Git URL to use (if different of official one) (Default) https://github.infra.cloudera.com/frisch/datagen
+  --data-gen-git-branch=spring : Datagen Git Branch to use (if different of official one) (Default) main
+
+----

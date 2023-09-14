@@ -58,61 +58,15 @@ java -Dnashorn.args=--no-deprecation-warning --add-opens java.base/jdk.internal.
 
 === How to deploy it on CDP ?
 
-This project can be bundled to offer a parcel and an associated CSD, so it can be managed easily Cloudera Manager.
+This project aims to be bundled as a CSD and a Parcel, so it can be managed easily Cloudera Manager.
 
-To create the parcel, the CSD and deploy it to a cloudera cluster, it can either be made manually or with provided ansible playbooks scripts.
+Repository containing all Datagen Versions of CSD and parcels: link:https://datagen-repo.s3.eu-west-3.amazonaws.com/index.html[https://datagen-repo.s3.eu-west-3.amazonaws.com/index.html]
 
-Best is to use the script link:dev-support/deployment/deploy.sh[deploy.sh].
+Steps to install it and configure it can be found here: link:https://frischhwc.github.io/datagen/installation/1-installation-csd-parcel.html[https://frischhwc.github.io/datagen/installation/1-installation-csd-parcel.html]
+or here: link:https://community.cloudera.com/t5/Community-Articles/Datagen-Data-Generator-tool-built-for-CDP/ta-p/357561[https://community.cloudera.com/t5/Community-Articles/Datagen-Data-Generator-tool-built-for-CDP/ta-p/357561]
 
-Here is an example on how to launch it:
-
-[source,bash]
- ./deploy.sh \
-    --cluster-name=my-cluster \
-    --cm-host=my.cm.host \
-    --edge-host=my.edge.host.where.datagen.will.be.deployed \
-    --datagen-version="1.0.0"
-
-See the helper command of the script to get more details on what customization are possible:
-
-[source,bash]
-----
-This script launches full deployment of Datagen on a running CDP Cluster
-
-Usage is the following :
-
-./deploy.sh
-  -h --help
-
-  --cluster-name= The name of the cluster to interact with (Default)
-  --edge-host= : To create data generation from this node and install the service on it (Default)
-  --ssh-key= : To connect to clusters host or provide a password (Default)
-  --ssh-password= : To connect to clusters host or provide a ssh-key (Default)
-
-  --cm-host= : Cloudera Manger Host  (Default)
-  --cm-port=7183 : Cloudera Manger Host  (Default) 7183
-  --cm-protocol=https : Cloudera Manger Host  (Default) https
-  --cm-user=admin : Cloudera Manger User (Default) admin
-  --cm-password=admin : Cloudera Manger Password (associated to the above user) (Default) admin
-
-  --ranger-password=admin : Ranger Password (associated to the admin user) (Default) admin
-
-  --cdp-version=7.1.7.1000 : Version of CDP on which Datagen is deployed (Default) 7.1.7.1000
-  --datagen-version=0.1.5 : Version of Datagen that will be set for this deployment  (Default) 0.1.5
-  --distro-suffix=el7 : Version of OS to deploy datagen  (Default) el7
-
-  --cluster-name-streaming= The name of the streaming cluster to interact with (that contains Kafka) (Default)
-
-  --debug=true : To set DEBUG log-level (Default) true
-  --log-dir=/tmp/datagen-deploy-logs/09-30-2022-18-59-24 : Log directory (Default) /tmp/datagen-deploy-logs/09-30-2022-18-59-24
-  --launch-generation=true : To launch API calls to generate data after installation (Default) true
-
-  --target-dir=/tmp/datagen : Target directory on edge machine (Default) /tmp/datagen
-
-  --data-gen-git-url=https://github.infra.cloudera.com/frisch/datagen : Datagen Git URL to use (if different of official one) (Default) https://github.infra.cloudera.com/frisch/datagen
-  --data-gen-git-branch=spring : Datagen Git Branch to use (if different of official one) (Default) main
-
-----
+To build & Deploy from scratch the project and deploy it to a cluster (especially useful for testing development), refer to following documentation
+link:dev-support/deployment/README.adoc[dev-support/deployment/README.adoc]
 
 Deploying it to CDP enables auto-configuration from Cloudera Manager, hence datagen is already configured to interact with services from CDP.
 It also ensures that rights are well set and default directories are created.
@@ -156,7 +110,7 @@ There are various possible services where data can be generated, these are calle
 - OZONE-ORC : generates an ORC file sent to OZONE
 - OZONE-PARQUET : generates a PARQUET file sent to OZONE
 - SOLR
-- HIVE
+- HIVE : generate tables (External or Managed or Iceberg)
 - PARQUET: Generates a parquet file locally
 - ORC: Generates an ORC file locally
 - CSV: Generate a CSV file locally
@@ -473,6 +427,7 @@ This mapping must be in the form : "CF:col1,col2;CF2:col5" +
 - SOLR_JAAS_FILE_PATH +
 - HIVE_THREAD_NUMBER +
 - HIVE_ON_HDFS +
+- HIVE_TABLE_TYPE +
 - HIVE_TEZ_QUEUE_NAME +
 - HIVE_TABLE_PARTITIONS_COLS +
 This is a just one string with a comma separated list of cols: "col1,col2" +

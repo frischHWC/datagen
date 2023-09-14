@@ -174,7 +174,7 @@ public class HiveSink implements SinkInterface {
                 log.info("Creating Iceberg table: " + tableName);
                 prepareAndExecuteStatement(
                     "CREATE TABLE IF NOT EXISTS " + tableName +
-                        model.getSQLSchema(partCols) + this.extraCreate + " STORED AS ICEBERG");
+                        model.getSQLSchema(partCols) + this.extraCreate + " STORED BY ICEBERG");
             }
 
             if (hiveOnHDFS) {

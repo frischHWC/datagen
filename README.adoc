@@ -11,7 +11,7 @@ Datagen is made with:
 
 It is built for:
 
-- CDP 7.1.7
+- CDP 7.1.7, 7.1.8, 7.1.9
 
 Datagen is made as a Spring Boot project with dependencies on various services of the CDP platform.
 

@@ -31,10 +31,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 
@@ -49,6 +46,24 @@ import java.util.concurrent.CountDownLatch;
 @SuppressWarnings("unchecked")
 @Slf4j
 public class HiveSink implements SinkInterface {
+
+    enum HiveTableType {
+        EXTERNAL,
+        MANAGED,
+        ICEBERG
+    }
+
+    HiveTableType getHiveTableType(String hivetype) {
+        switch (hivetype.toLowerCase(Locale.ROOT)) {
+            case "iceberg":
+                return HiveTableType.ICEBERG;
+            case "managed":
+                return HiveTableType.MANAGED;
+            default:
+                return HiveTableType.EXTERNAL;
+        }
+
+    }
 
     private final int threads_number;
     private final String hiveUri;
@@ -68,6 +83,7 @@ public class HiveSink implements SinkInterface {
     private int bucketNumber;
     private String extraCreate;
     private String extraInsert;
+    private HiveTableType hiveTableType;
 
 
     HiveSink(Model model, Map<ApplicationConfigs, String> properties) {
@@ -83,6 +99,7 @@ public class HiveSink implements SinkInterface {
             database + ";serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=" +
             properties.get(ApplicationConfigs.HIVE_ZK_ZNODE) + "?tez.queue.name=" + queue ;
         this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS));
+        this.hiveTableType = getHiveTableType((String) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_TYPE));
 
         this.isPartitioned = !((String) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_PARTITIONS_COLS)).isEmpty();
         this.partCols = new LinkedList<>();
@@ -148,19 +165,38 @@ public class HiveSink implements SinkInterface {
             }
 
             log.info("SQL schema for hive: " + model.getSQLSchema(partCols) + this.extraCreate );
-            prepareAndExecuteStatement("CREATE TABLE IF NOT EXISTS " + tableName + model.getSQLSchema(partCols) + this.extraCreate);
+            if(hiveTableType == HiveTableType.MANAGED) {
+                log.info("Creating Managed table: " + tableName);
+                prepareAndExecuteStatement(
+                    "CREATE TABLE IF NOT EXISTS " + tableName +
+                        model.getSQLSchema(partCols) + this.extraCreate);
+            } else if (hiveTableType == HiveTableType.ICEBERG) {
+                log.info("Creating Iceberg table: " + tableName);
+                prepareAndExecuteStatement(
+                    "CREATE TABLE IF NOT EXISTS " + tableName +
+                        model.getSQLSchema(partCols) + this.extraCreate + " STORED AS ICEBERG");
+            }
 
             if (hiveOnHDFS) {
                 // If using an HDFS sink, we want it to use the Hive HDFS File path and not the Hdfs file path
                 properties.put(ApplicationConfigs.HDFS_FOR_HIVE, "true");
                 this.hdfsSink = new HdfsParquetSink(model, properties);
 
-                log.info("Creating temporary table: " + tableNameTemporary);
-                prepareAndExecuteStatement(
-                        "CREATE EXTERNAL TABLE IF NOT EXISTS " + tableNameTemporary + model.getSQLSchema(null) +
+                if(hiveTableType == HiveTableType.EXTERNAL) {
+                    log.info("Creating temporary table: " + tableNameTemporary);
+                    prepareAndExecuteStatement(
+                        "CREATE EXTERNAL TABLE IF NOT EXISTS " + tableName + model.getSQLSchema(null) +
                                 " STORED AS PARQUET " +
                                 " LOCATION '" + locationTemporaryTable + "'"
-                );
+                    );
+                } else {
+                    log.info("Creating temporary table: " + tableNameTemporary);
+                    prepareAndExecuteStatement(
+                        "CREATE EXTERNAL TABLE IF NOT EXISTS " + tableNameTemporary + model.getSQLSchema(null) +
+                            " STORED AS PARQUET " +
+                            " LOCATION '" + locationTemporaryTable + "'"
+                    );
+                }
                 // Reset it to false, so if another sink is hdfs, it does not initialize like Hive
                 properties.put(ApplicationConfigs.HDFS_FOR_HIVE, "false");
             }
@@ -177,9 +213,14 @@ public class HiveSink implements SinkInterface {
     public void terminate() {
         try {
             if (hiveOnHDFS) {
-                log.info("Starting to load data to final table");
-                prepareAndExecuteStatement("INSERT INTO " + tableName + this.extraInsert +
-                        " SELECT * FROM " + tableNameTemporary);
+                if(hiveTableType != HiveTableType.EXTERNAL) {
+                    log.info("Starting to load data to final table");
+                    prepareAndExecuteStatement(
+                        "INSERT INTO " + tableName + this.extraInsert +
+                            " SELECT * FROM " + tableNameTemporary);
+                    log.info("Dropping Temporary Table");
+                    prepareAndExecuteStatement("DROP TABLE IF EXISTS " + tableNameTemporary);
+                }
             }
 
             hiveConnection.close();

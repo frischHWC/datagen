@@ -300,6 +300,9 @@ public class Model<T extends Field> {
             case HIVE_TEZ_QUEUE_NAME:
                 optionResult = "root.default";
                 break;
+            case HIVE_TABLE_TYPE:
+                optionResult = "external";
+                break;
             case HIVE_TABLE_BUCKETS_COLS:
             case HIVE_TABLE_PARTITIONS_COLS:
                 optionResult = "";

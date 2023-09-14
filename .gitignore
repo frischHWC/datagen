@@ -17,7 +17,7 @@ dev-support/deployment/launch.sh
 dev-support/deployment/launch_build.sh
 dev-support/deployment/build_local_csd_parcel.sh
 dev-support/deployment/deploy_to_aws_remotely.sh
-dev-support/deployment/repository/launch.sh
+dev-support/deployment/repository/launch*.sh
 .factorypath
 .classpath
 .settings

@@ -44,8 +44,8 @@ export CM_PASSWORD="admin"
 export RANGER_PASSWORD="admin"
 
 # Version of RD to create (to inject datagen-env.sh)
-export CDP_VERSION="7.1.7.2000"
-export DATAGEN_VERSION="0.4.91"
+export CDP_VERSION="7.1.9.0"
+export DATAGEN_VERSION="0.4.10"
 export DISTRO_SUFFIX="el7"
 
 # Steps to launch
@@ -250,14 +250,6 @@ then
     cat ${EXTRA_VARS_TEMP}
     echo ""
 fi
-
-#TODO: Add a clean of potential still existing previous files:
-# rm -rf /opt/cloudera/parcel-cache/DATAGEN-0.4.10.7.1.9.0-el7.parcel.torrent
-# rm -rf /opt/cloudera/parcel-repo/DATAGEN-0.4.10.7.1.9.0-el7.parcel
-# rm -rf /opt/cloudera/parcels/.flood/DATAGEN-0.4.10.7.1.9.0-el7.parcel
-# rm -rf /opt/cloudera/parcels/.flood/DATAGEN-0.4.10.7.1.9.0-el7.parcel.torrent
-# systemctl restart cloudera-scm-agent
-
 
 if [ "${CREATE_DATAGEN}" == "true" ]
 then

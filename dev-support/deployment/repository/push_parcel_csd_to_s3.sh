@@ -140,6 +140,15 @@ function create_index_file()
   bucket_dir=$3
   s3_repo="s3.eu-west-3.amazonaws.com"
 
+  # Get previous directory
+  bucket_dir_file=$(mktemp)
+  echo "$3" > $bucket_dir_file
+  bucket_previous_dir=$(rev $bucket_dir_file | cut -d'/' -f2- | rev)
+  if [ ! -z $bucket_previous_dir ]
+  then
+    bucket_previous_dir=${bucket_previous_dir}"/"
+  fi
+
     export INDEX_TEMP_FILE=$(mktemp)
     echo "<!DOCTYPE html>
           <html>
@@ -147,23 +156,23 @@ function create_index_file()
               <title>${title}</title>
           </head>
           <html>
-          <h2>${subtitle}/</h2>
+          <h2>${subtitle}:</h2>
           <hr/>
           <table border="0">
               <tr>
                   <th>Name</th><th>Last Modified</th><th>Size</th>
               </tr>
               <tr>
-                  <td><a href="../">Parent Directory</a></td>
+                  <td><a href="https://${AWS_S3_BUCKET}.${s3_repo}/${bucket_previous_dir}index.html">Parent Directory</a></td>
               </tr>" > ${INDEX_TEMP_FILE}
 
-    FILES_TO_INDEX=$(aws s3 ls s3://${AWS_S3_BUCKET}/${bucket_dir}/ | grep -v PRE)
-    DIR_TO_INDEX=$(aws s3 ls s3://${AWS_S3_BUCKET}/${bucket_dir}/ | grep PRE)
+    FILES_TO_INDEX=$(aws s3 ls s3://${AWS_S3_BUCKET}/${bucket_dir} | grep -v PRE)
+    DIR_TO_INDEX=$(aws s3 ls s3://${AWS_S3_BUCKET}/${bucket_dir} | grep PRE)
 
     while IFS= read -r line; do
         DIR_NAME=$( echo $line | awk '{ print $2 }')
         echo "<tr>
-                      <td><a href="https://${AWS_S3_BUCKET}.${s3_repo}/${bucket_dir}/${DIR_NAME}index.html">${DIR_NAME}</a></td>
+                      <td><a href="https://${AWS_S3_BUCKET}.${s3_repo}/${bucket_dir}${DIR_NAME}index.html">${DIR_NAME}</a></td>
                       <td>-</td>
                       <td>-</td>
                   </tr>" >> ${INDEX_TEMP_FILE}
@@ -176,7 +185,7 @@ function create_index_file()
           FILE_DATE=$( echo $line | awk '{ print $1 $2 }')
           FILE_SIZE=$( echo $line | awk '{ print $3 }')
           echo "<tr>
-                              <td><a href="https://${AWS_S3_BUCKET}.${s3_repo}/${bucket_dir}/${FILE_NAME}">${FILE_NAME}</a></td>
+                              <td><a href="https://${AWS_S3_BUCKET}.${s3_repo}/${bucket_dir}${FILE_NAME}">${FILE_NAME}</a></td>
                               <td>${FILE_DATE}</td>
                               <td>${FILE_SIZE}</td>
                           </tr>" >> ${INDEX_TEMP_FILE}
@@ -193,14 +202,15 @@ function create_index_file()
       cat ${INDEX_TEMP_FILE}
     fi
 
-    aws s3 cp ${INDEX_TEMP_FILE} s3://${AWS_S3_BUCKET}/${bucket_dir}/index.html --content-type "text/html"
+    aws s3 cp ${INDEX_TEMP_FILE} s3://${AWS_S3_BUCKET}/${bucket_dir}index.html --content-type "text/html"
 }
 
 
 if [ ${INDEX} = "true" ]
 then
-  create_index_file "Datagen Repository" "Datagen Versions" ${DATAGEN_VERSION}
-  create_index_file "Datagen Repository" "CDP Versions for Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/${CDP_VERSION}
-  create_index_file "Datagen Repository" "CSD files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/${CDP_VERSION}/csd
-  create_index_file "Datagen Repository" "Parcels files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/${CDP_VERSION}/parcels
+  create_index_file "Datagen Repository" "Datagen Versions"
+  create_index_file "Datagen Repository" "CDP Versions for Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/
+  create_index_file "Datagen Repository" "CSD & Parcels for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/${CDP_VERSION}/
+  create_index_file "Datagen Repository" "CSD files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/${CDP_VERSION}/csd/
+  create_index_file "Datagen Repository" "Parcels files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/${CDP_VERSION}/parcels/
 fi

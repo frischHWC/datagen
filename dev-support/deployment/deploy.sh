@@ -317,8 +317,6 @@ fi
 fi
 
 
-
-
 # Clean files
 
 rm -rf ${HOSTS_TEMP}

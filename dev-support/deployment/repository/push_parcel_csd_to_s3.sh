@@ -119,7 +119,7 @@ then
     if [ ! -z ${CSD_JAR_FILE_NAME} ]
     then
       echo "Upload to AWS ${AWS_S3_BUCKET}/csd/${DATAGEN_VERSION}/${CDP_VERSION}/ file: ${CSD_DIR}/${CSD_JAR_FILE_NAME}"
-      aws s3 cp ${CSD_DIR}/${CSD_JAR_FILE_NAME} s3://${AWS_S3_BUCKET}/csd/${DATAGEN_VERSION}/${CDP_VERSION}/
+      aws s3 cp ${CSD_DIR}/${CSD_JAR_FILE_NAME} s3://${AWS_S3_BUCKET}/${DATAGEN_VERSION}/${CDP_VERSION}/csd/
     fi
     
     # Upload Parcel
@@ -127,7 +127,7 @@ then
     if [ ! -z "${PARCEL_FILES}" ]
     then
       echo "Upload to AWS ${AWS_S3_BUCKET}/parcels/${DATAGEN_VERSION}/${CDP_VERSION}/ files: ${CSD_DIR}/${PARCEL_FILES}"
-      aws s3 cp ${PARCEL_DIR}/ s3://${AWS_S3_BUCKET}/parcels/${DATAGEN_VERSION}/${CDP_VERSION}/ --recursive
+      aws s3 cp ${PARCEL_DIR}/ s3://${AWS_S3_BUCKET}/${DATAGEN_VERSION}/${CDP_VERSION}/parcels/ --recursive
     fi
 fi
 
@@ -199,12 +199,8 @@ function create_index_file()
 
 if [ ${INDEX} = "true" ]
 then
-  create_index_file "CSD Indexing Files" "Datagen Versions for CSD" csd
-  create_index_file "CSD Indexing Files" "CSD by CDP Version for Datagen: ${DATAGEN_VERSION}" csd/${DATAGEN_VERSION}
-  create_index_file "CSD Indexing Files" "CSD files for CDP Version: ${CDP_VERSION} for Datagen: ${DATAGEN_VERSION}" csd/${DATAGEN_VERSION}/${CDP_VERSION}
-
-
-  create_index_file "Parcels Indexing Files" "Datagen Versions for Parcels" parcels
-  create_index_file "Parcels Indexing Files" "Parcels by CDP Version for Datagen: ${DATAGEN_VERSION}" parcels/${DATAGEN_VERSION}
-  create_index_file "Parcels Indexing Files" "Parcels files for CDP Version: ${CDP_VERSION} for Datagen: ${DATAGEN_VERSION}" parcels/${DATAGEN_VERSION}/${CDP_VERSION}
+  create_index_file "Datagen Repository" "Datagen Versions" ${DATAGEN_VERSION}
+  create_index_file "Datagen Repository" "CDP Versions for Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/${CDP_VERSION}
+  create_index_file "Datagen Repository" "CSD files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/${CDP_VERSION}/csd
+  create_index_file "Datagen Repository" "Parcels files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/${CDP_VERSION}/parcels
 fi

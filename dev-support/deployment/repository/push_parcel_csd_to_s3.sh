@@ -143,7 +143,7 @@ function create_index_file()
   # Get previous directory
   bucket_dir_file=$(mktemp)
   echo "$3" > $bucket_dir_file
-  bucket_previous_dir=$(rev $bucket_dir_file | cut -d'/' -f2- | rev)
+  bucket_previous_dir=$(rev $bucket_dir_file | cut -d'/' -f3- | rev)
   if [ ! -z $bucket_previous_dir ]
   then
     bucket_previous_dir=${bucket_previous_dir}"/"

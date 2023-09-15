@@ -331,7 +331,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${python_path}"
             ]
           }
         },
@@ -350,7 +351,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${python_path}"
             ]
           }
         },
@@ -369,7 +371,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${python_path}"
             ]
           }
         },
@@ -388,7 +391,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${python_path}"
             ]
           }
         },
@@ -407,7 +411,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${python_path}"
             ]
           }
         },
@@ -426,7 +431,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${python_path}"
             ]
           }
         },
@@ -445,7 +451,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${python_path}"
             ]
           }
         },
@@ -464,7 +471,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${python_path}"
             ]
           }
         },
@@ -483,7 +491,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${python_path}"
             ]
           }
         },
@@ -502,7 +511,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${python_path}"
             ]
           }
         },
@@ -521,7 +531,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${python_path}"
             ]
           }
         }
@@ -652,10 +663,20 @@
           "type": "password"
         },
         {
+          "name": "python_path",
+          "label": "Custom Python 3 Path",
+          "description": "The Path where Python is installed. It is used to launch data generation from CM, it requires a python3 path with urllib3 and requests packages installed. Recommendation is to use python 3.6. (By default, it is using the one provided by CM)",
+          "required": false,
+          "configurableInWizard": true,
+          "default": "/usr/bin/python3",
+          "type": "string"
+        },
+        {
           "name": "java_home_custom",
           "label": "Custom JAVA_HOME",
           "description": "The JAVA_HOME path to use for Datagen Web Server. (By default, it is using the one provided by CM)",
           "required": false,
+          "configurableInWizard": true,
           "default": "",
           "type": "string"
         },

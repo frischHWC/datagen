@@ -212,13 +212,15 @@ then
     && mv "${LOCAL_PARCEL_DIR}/meta/release-notes.txt.tmp" "${LOCAL_PARCEL_DIR}/meta/release-notes.txt"
 
   sed -i '' "s/DATAGEN_FULL_VERSION/${DATAGEN_FULL_VERSION}/g" "${LOCAL_PARCEL_DIR}/meta/parcel.json"
+  sed -i '' "s/DATAGEN_FULL_NAME/${DATAGEN_FULL_NAME}/g" "${LOCAL_PARCEL_DIR}/meta/parcel.json"
   sed -i '' "s/DATAGEN_FULL_NAME/${DATAGEN_FULL_NAME}/g" "${LOCAL_PARCEL_DIR}/meta/datagen_env.sh"
 
   # Tar all this tmp dir in one with owner/group being root
   cd ${TEMP_DIR}
   rm -rf ${PARCEL_DIR}/*.parcel
+  # For BSD-like, tar includes some files which should not be present to be GNU-compliant
   export COPYFILE_DISABLE=true
-  tar -czvf ${PARCEL_DIR}/${PARCEL_NAME}-XXX.parcel ${PARCEL_NAME}/
+  tar -czv --no-xattrs --exclude '._*' -f ${PARCEL_DIR}/${PARCEL_NAME}-XXX.parcel ${PARCEL_NAME}/
 
   for i in "${DISTRIBUTIONS[@]}"
   do

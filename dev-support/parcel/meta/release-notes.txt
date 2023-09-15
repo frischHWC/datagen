@@ -1,1 +1,2 @@
-First release of DATAGEN
+New Features:
+- Iceberg support for Hive (user can also choose external or managed tables)

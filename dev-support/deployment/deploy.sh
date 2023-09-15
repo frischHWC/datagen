@@ -251,6 +251,12 @@ then
     echo ""
 fi
 
+#TODO: Add a clean of potential still existing previous files:
+# rm -rf /opt/cloudera/parcel-cache/DATAGEN-0.4.10.7.1.9.0-el7.parcel.torrent
+# rm -rf /opt/cloudera/parcel-repo/DATAGEN-0.4.10.7.1.9.0-el7.parcel
+# rm -rf /opt/cloudera/parcels/.flood/DATAGEN-0.4.10.7.1.9.0-el7.parcel
+# rm -rf /opt/cloudera/parcels/.flood/DATAGEN-0.4.10.7.1.9.0-el7.parcel.torrent
+# systemctl restart cloudera-scm-agent
 
 
 if [ "${CREATE_DATAGEN}" == "true" ]

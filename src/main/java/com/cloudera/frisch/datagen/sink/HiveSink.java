@@ -151,6 +151,7 @@ public class HiveSink implements SinkInterface {
                 propertiesForHive.put("hive.enforce.bucketing", true);
             }
             if(hiveTableType == HiveTableType.ICEBERG) {
+                propertiesForHive.put("hive.vectorized.execution.enabled",false);
                 propertiesForHive.put("tez.mrreader.config.update.properties", "hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids");
             }
 

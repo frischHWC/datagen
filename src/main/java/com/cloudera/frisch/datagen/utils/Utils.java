@@ -518,12 +518,7 @@ public class Utils {
                 log.info("   - Hive in database: " + model.getTableNames().get(OptionsConverter.TableNames.HIVE_DATABASE) +
                     " in table : " + model.getTableNames().get(OptionsConverter.TableNames.HIVE_TABLE_NAME));
                 if((Boolean) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_ON_HDFS)) {
-                    String tableNameTemporary = model.getTableNames().get(OptionsConverter.TableNames.HIVE_TEMPORARY_TABLE_NAME)==null ?
-                        (String) model.getTableNames().get(OptionsConverter.TableNames.HIVE_TABLE_NAME) + "_tmp" :
-                        (String) model.getTableNames().get(OptionsConverter.TableNames.HIVE_TEMPORARY_TABLE_NAME);
-                    log.info("   - Hive in database: " + model.getTableNames().get(OptionsConverter.TableNames.HIVE_DATABASE) +
-                        " in external table : " + tableNameTemporary + " located in HDFS at: " +
-                        model.getTableNames().get(OptionsConverter.TableNames.HIVE_HDFS_FILE_PATH));
+                    log.info(" located in HDFS at: " + model.getTableNames().get(OptionsConverter.TableNames.HIVE_HDFS_FILE_PATH));
                 }
                 break;
             case OZONE:

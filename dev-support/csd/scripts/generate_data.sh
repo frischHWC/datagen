@@ -61,12 +61,12 @@ generate_data() {
   SINK_ARRAY=( $UNIQUE_SINKS )
   number_of_sinks="${#SINK_ARRAY[@]}"
 
-  if [ number_of_sinks = 1 ]
+  if [ $number_of_sinks == 1 ]
   then
     URL_TO_CALL="${DATAGEN_URL}/datagen/${SINK_ARRAY[0]}/?batches=${BATCHES}&rows=${ROWS}&threads=${THREADS}"
   else
     SINK_STRING=""
-    for i in ${SINK_ARRAY}
+    for i in ${SINK_ARRAY[@]}
     do
       SINK_STRING="${SINK_STRING}sinks=${i}&"
     done

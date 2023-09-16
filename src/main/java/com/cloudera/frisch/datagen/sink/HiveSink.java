@@ -182,7 +182,7 @@ public class HiveSink implements SinkInterface {
                     "CREATE TABLE IF NOT EXISTS " + tableName +
                         model.getSQLSchema(partCols) + this.extraCreate + " STORED BY ICEBERG");
             } else if(hiveTableType == HiveTableType.EXTERNAL) {
-                log.info("Creating table: " + tableName);
+                log.info("Creating External table: " + tableName);
                 prepareAndExecuteStatement(
                     "CREATE EXTERNAL TABLE IF NOT EXISTS " + tableName +
                         model.getSQLSchema(null) +
@@ -220,7 +220,7 @@ public class HiveSink implements SinkInterface {
     public void terminate() {
         try {
             if (hiveOnHDFS) {
-                if(hiveTableType != HiveTableType.EXTERNAL) {
+                if(hiveTableType == HiveTableType.MANAGED) {
                     log.info("Starting to load data to final table");
                     prepareAndExecuteStatement(
                         "INSERT INTO " + tableName + this.extraInsert +

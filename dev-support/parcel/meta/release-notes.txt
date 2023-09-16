@@ -1,2 +1,2 @@
 New Features:
-- Iceberg support for Hive (user can also choose external or managed tables)
+- Support for CDP 7.1.9

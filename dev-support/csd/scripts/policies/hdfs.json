@@ -1,7 +1,4 @@
 {
-  "id": "1",
-  "guid": "...",
-  "isEnabled": true,
   "version": 1,
   "service": "cm_hdfs",
   "name": "datagen policy",
@@ -36,7 +33,8 @@
         }
       ],
       "users": [
-        "datagen"
+        "datagen",
+        "hive"
       ],
       "groups": [
 

@@ -2,7 +2,7 @@
   "name": "DATAGEN",
   "label": "Datagen",
   "description": "The service to generate Data into various services of CDP platform",
-  "version": "0.4.9",
+  "version": "0.4.12",
   "parcel": {
     "requiredTags": [
       "datagen"
@@ -629,6 +629,7 @@
           "label": "Custom JAVA_HOME",
           "description": "The JAVA_HOME path to use for Datagen Web Server. (By default, it is using the one provided by CM)",
           "required": false,
+          "configurableInWizard": true,
           "default": "",
           "type": "string"
         },

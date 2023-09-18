@@ -129,6 +129,7 @@ public class OptionsConverter {
         ONE_FILE_PER_ITERATION,
         KAFKA_MESSAGE_TYPE,
         HIVE_THREAD_NUMBER,
+        HIVE_TABLE_TYPE,
         HIVE_ON_HDFS,
         HIVE_TEZ_QUEUE_NAME,
         HIVE_TABLE_PARTITIONS_COLS,
@@ -170,6 +171,8 @@ public class OptionsConverter {
                 return Options.SOLR_JAAS_FILE_PATH;
             case "HIVE_THREAD_NUMBER":
                 return Options.HIVE_THREAD_NUMBER;
+            case "HIVE_TABLE_TYPE":
+                return Options.HIVE_TABLE_TYPE;
             case "HIVE_ON_HDFS":
                 return Options.HIVE_ON_HDFS;
             case "HIVE_TEZ_QUEUE_NAME":

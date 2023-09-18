@@ -300,6 +300,9 @@ public class Model<T extends Field> {
             case HIVE_TEZ_QUEUE_NAME:
                 optionResult = "root.default";
                 break;
+            case HIVE_TABLE_TYPE:
+                optionResult = "external";
+                break;
             case HIVE_TABLE_BUCKETS_COLS:
             case HIVE_TABLE_PARTITIONS_COLS:
                 optionResult = "";
@@ -590,6 +593,23 @@ public class Model<T extends Field> {
             cols++;
         }
         return hashMap;
+    }
+
+    public enum HiveTableType {
+        EXTERNAL,
+        MANAGED,
+        ICEBERG
+    }
+
+    public HiveTableType getHiveTableType() {
+        switch (this.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_TYPE).toString().toLowerCase(Locale.ROOT)) {
+        case "iceberg":
+            return HiveTableType.ICEBERG;
+        case "managed":
+            return HiveTableType.MANAGED;
+        default:
+            return HiveTableType.EXTERNAL;
+        }
     }
 
     // TODO: Implement verifications on the model before starting (not two same names of field, primary keys defined)

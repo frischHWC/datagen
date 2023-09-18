@@ -49,6 +49,12 @@ then
     echo "Pushing policy to Hive"
     curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/hive.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
 
+    echo "Pushing policy to Hive URL "
+    curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/hive-url.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
+
+    echo "Pushing policy to Hive Storage"
+    curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/hive-storage.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
+
     echo "Pushing policy to Kafka"
     curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/kafka.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
 

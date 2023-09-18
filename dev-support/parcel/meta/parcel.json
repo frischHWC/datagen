@@ -3,10 +3,11 @@
   "name": "DATAGEN",
   "version": "DATAGEN_FULL_VERSION",
   "setActiveSymlink": true,
-
-  "depends": "",
-  "replaces": "",
-  "conflicts": "",
+  "extraVersionInfo": {
+    "patchCount": "0",
+    "fullVersion": "DATAGEN_FULL_VERSION",
+    "baseVersion": "DATAGEN_FULL_NAME"
+  },
 
   "provides": [
     "datagen"
@@ -16,12 +17,18 @@
     "defines": "datagen_env.sh"
   },
 
-  "packages": [],
-
   "components": [
     {
       "name"       : "datagen",
-      "version"    : "DATAGEN_FULL_VERSION"
+      "version"    : "DATAGEN_FULL_VERSION",
+      "pkg_version": "DATAGEN_FULL_VERSION",
+      "pkg_release": "DATAGEN_FULL_NAME"
+    }
+  ],
+  "packages": [
+    {
+      "name": "datagen",
+      "version": "DATAGEN_FULL_VERSION"
     }
   ],
 
@@ -30,7 +37,7 @@
       "longname"    : "Data Generator",
       "home"        : "/home/datagen",
       "shell"       : "/bin/bash",
-      "extra_groups": []
+      "extra_groups": [ "hadoop" ]
     }
   },
 

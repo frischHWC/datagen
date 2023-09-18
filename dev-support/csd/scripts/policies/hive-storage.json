@@ -1,29 +1,24 @@
 {
   "version": 1,
-  "service": "cm_hbase",
-  "name": "datagen policy",
+  "service": "cm_hive",
+  "name": "datagen storage policy",
   "policyType": 0,
   "policyPriority": 0,
-  "description": "DATAGEN's policy for default generation",
+  "description": "DATAGEN's policy for default generation for iceberg tables",
   "isAuditEnabled": true,
   "resources": {
-    "column-family": {
+    "storage-type": {
       "values": [
-        "*"
+        "*",
+        "datagen"
       ],
       "isExcludes": false,
       "isRecursive": false
     },
-    "column": {
+    "storage-url": {
       "values": [
-        "*"
-      ],
-      "isExcludes": false,
-      "isRecursive": false
-    },
-    "table": {
-      "values": [
-        "datagen*"
+        "*",
+        "datagen"
       ],
       "isExcludes": false,
       "isRecursive": false
@@ -33,23 +28,7 @@
     {
       "accesses": [
         {
-          "type": "read",
-          "isAllowed": true
-        },
-        {
-          "type": "write",
-          "isAllowed": true
-        },
-        {
-          "type": "create",
-          "isAllowed": true
-        },
-        {
-          "type": "admin",
-          "isAllowed": true
-        },
-        {
-          "type": "execute",
+          "type": "rwstorage",
           "isAllowed": true
         }
       ],
@@ -83,7 +62,7 @@
   "rowFilterPolicyItems": [
 
   ],
-  "serviceType": "hbase",
+  "serviceType": "hive",
   "options": {
 
   },

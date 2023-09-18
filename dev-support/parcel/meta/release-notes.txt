@@ -1,1 +1,2 @@
-First release of DATAGEN
+New Features:
+- Support for CDP 7.1.9

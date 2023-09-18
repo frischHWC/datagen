@@ -114,6 +114,12 @@
     regexp: 'DATAGEN_FULL_VERSION'
     replace: "{{ dg_full_version }}"
 
+- name: Inject DG full version
+  replace:
+    path: "{{ target_dir }}/parcel/{{ dg_name }}/meta/parcel.json"
+    regexp: 'DATAGEN_FULL_NAME'
+    replace: "{{ dg_name }}"
+
 
 
 - name: Create Parcel tar

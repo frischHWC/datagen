@@ -28,6 +28,12 @@
     - install_datagen/remove_service
     - install_datagen/remove_parcel
 
+- name: Remove cached files
+  hosts: all
+  gather_facts: true
+  roles:
+    - install_datagen/remove_cached_parcel
+
 - name: Remove CSD
   hosts: cloudera_manager
   gather_facts: false
@@ -51,3 +57,9 @@
   gather_facts: false
   roles: 
     - install_datagen/install_parcel
+
+- name: Install Prerequisites
+  hosts: edge
+  gather_facts: false
+  roles:
+    - install_datagen/install_prereqs

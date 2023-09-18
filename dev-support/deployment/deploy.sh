@@ -44,8 +44,8 @@ export CM_PASSWORD="admin"
 export RANGER_PASSWORD="admin"
 
 # Version of RD to create (to inject datagen-env.sh)
-export CDP_VERSION="7.1.7.2000"
-export DATAGEN_VERSION="0.4.61"
+export CDP_VERSION="7.1.9.0"
+export DATAGEN_VERSION="0.4.10"
 export DISTRO_SUFFIX="el7"
 
 # Steps to launch
@@ -251,8 +251,6 @@ then
     echo ""
 fi
 
-
-
 if [ "${CREATE_DATAGEN}" == "true" ]
 then
 # Launch playbook to clone repo on edge host, mvn clean package, create the CSD, create the parcel
@@ -317,8 +315,6 @@ else
   exit 1
 fi
 fi
-
-
 
 
 # Clean files

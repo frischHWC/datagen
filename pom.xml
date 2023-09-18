@@ -121,8 +121,8 @@
 
         <!-- OZONE -->
         <dependency>
-            <groupId>org.apache.ozone</groupId>
-            <artifactId>ozone-client</artifactId>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-ozone-client</artifactId>
             <version>1.1.0.${cdp.version}</version>
         </dependency>
         <dependency>

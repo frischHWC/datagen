@@ -181,8 +181,12 @@ public class KuduSink implements SinkInterface {
             partialRowLower.addString(colName, value);
             PartialRow partialRowUpper = new PartialRow(model.getKuduSchema());
             partialRowUpper.addString(colName, value);
-            cto.addSplitRow(partialRowLower);
-            //cto.addRangePartition(partialRowLower, partialRowUpper, RangePartitionBound.INCLUSIVE_BOUND, RangePartitionBound.INCLUSIVE_BOUND);
+            // From Kudu 0.17, it seems that adding RangePartition is not working anymore, so use the splitRow which is working.
+            try {
+                cto.addRangePartition(partialRowLower, partialRowUpper, RangePartitionBound.INCLUSIVE_BOUND, RangePartitionBound.INCLUSIVE_BOUND);
+            } catch(Exception e) {
+                cto.addSplitRow(partialRowLower);
+            }
             }
         );
     }
@@ -199,7 +203,12 @@ public class KuduSink implements SinkInterface {
             partialRowLower.addLong(colName,min+(i*step));
             PartialRow partialRowUpper = new PartialRow(model.getKuduSchema());
             partialRowUpper.addLong(colName,min+((i+1)*step));
-            cto.addRangePartition(partialRowLower,partialRowUpper);
+            // From Kudu 0.17, it seems that adding RangePartition is not working anymore, so use the splitRow which is working.
+            try {
+                cto.addRangePartition(partialRowLower, partialRowUpper);
+            } catch(Exception e) {
+                cto.addSplitRow(partialRowLower);
+            }
         }
         // Last Partition should be until max (max being included)
         log.debug("Create Part col: {} with value min: {} (Inclusive) ; and value max: {} (Inclusive)", colName, min+((numOfPartitions-1)*step), max);
@@ -207,7 +216,12 @@ public class KuduSink implements SinkInterface {
         partialRowLower.addLong(colName,min+((numOfPartitions-1)*step));
         PartialRow partialRowUpper = new PartialRow(model.getKuduSchema());
         partialRowUpper.addLong(colName,max);
-        cto.addRangePartition(partialRowLower, partialRowUpper, RangePartitionBound.INCLUSIVE_BOUND, RangePartitionBound.INCLUSIVE_BOUND);
+        // From Kudu 0.17, it seems that adding RangePartition is not working anymore, so use the splitRow which is working.
+        try {
+            cto.addRangePartition(partialRowLower, partialRowUpper, RangePartitionBound.INCLUSIVE_BOUND, RangePartitionBound.INCLUSIVE_BOUND);
+        } catch(Exception e) {
+            cto.addSplitRow(partialRowLower);
+        }
     }
 
 }

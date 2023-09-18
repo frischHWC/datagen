@@ -10,7 +10,8 @@
   "resources": {
     "collection": {
       "values": [
-        "datagen*"
+        "datagen*",
+        "datagen-publicservice-weather"
       ],
       "isExcludes": false,
       "isRecursive": false

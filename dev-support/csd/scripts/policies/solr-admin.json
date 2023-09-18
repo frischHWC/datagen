@@ -8,7 +8,7 @@
   "description": "DATAGEN's policy for default generation",
   "isAuditEnabled": true,
   "resources": {
-    "collection": {
+    "admin": {
       "values": [
         "datagen*"
       ],

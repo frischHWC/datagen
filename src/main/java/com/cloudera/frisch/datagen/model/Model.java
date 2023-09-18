@@ -595,6 +595,23 @@ public class Model<T extends Field> {
         return hashMap;
     }
 
+    public enum HiveTableType {
+        EXTERNAL,
+        MANAGED,
+        ICEBERG
+    }
+
+    public HiveTableType getHiveTableType() {
+        switch (this.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_TYPE).toString().toLowerCase(Locale.ROOT)) {
+        case "iceberg":
+            return HiveTableType.ICEBERG;
+        case "managed":
+            return HiveTableType.MANAGED;
+        default:
+            return HiveTableType.EXTERNAL;
+        }
+    }
+
     // TODO: Implement verifications on the model before starting (not two same names of field, primary keys defined)
     // Each field should have a unique name
     // Each field should have a know type

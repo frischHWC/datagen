@@ -14,8 +14,8 @@
 
         <logger name="com.cloudera.frisch" level="DEBUG" />
 
-        <!-- LOG everything at INFO level -->
-        <root level="info">
+        <!-- LOG everything at DEBUG level -->
+        <root level="debug">
             <appender-ref ref="Console" />
         </root>
 
@@ -34,8 +34,8 @@
 
         <logger name="com.cloudera.frisch" level="DEBUG" />
 
-        <!-- LOG everything at INFO level -->
-        <root level="info">
+        <!-- LOG everything at DEBUG level -->
+        <root level="debug">
             <appender-ref ref="Console" />
         </root>
 
@@ -64,8 +64,10 @@
             </rollingPolicy>
         </appender>
 
+        <logger name="com.cloudera.frisch" level="DEBUG" />
+
         <!-- LOG everything at INFO level -->
-        <root level="info">
+        <root level="debug">
             <appender-ref ref="RollingFile" />
         </root>
 

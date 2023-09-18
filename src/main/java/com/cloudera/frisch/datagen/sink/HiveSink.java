@@ -17,11 +17,11 @@
  */
 package com.cloudera.frisch.datagen.sink;
 
-import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
+import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.jdbc.HiveConnection;
@@ -31,7 +31,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
 
@@ -46,24 +49,6 @@ import java.util.concurrent.CountDownLatch;
 @SuppressWarnings("unchecked")
 @Slf4j
 public class HiveSink implements SinkInterface {
-
-    enum HiveTableType {
-        EXTERNAL,
-        MANAGED,
-        ICEBERG
-    }
-
-    public HiveTableType getHiveTableType(String hivetype) {
-        switch (hivetype.toLowerCase(Locale.ROOT)) {
-            case "iceberg":
-                return HiveTableType.ICEBERG;
-            case "managed":
-                return HiveTableType.MANAGED;
-            default:
-                return HiveTableType.EXTERNAL;
-        }
-
-    }
 
     private final int threads_number;
     private final String hiveUri;
@@ -83,7 +68,7 @@ public class HiveSink implements SinkInterface {
     private int bucketNumber;
     private String extraCreate;
     private String extraInsert;
-    private HiveTableType hiveTableType;
+    private Model.HiveTableType hiveTableType;
 
 
     HiveSink(Model model, Map<ApplicationConfigs, String> properties) {
@@ -99,7 +84,7 @@ public class HiveSink implements SinkInterface {
             database + ";serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=" +
             properties.get(ApplicationConfigs.HIVE_ZK_ZNODE) + "?tez.queue.name=" + queue ;
         this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS));
-        this.hiveTableType = getHiveTableType((String) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_TYPE));
+        this.hiveTableType = model.getHiveTableType();
 
         this.isPartitioned = !((String) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_PARTITIONS_COLS)).isEmpty();
         this.partCols = new LinkedList<>();
@@ -150,7 +135,7 @@ public class HiveSink implements SinkInterface {
             if(isBucketed) {
                 propertiesForHive.put("hive.enforce.bucketing", true);
             }
-            if(hiveTableType == HiveTableType.ICEBERG) {
+            if(hiveTableType == Model.HiveTableType.ICEBERG) {
                 propertiesForHive.put("hive.vectorized.execution.enabled",false);
                 propertiesForHive.put("tez.mrreader.config.update.properties", "hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids");
             }
@@ -171,17 +156,17 @@ public class HiveSink implements SinkInterface {
             }
 
             log.info("SQL schema for hive: " + model.getSQLSchema(partCols) + this.extraCreate );
-            if(hiveTableType == HiveTableType.MANAGED) {
+            if(hiveTableType == Model.HiveTableType.MANAGED) {
                 log.info("Creating Managed table: " + tableName);
                 prepareAndExecuteStatement(
                     "CREATE TABLE IF NOT EXISTS " + tableName +
                         model.getSQLSchema(partCols) + this.extraCreate);
-            } else if (hiveTableType == HiveTableType.ICEBERG) {
+            } else if (hiveTableType == Model.HiveTableType.ICEBERG) {
                 log.info("Creating Iceberg table: " + tableName);
                 prepareAndExecuteStatement(
                     "CREATE TABLE IF NOT EXISTS " + tableName +
                         model.getSQLSchema(partCols) + this.extraCreate + " STORED BY ICEBERG");
-            } else if(hiveTableType == HiveTableType.EXTERNAL) {
+            } else if(hiveTableType == Model.HiveTableType.EXTERNAL) {
                 log.info("Creating External table: " + tableName);
                 prepareAndExecuteStatement(
                     "CREATE EXTERNAL TABLE IF NOT EXISTS " + tableName +
@@ -196,7 +181,7 @@ public class HiveSink implements SinkInterface {
                 properties.put(ApplicationConfigs.HDFS_FOR_HIVE, "true");
                 this.hdfsSink = new HdfsParquetSink(model, properties);
 
-                if(hiveTableType == HiveTableType.MANAGED) {
+                if(hiveTableType == Model.HiveTableType.MANAGED) {
                     log.info("Creating temporary table: " + tableNameTemporary);
                     prepareAndExecuteStatement(
                         "CREATE EXTERNAL TABLE IF NOT EXISTS " + tableNameTemporary + model.getSQLSchema(null) +
@@ -220,7 +205,7 @@ public class HiveSink implements SinkInterface {
     public void terminate() {
         try {
             if (hiveOnHDFS) {
-                if(hiveTableType == HiveTableType.MANAGED) {
+                if(hiveTableType == Model.HiveTableType.MANAGED) {
                     log.info("Starting to load data to final table");
                     prepareAndExecuteStatement(
                         "INSERT INTO " + tableName + this.extraInsert +

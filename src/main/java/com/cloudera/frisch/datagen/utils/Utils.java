@@ -39,7 +39,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 @Slf4j
 public class Utils {
@@ -515,9 +518,10 @@ public class Utils {
                     " in table : " + model.getTableNames().get(OptionsConverter.TableNames.HBASE_TABLE_NAME));
                 break;
             case HIVE:
+                Model.HiveTableType ht = model.getHiveTableType();
                 log.info("   - Hive in database: " + model.getTableNames().get(OptionsConverter.TableNames.HIVE_DATABASE) +
-                    " in table : " + model.getTableNames().get(OptionsConverter.TableNames.HIVE_TABLE_NAME));
-                if((Boolean) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_ON_HDFS)) {
+                    " in " + ht.toString() + " table : " + model.getTableNames().get(OptionsConverter.TableNames.HIVE_TABLE_NAME));
+                if((Boolean) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_ON_HDFS) && ht == Model.HiveTableType.EXTERNAL) {
                     log.info(" located in HDFS at: " + model.getTableNames().get(OptionsConverter.TableNames.HIVE_HDFS_FILE_PATH));
                 }
                 break;

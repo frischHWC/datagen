@@ -6,7 +6,7 @@
     },
     {
       "name": "age",
-      "type": "INTEGER",
+      "type": "LONG",
       "min": 18,
       "max": 99
     }
@@ -34,9 +34,8 @@
   "Primary_Keys": [
     {"KAFKA_MSG_KEY": "name"},
     {"HBASE_PRIMARY_KEY":  "name"},
-    {"KUDU_PRIMARY_KEYS":  "name"},
-    {"KUDU_HASH_KEYS":  "name"},
-    {"KUDU_RANGE_KEYS":  "name"}
+    {"KUDU_PRIMARY_KEYS":  "name,age"},
+    {"KUDU_RANGE_KEYS":  "age"}
   ],
   "Options": [
     {"DELETE_PREVIOUS":  false},

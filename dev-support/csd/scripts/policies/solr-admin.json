@@ -10,7 +10,7 @@
   "resources": {
     "admin": {
       "values": [
-        "datagen*"
+        "collections"
       ],
       "isExcludes": false,
       "isRecursive": false

@@ -147,7 +147,7 @@ public class KuduSink implements SinkInterface {
                 Field field = model.getFieldFromName((String) colname);
 
                 if (field.getPossibleValues()!= null && !field.getPossibleValues().isEmpty()) {
-                    log.info("For column: {}, found non-empty possible_values  to use for range partitions", (String) colname);
+                    log.info("For column: {}, found non-empty possible_values to use for range partitions", (String) colname);
                     createPartitionsFromListOfValues((String) colname, field.getPossibleValues(), cto);
                 } else if(field.getMin()!=null && field.getMax()!=null) {
                     log.info("For column: {}, will use minimum and maximum", (String) colname);
@@ -181,7 +181,8 @@ public class KuduSink implements SinkInterface {
             partialRowLower.addString(colName, value);
             PartialRow partialRowUpper = new PartialRow(model.getKuduSchema());
             partialRowUpper.addString(colName, value);
-            cto.addRangePartition(partialRowLower, partialRowUpper, RangePartitionBound.INCLUSIVE_BOUND, RangePartitionBound.INCLUSIVE_BOUND);
+            cto.addSplitRow(partialRowLower);
+            //cto.addRangePartition(partialRowLower, partialRowUpper, RangePartitionBound.INCLUSIVE_BOUND, RangePartitionBound.INCLUSIVE_BOUND);
             }
         );
     }

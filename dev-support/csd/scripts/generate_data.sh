@@ -27,6 +27,12 @@ DATAGEN_PASSWORD=$5
 set -x
 . ${COMMON_SCRIPT}
 
+USE_RHEL_8="false"
+RHEL_VERSION="$(cat /etc/redhat-release | grep 8. | wc -l)"
+if [ "${RHEL_VERSION}" = 1 ]
+then
+  USE_RHEL_8="true"
+fi
 
 # Checking that jq command is present to process
 if ! command -v jq &> /dev/null
@@ -75,7 +81,13 @@ generate_data() {
 
   echo "Will call URL: ${URL_TO_CALL}"
 
-  COMMAND_ID=$(curl -s -k -X POST -H "Accept: */*" -H "Content-Type: multipart/form-data ; boundary=toto" \
+  EXTRA_HEADER='-H "Content-Type: multipart/form-data ; boundary=toto"'
+  if [ ${USE_RHEL_8} == "true" ]
+  then
+    EXTRA_HEADER=""
+  fi
+
+  COMMAND_ID=$(curl -s -k -X POST -H "Accept: */*" ${EXTRA_HEADER} \
       -F "model_file=@${MODEL_FILE}" -u ${DATAGEN_USER}:${DATAGEN_PASSWORD} \
       "$URL_TO_CALL" | jq -r '.commandUuid' )
 

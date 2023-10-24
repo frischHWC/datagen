@@ -45,7 +45,7 @@ export RANGER_PASSWORD="admin"
 
 # Version of RD to create (to inject datagen-env.sh)
 export CDP_VERSION="7.1.9.0"
-export DATAGEN_VERSION="0.4.10"
+export DATAGEN_VERSION="0.4.11"
 export DISTRO_SUFFIX="el7"
 
 # Steps to launch
@@ -61,6 +61,7 @@ export CLUSTER_NAME_STREAMING=""
 export DEBUG=false
 export LOG_DIR="/tmp/datagen-deploy-logs/"$(date +%m-%d-%Y-%H-%M-%S)
 export LAUNCH_GENERATION=false
+export USE_ANSIBLE_PYTHON_3="false"
 
 # Target Directory
 export TARGET_DIR="/tmp/datagen"
@@ -103,6 +104,7 @@ function usage()
     echo "  --debug=$DEBUG : To set DEBUG log-level (Default) $DEBUG "
     echo "  --log-dir=$LOG_DIR : Log directory (Default) $LOG_DIR "
     echo "  --launch-generation=$LAUNCH_GENERATION : To launch API calls to generate data after installation (Default) $LAUNCH_GENERATION "
+    echo "  --ansible-python-3=$USE_ANSIBLE_PYTHON_3 : (Optional) To use python3 for ansible (Default) $USE_ANSIBLE_PYTHON_3 "
     echo ""
     echo "  --target-dir=$TARGET_DIR : Target directory on edge machine (Default) $TARGET_DIR "
     echo ""
@@ -178,6 +180,9 @@ while [ "$1" != "" ]; do
         --launch-generation)
             LAUNCH_GENERATION=$VALUE
             ;;
+        --use-ansible-python-3)
+            USE_ANSIBLE_PYTHON_3=$VALUE
+            ;;
         --target-dir)
             TARGET_DIR=$VALUE
             ;;
@@ -251,16 +256,21 @@ then
     echo ""
 fi
 
+if [ "${USE_ANSIBLE_PYTHON_3}" == "true" ]
+then
+    export ANSIBLE_PYTHON_3_PARAMS='-e ansible_python_interpreter=/usr/bin/python3'
+fi
+
 if [ "${CREATE_DATAGEN}" == "true" ]
 then
 # Launch playbook to clone repo on edge host, mvn clean package, create the CSD, create the parcel
 echo "################### Creation of Datagen ###################"
 if [ "${DEBUG}" = "true" ]
 then
-    echo " Command launched: ansible-playbook -i ${HOSTS_TEMP} -e @${EXTRA_VARS_TEMP} playbooks/create_datagen.yml  "
+    echo " Command launched: ansible-playbook -i ${HOSTS_TEMP} -e @${EXTRA_VARS_TEMP} playbooks/create_datagen.yml ${ANSIBLE_PYTHON_3_PARAMS}  "
     echo " Follow advancement at: ${LOG_DIR}/create_datagen.log "
 fi
-ansible-playbook -i ${HOSTS_TEMP} -e @${EXTRA_VARS_TEMP} playbooks/create_datagen.yml 2>&1 > ${LOG_DIR}/create_datagen.log
+ansible-playbook -i ${HOSTS_TEMP} -e @${EXTRA_VARS_TEMP} playbooks/create_datagen.yml ${ANSIBLE_PYTHON_3_PARAMS}  2>&1 > ${LOG_DIR}/create_datagen.log
 OUTPUT=$(tail -20 ${LOG_DIR}/create_datagen.log | grep -A20 RECAP | grep -v "failed=0" | wc -l | xargs)
 if [ "${OUTPUT}" == "2" ]
 then
@@ -279,10 +289,10 @@ then
 echo "################### Installation of Datagen ###################"
 if [ "${DEBUG}" = "true" ]
 then
-    echo " Command launched: ansible-playbook -i ${HOSTS_TEMP} -e @${EXTRA_VARS_TEMP} playbooks/install_datagen.yml  "
+    echo " Command launched: ansible-playbook -i ${HOSTS_TEMP} -e @${EXTRA_VARS_TEMP} playbooks/install_datagen.yml ${ANSIBLE_PYTHON_3_PARAMS}  "
     echo " Follow advancement at: ${LOG_DIR}/install_datagen.log "
 fi
-ansible-playbook -i ${HOSTS_TEMP} -e @${EXTRA_VARS_TEMP} playbooks/install_datagen.yml 2>&1 > ${LOG_DIR}/install_datagen.log
+ansible-playbook -i ${HOSTS_TEMP} -e @${EXTRA_VARS_TEMP} playbooks/install_datagen.yml ${ANSIBLE_PYTHON_3_PARAMS}  2>&1 > ${LOG_DIR}/install_datagen.log
 OUTPUT=$(tail -20 ${LOG_DIR}/install_datagen.log | grep -A20 RECAP | grep -v "failed=0" | wc -l | xargs)
 if [ "${OUTPUT}" == "2" ]
 then
@@ -301,10 +311,10 @@ then
 echo "################### Launch of Datagen ###################"
 if [ "${DEBUG}" = "true" ]
 then
-    echo " Command launched: ansible-playbook -i ${HOSTS_TEMP} -e @${EXTRA_VARS_TEMP} playbooks/launch_datagen.yml  "
+    echo " Command launched: ansible-playbook -i ${HOSTS_TEMP} -e @${EXTRA_VARS_TEMP} playbooks/launch_datagen.yml ${ANSIBLE_PYTHON_3_PARAMS}  "
     echo " Follow advancement at: ${LOG_DIR}/launch_datagen.log "
 fi
-ansible-playbook -i ${HOSTS_TEMP} -e @${EXTRA_VARS_TEMP} playbooks/launch_datagen.yml 2>&1 > ${LOG_DIR}/launch_datagen.log
+ansible-playbook -i ${HOSTS_TEMP} -e @${EXTRA_VARS_TEMP} playbooks/launch_datagen.yml ${ANSIBLE_PYTHON_3_PARAMS}  2>&1 > ${LOG_DIR}/launch_datagen.log
 OUTPUT=$(tail -20 ${LOG_DIR}/launch_datagen.log | grep -A20 RECAP | grep -v "failed=0" | wc -l | xargs)
 if [ "${OUTPUT}" == "2" ]
 then

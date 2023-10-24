@@ -28,6 +28,12 @@
     state: directory
     mode: '0755'
 
+- name: Install epel-release
+  package:
+    name: epel-release
+    state: latest
+  ignore_errors: true
+
 - name: Install Git
   package:
     name: git

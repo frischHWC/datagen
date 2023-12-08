@@ -69,7 +69,7 @@ export TARGET_DIR="/tmp/datagen"
 # Datagen Repository
 export DATA_GEN_GIT_URL="https://github.com/frischHWC/datagen"
 export DATA_GEN_GIT_BRANCH="main"
-
+export CREATE_IN_LOCAL="false"
 
 
 function usage()
@@ -110,6 +110,7 @@ function usage()
     echo ""
     echo "  --data-gen-git-url=$DATA_GEN_GIT_URL : Datagen Git URL to use (if different of official one) (Default) $DATA_GEN_GIT_URL "
     echo "  --data-gen-git-branch=$DATA_GEN_GIT_BRANCH : Datagen Git Branch to use (if different of official one) (Default) $DATA_GEN_GIT_BRANCH "
+    echo "  --create-in-local=$CREATE_IN_LOCAL : To create locally the CSD and parcel instead of using a repository (Default) $CREATE_IN_LOCAL "
     echo ""
     echo "  --create-datagen=$CREATE_DATAGEN : To launch playbooks for creation of datagen (Default) $CREATE_DATAGEN "
     echo "  --install-datagen=$INSTALL_DATAGEN : To launch playbooks for installation of datagen (Default) $INSTALL_DATAGEN "
@@ -192,6 +193,9 @@ while [ "$1" != "" ]; do
         --data-gen-git-branch)
             DATA_GEN_GIT_BRANCH=$VALUE
             ;;
+        --create-in-local)
+            CREATE_IN_LOCAL=$VALUE
+            ;;
         --create-datagen)
             CREATE_DATAGEN=$VALUE
             ;;
@@ -244,6 +248,9 @@ then
   export CLUSTER_NAME_STREAMING="${CLUSTER_NAME}"
 fi
 
+export CSD_LOCAL_DIR="/tmp/datagen_csd-${DATAGEN_VERSION}-${CDP_VERSION}/"
+export PARCEL_LOCAL_DIR="/tmp/datagen_parcel-${DATAGEN_VERSION}-${CDP_VERSION}/"
+
 envsubst < extra-vars.yml > ${EXTRA_VARS_TEMP}
 
 if [ "${DEBUG}" == "true" ]
@@ -264,22 +271,33 @@ fi
 if [ "${CREATE_DATAGEN}" == "true" ]
 then
 # Launch playbook to clone repo on edge host, mvn clean package, create the CSD, create the parcel
-echo "################### Creation of Datagen ###################"
-if [ "${DEBUG}" = "true" ]
-then
-    echo " Command launched: ansible-playbook -i ${HOSTS_TEMP} -e @${EXTRA_VARS_TEMP} playbooks/create_datagen.yml ${ANSIBLE_PYTHON_3_PARAMS}  "
-    echo " Follow advancement at: ${LOG_DIR}/create_datagen.log "
-fi
-ansible-playbook -i ${HOSTS_TEMP} -e @${EXTRA_VARS_TEMP} playbooks/create_datagen.yml ${ANSIBLE_PYTHON_3_PARAMS}  2>&1 > ${LOG_DIR}/create_datagen.log
-OUTPUT=$(tail -20 ${LOG_DIR}/create_datagen.log | grep -A20 RECAP | grep -v "failed=0" | wc -l | xargs)
-if [ "${OUTPUT}" == "2" ]
-then
-  echo " SUCCESS: Datagen Creation made "
-else
-  echo " FAILURE: Could not create Datagen " 
-  echo " See details in file: ${LOG_DIR}/create_datagen.log "
-  exit 1
-fi
+  echo "################### Creation of Datagen ###################"
+  if [ "${CREATE_IN_LOCAL}" == "true" ] ; then
+    cd repository/
+    ./build_local_csd_parcel.sh \
+      --cdp-version=${CDP_VERSION} \
+      --datagen-version=${DATAGEN_VERSION} \
+      --distributions-to-build=${DISTRO_SUFFIX} \
+      --csd-dir=${CSD_LOCAL_DIR} \
+      --parcel-dir=${PARCEL_LOCAL_DIR} \
+      --debug=${DEBUG}
+    cd ../
+  fi
+  if [ "${DEBUG}" = "true" ]
+  then
+      echo " Command launched: ansible-playbook -i ${HOSTS_TEMP} -e @${EXTRA_VARS_TEMP} playbooks/create_datagen.yml ${ANSIBLE_PYTHON_3_PARAMS}  "
+      echo " Follow advancement at: ${LOG_DIR}/create_datagen.log "
+  fi
+  ansible-playbook -i ${HOSTS_TEMP} -e @${EXTRA_VARS_TEMP} playbooks/create_datagen.yml ${ANSIBLE_PYTHON_3_PARAMS}  2>&1 > ${LOG_DIR}/create_datagen.log
+  OUTPUT=$(tail -20 ${LOG_DIR}/create_datagen.log | grep -A20 RECAP | grep -v "failed=0" | wc -l | xargs)
+  if [ "${OUTPUT}" == "2" ]
+  then
+    echo " SUCCESS: Datagen Creation made "
+  else
+    echo " FAILURE: Could not create Datagen "
+    echo " See details in file: ${LOG_DIR}/create_datagen.log "
+    exit 1
+  fi
 fi
 
 

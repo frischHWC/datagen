@@ -50,6 +50,9 @@ launch_generation: ${LAUNCH_GENERATION}
 
 # Directory where Datagen will be cloned and compiled
 target_dir: ${TARGET_DIR}
+create_in_local: ${CREATE_IN_LOCAL}
+csd_local_file: ${CSD_LOCAL_DIR}DATAGEN-${DATAGEN_VERSION}.${CDP_VERSION}.jar
+parcel_local_dir: ${PARCEL_LOCAL_DIR}
 
 # Data Gen Settings
 data_gen_git_url: ${DATA_GEN_GIT_URL}

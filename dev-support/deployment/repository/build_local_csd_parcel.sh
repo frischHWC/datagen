@@ -17,8 +17,8 @@
 # under the License.
 #
 #!/bin/bash
-export DATAGEN_VERSION="0.4.10"
-export CDP_VERSION="7.1.9.0"
+export DATAGEN_VERSION="0.4.12"
+export CDP_VERSION="7.2.17"
 
 export DISTRIBUTIONS_TO_BUILD="el7 el8 el9 sles12 sles15"
 

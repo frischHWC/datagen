@@ -15,12 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.sink;
+package com.cloudera.frisch.datagen.sink.db;
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
+import com.cloudera.frisch.datagen.sink.SinkInterface;
+import com.cloudera.frisch.datagen.sink.storage.hdfs.HdfsParquetSink;
 import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
@@ -71,7 +73,7 @@ public class HiveSink implements SinkInterface {
     private Model.HiveTableType hiveTableType;
 
 
-    HiveSink(Model model, Map<ApplicationConfigs, String> properties) {
+    public HiveSink(Model model, Map<ApplicationConfigs, String> properties) {
         this.hiveOnHDFS = (Boolean) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_ON_HDFS);
         this.threads_number = (Integer) model.getOptionsOrDefault(OptionsConverter.Options.HIVE_THREAD_NUMBER);
         this.database = (String) model.getTableNames().get(OptionsConverter.TableNames.HIVE_DATABASE);

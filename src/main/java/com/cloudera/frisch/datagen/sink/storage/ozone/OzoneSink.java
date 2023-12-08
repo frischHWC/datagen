@@ -15,9 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.sink;
+package com.cloudera.frisch.datagen.sink.storage.ozone;
 
 
+import com.cloudera.frisch.datagen.sink.SinkInterface;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
@@ -31,10 +32,7 @@ import org.apache.hadoop.ozone.client.*;
 import org.apache.hadoop.ozone.client.io.OzoneOutputStream;
 import org.apache.hadoop.ozone.om.exceptions.OMException;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,36 +43,19 @@ import java.util.Map;
  * Note that it could produce some Timeout on heavy workload but it still inserts correctly
  */
 @Slf4j
-public class OzoneJsonSink implements SinkInterface {
+public class OzoneSink implements SinkInterface {
 
     private OzoneClient ozClient;
     private ObjectStore objectStore;
     private OzoneVolume volume;
     private final String volumeName;
-    private final String bucketName;
-    private final String keyNamePrefix;
     private final ReplicationFactor replicationFactor;
-    private final String localFileTempDir;
     private Boolean useKerberos;
 
-    private FileOutputStream outputStream;
-    private final String lineSeparator;
-    private final Boolean oneFilePerIteration;
-    private final Model model;
-    private int counter;
-    private OzoneBucket bucket;
 
-
-    OzoneJsonSink(Model model, Map<ApplicationConfigs, String> properties) {
+    public OzoneSink(Model model, Map<ApplicationConfigs, String> properties) {
         this.volumeName = (String) model.getTableNames().get(OptionsConverter.TableNames.OZONE_VOLUME);
-        this.bucketName = (String) model.getTableNames().get(OptionsConverter.TableNames.OZONE_BUCKET);
-        this.keyNamePrefix = (String) model.getTableNames().get(OptionsConverter.TableNames.OZONE_KEY_NAME);
-        this.localFileTempDir = (String) model.getTableNames().get(OptionsConverter.TableNames.OZONE_LOCAL_FILE_PATH);
         this.replicationFactor = ReplicationFactor.valueOf((int) model.getOptionsOrDefault(OptionsConverter.Options.OZONE_REPLICATION_FACTOR));
-        this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(OptionsConverter.Options.ONE_FILE_PER_ITERATION);
-        this.model = model;
-        this.counter = 0;
-        this.lineSeparator = System.getProperty("line.separator");
         this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS));
 
         try {
@@ -94,16 +75,6 @@ public class OzoneJsonSink implements SinkInterface {
             }
             createVolumeIfItDoesNotExist(volumeName);
             this.volume = objectStore.getVolume(volumeName);
-            createBucketIfNotExist(bucketName);
-            this.bucket = volume.getBucket(bucketName);
-
-            // Will use a local directory before pushing data to Ozone
-            Utils.createLocalDirectory(localFileTempDir);
-            Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "json");
-
-            if (!oneFilePerIteration) {
-                createLocalFileWithOverwrite(localFileTempDir + keyNamePrefix + ".json");
-            }
 
         } catch (IOException e) {
             log.error("Could not connect and create Volume into Ozone, due to error: ", e);
@@ -114,22 +85,7 @@ public class OzoneJsonSink implements SinkInterface {
     @Override
     public void terminate() {
         try {
-            if (!oneFilePerIteration) {
-                outputStream.close();
-                // Send local file to Ozone
-                String keyName = keyNamePrefix + ".json";
-                try {
-                    byte[] dataToWrite = Files.readAllBytes(java.nio.file.Path.of(localFileTempDir + keyName));
-                    OzoneOutputStream os = bucket.createKey(keyName, dataToWrite.length, ReplicationType.RATIS, replicationFactor, new HashMap<>());
-                    os.write(dataToWrite);
-                    os.getOutputStream().flush();
-                    os.close();
-                } catch (IOException e) {
-                    log.error("Could not write row to Ozone volume: {} bucket: {}, key: {} ; error: ", volumeName, bucketName, keyName, e);
-                }
-            }
             ozClient.close();
-            Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "json");
         } catch (IOException e) {
             log.warn("Could not close properly Ozone connection, due to error: ", e);
         }
@@ -140,40 +96,21 @@ public class OzoneJsonSink implements SinkInterface {
 
     @Override
     public void sendOneBatchOfRows(List<Row> rows) {
-        // Let's create a temp local file and then pushes it to ozone ?
-        String keyName = keyNamePrefix + "-" + String.format("%010d", counter) + ".json";
-        // Write to local file
-        if (oneFilePerIteration) {
-            createLocalFileWithOverwrite( localFileTempDir + keyName);
-            counter++;
-        }
-        rows.stream().map(Row::toJSON).forEach(r -> {
+        rows.parallelStream().forEach(row -> {
+            OzoneObject ob = row.toOzoneObject();
+            createBucketIfNotExist(ob.getBucket());
             try {
-                outputStream.write(r.getBytes());
-                outputStream.write(lineSeparator.getBytes());
-            } catch (IOException e) {
-                log.error("Could not write row: " + r + " to file: " + outputStream.getChannel());
-            }
-        });
-        if (oneFilePerIteration) {
-            try {
-                outputStream.close();
-            } catch (IOException e) {
-                log.error(" Unable to close local file with error :", e);
-            }
-
-            // Send local file to Ozone
-            try {
-                byte[] dataToWrite = Files.readAllBytes(java.nio.file.Path.of(localFileTempDir + keyName));
-                OzoneOutputStream os = bucket.createKey(keyName, dataToWrite.length, ReplicationType.RATIS, replicationFactor, new HashMap<>());
-                os.write(dataToWrite);
+                OzoneBucket bucket = volume.getBucket(ob.getBucket());
+                OzoneOutputStream os = bucket.createKey(ob.getKey(), ob.getValue().length(), ReplicationType.RATIS, replicationFactor, new HashMap<>());
+                os.write(ob.getValue().getBytes());
                 os.getOutputStream().flush();
                 os.close();
             } catch (IOException e) {
-                log.error("Could not write row to Ozone volume: {} bucket: {}, key: {} ; error: ", volumeName, bucketName, keyName, e);
+                log.error("Could not write row to Ozone volume: " + volume.getName() +
+                        " and bucket : " + ob.getBucket() +
+                        " and key: " + ob.getKey() + " due to error: ", e);
             }
-            Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "json");
-        }
+        });
 
     }
 
@@ -263,19 +200,6 @@ public class OzoneJsonSink implements SinkInterface {
             objectStore.deleteVolume(volumeName);
         } catch (IOException e) {
             log.error("Could not delete volume: " + volumeName + " due to error: ", e);
-        }
-    }
-
-    private void createLocalFileWithOverwrite(String path) {
-        try {
-            File file = new File(path);
-            file.getParentFile().mkdirs();
-            if(!file.createNewFile()) { log.warn("Could not create file: {}", path);}
-            outputStream = new FileOutputStream(path, false);
-            log.debug("Successfully created local file : " + path);
-
-        } catch (IOException e) {
-            log.error("Tried to create Parquet local file : " + path + " with no success :", e);
         }
     }
 

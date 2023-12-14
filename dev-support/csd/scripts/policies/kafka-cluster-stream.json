@@ -1,7 +1,7 @@
 {
   "version": 1,
   "service": "cm_kafka_stream",
-  "name": "datagen policy",
+  "name": "datagen policy for cluster actions",
   "policyType": 0,
   "policyPriority": 0,
   "description": "DATAGEN's policy for default generation",
@@ -20,14 +20,6 @@
     {
       "accesses": [
         {
-          "type": "publish",
-          "isAllowed": true
-        },
-        {
-          "type": "consume",
-          "isAllowed": true
-        },
-        {
           "type": "configure",
           "isAllowed": true
         },
@@ -36,11 +28,19 @@
           "isAllowed": true
         },
         {
+          "type": "kafka_admin",
+          "isAllowed": true
+        },
+        {
           "type": "create",
           "isAllowed": true
         },
         {
-          "type": "delete",
+          "type": "idempotent_write",
+          "isAllowed": true
+        },
+        {
+          "type": "alter_configs",
           "isAllowed": true
         },
         {
@@ -48,7 +48,7 @@
           "isAllowed": true
         },
         {
-          "type": "alter_configs",
+          "type": "cluster_action",
           "isAllowed": true
         },
         {

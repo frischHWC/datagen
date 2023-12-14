@@ -15,8 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.sink;
+package com.cloudera.frisch.datagen.sink.index;
 
+import com.cloudera.frisch.datagen.sink.SinkInterface;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
@@ -48,7 +49,7 @@ public class SolRSink implements SinkInterface {
     private Boolean useKerberos;
 
 
-    SolRSink(Model model, Map<ApplicationConfigs, String> properties) {
+    public SolRSink(Model model, Map<ApplicationConfigs, String> properties) {
         this.collection = (String) model.getTableNames().get(OptionsConverter.TableNames.SOLR_COLLECTION);
         this.model = model;
         this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS));

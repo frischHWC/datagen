@@ -20,6 +20,14 @@ package com.cloudera.frisch.datagen.sink;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.config.SinkParser;
 import com.cloudera.frisch.datagen.model.Model;
+import com.cloudera.frisch.datagen.sink.db.HbaseSink;
+import com.cloudera.frisch.datagen.sink.db.HiveSink;
+import com.cloudera.frisch.datagen.sink.index.SolRSink;
+import com.cloudera.frisch.datagen.sink.queues.KafkaSink;
+import com.cloudera.frisch.datagen.sink.storage.KuduSink;
+import com.cloudera.frisch.datagen.sink.storage.files.*;
+import com.cloudera.frisch.datagen.sink.storage.hdfs.*;
+import com.cloudera.frisch.datagen.sink.storage.ozone.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;

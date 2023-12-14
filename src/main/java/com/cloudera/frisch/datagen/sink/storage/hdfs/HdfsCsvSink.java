@@ -15,9 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.sink;
+package com.cloudera.frisch.datagen.sink.storage.hdfs;
 
 
+import com.cloudera.frisch.datagen.sink.SinkInterface;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
@@ -56,7 +57,7 @@ public class HdfsCsvSink implements SinkInterface {
     /**
      * Initiate HDFSCSV connection with Kerberos or not
      */
-    HdfsCsvSink(Model model, Map<ApplicationConfigs, String> properties) {
+    public HdfsCsvSink(Model model, Map<ApplicationConfigs, String> properties) {
         this.counter = 0;
         this.model = model;
         this.directoryName = (String) model.getTableNames().get(OptionsConverter.TableNames.HDFS_FILE_PATH);

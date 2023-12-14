@@ -130,6 +130,7 @@ public class OptionsConverter {
         KAFKA_MESSAGE_TYPE,
         HIVE_THREAD_NUMBER,
         HIVE_TABLE_TYPE,
+        HIVE_TABLE_FORMAT,
         HIVE_ON_HDFS,
         HIVE_TEZ_QUEUE_NAME,
         HIVE_TABLE_PARTITIONS_COLS,
@@ -173,6 +174,8 @@ public class OptionsConverter {
                 return Options.HIVE_THREAD_NUMBER;
             case "HIVE_TABLE_TYPE":
                 return Options.HIVE_TABLE_TYPE;
+            case "HIVE_TABLE_FORMAT":
+                return Options.HIVE_TABLE_FORMAT;
             case "HIVE_ON_HDFS":
                 return Options.HIVE_ON_HDFS;
             case "HIVE_TEZ_QUEUE_NAME":

@@ -15,28 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.sink;
+package com.cloudera.frisch.datagen.sink.storage.ozone;
 
 
+import com.cloudera.frisch.datagen.sink.SinkInterface;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdds.client.ReplicationFactor;
 import org.apache.hadoop.hdds.client.ReplicationType;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.ozone.client.*;
 import org.apache.hadoop.ozone.client.io.OzoneOutputStream;
 import org.apache.hadoop.ozone.om.exceptions.OMException;
-import org.apache.parquet.avro.AvroParquetWriter;
-import org.apache.parquet.hadoop.ParquetWriter;
-import org.apache.parquet.hadoop.metadata.CompressionCodecName;
+import org.apache.orc.OrcFile;
+import org.apache.orc.TypeDescription;
+import org.apache.orc.Writer;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,7 +52,7 @@ import java.util.Map;
  * Note that it could produce some Timeout on heavy workload but it still inserts correctly
  */
 @Slf4j
-public class OzoneParquetSink implements SinkInterface {
+public class OzoneOrcSink implements SinkInterface {
 
     private OzoneClient ozClient;
     private ObjectStore objectStore;
@@ -63,24 +64,28 @@ public class OzoneParquetSink implements SinkInterface {
     private final String localFileTempDir;
     private Boolean useKerberos;
 
-    private final Schema schema;
-    private ParquetWriter<GenericRecord> writer;
+    private final TypeDescription schema;
+    private Writer writer;
+    private final Map<String, ColumnVector> vectors;
+    private final VectorizedRowBatch batch;
     private final Boolean oneFilePerIteration;
     private final Model model;
     private int counter;
     private OzoneBucket bucket;
 
 
-    OzoneParquetSink(Model model, Map<ApplicationConfigs, String> properties) {
+    public OzoneOrcSink(Model model, Map<ApplicationConfigs, String> properties) {
         this.volumeName = (String) model.getTableNames().get(OptionsConverter.TableNames.OZONE_VOLUME);
         this.bucketName = (String) model.getTableNames().get(OptionsConverter.TableNames.OZONE_BUCKET);
         this.keyNamePrefix = (String) model.getTableNames().get(OptionsConverter.TableNames.OZONE_KEY_NAME);
-        this.replicationFactor = ReplicationFactor.valueOf((int) model.getOptionsOrDefault(OptionsConverter.Options.OZONE_REPLICATION_FACTOR));
         this.localFileTempDir = (String) model.getTableNames().get(OptionsConverter.TableNames.OZONE_LOCAL_FILE_PATH);
+        this.replicationFactor = ReplicationFactor.valueOf((int) model.getOptionsOrDefault(OptionsConverter.Options.OZONE_REPLICATION_FACTOR));
         this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(OptionsConverter.Options.ONE_FILE_PER_ITERATION);
         this.model = model;
         this.counter = 0;
-        this.schema = model.getAvroSchema();
+        this.schema = model.getOrcSchema();
+        this.batch = schema.createRowBatch();
+        this.vectors = model.createOrcVectors(batch);
         this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS));
 
         try {
@@ -105,10 +110,10 @@ public class OzoneParquetSink implements SinkInterface {
 
             // Will use a local directory before pushing data to Ozone
             Utils.createLocalDirectory(localFileTempDir);
-            Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "parquet");
+            Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "orc");
 
             if (!oneFilePerIteration) {
-                createLocalFileWithOverwrite(localFileTempDir + keyNamePrefix + ".parquet");
+                createLocalFileWithOverwrite(localFileTempDir + keyNamePrefix + ".orc");
             }
 
         } catch (IOException e) {
@@ -123,7 +128,7 @@ public class OzoneParquetSink implements SinkInterface {
             if (!oneFilePerIteration) {
                 writer.close();
                 // Send local file to Ozone
-                String keyName = keyNamePrefix + ".parquet";
+                String keyName = keyNamePrefix + ".orc";
                 try {
                     byte[] dataToWrite = Files.readAllBytes(java.nio.file.Path.of(localFileTempDir + keyName));
                     OzoneOutputStream os = bucket.createKey(keyName, dataToWrite.length, ReplicationType.RATIS, replicationFactor, new HashMap<>());
@@ -135,7 +140,7 @@ public class OzoneParquetSink implements SinkInterface {
                 }
             }
             ozClient.close();
-            Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "parquet");
+            Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "orc");
         } catch (IOException e) {
             log.warn("Could not close properly Ozone connection, due to error: ", e);
         }
@@ -147,19 +152,33 @@ public class OzoneParquetSink implements SinkInterface {
     @Override
     public void sendOneBatchOfRows(List<Row> rows) {
         // Let's create a temp local file and then pushes it to ozone ?
-        String keyName = keyNamePrefix + "-" + String.format("%010d", counter) + ".parquet";
+        String keyName = keyNamePrefix + "-" + String.format("%010d", counter) + ".orc";
         // Write to local file
         if (oneFilePerIteration) {
             createLocalFileWithOverwrite( localFileTempDir + keyName);
             counter++;
         }
-        rows.stream().map(row -> row.toGenericRecord(schema)).forEach(genericRecord -> {
+        for (Row row : rows) {
+            int rowNumber = batch.size++;
+            row.fillinOrcVector(rowNumber, vectors);
             try {
-                writer.write(genericRecord);
+                if (batch.size == batch.getMaxSize()) {
+                    writer.addRowBatch(batch);
+                    batch.reset();
+                }
             } catch (IOException e) {
                 log.error("Can not write data to the local file due to error: ", e);
             }
-        });
+        }
+        try {
+            if (batch.size != 0) {
+                writer.addRowBatch(batch);
+                batch.reset();
+            }
+        } catch (IOException e) {
+            log.error("Can not write data to the local file due to error: ", e);
+        }
+
         if (oneFilePerIteration) {
             try {
                 writer.close();
@@ -177,7 +196,7 @@ public class OzoneParquetSink implements SinkInterface {
             } catch (IOException e) {
                 log.error("Could not write row to Ozone volume: {} bucket: {}, key: {} ; error: ", volumeName, bucketName, keyName, e);
             }
-            Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "parquet");
+            Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "orc");
         }
 
     }
@@ -275,17 +294,9 @@ public class OzoneParquetSink implements SinkInterface {
         try {
             Utils.deleteLocalFile(path);
             new File(path).getParentFile().mkdirs();
-            this.writer = AvroParquetWriter
-                .<GenericRecord>builder(new Path(path))
-                .withSchema(schema)
-                .withConf(new Configuration())
-                .withCompressionCodec(CompressionCodecName.SNAPPY)
-                .withPageSize((int) model.getOptionsOrDefault(OptionsConverter.Options.PARQUET_PAGE_SIZE))
-                .withDictionaryEncoding((Boolean) model.getOptionsOrDefault(OptionsConverter.Options.PARQUET_DICTIONARY_ENCODING))
-                .withDictionaryPageSize((int) model.getOptionsOrDefault(OptionsConverter.Options.PARQUET_DICTIONARY_PAGE_SIZE))
-                .withRowGroupSize((int) model.getOptionsOrDefault(OptionsConverter.Options.PARQUET_ROW_GROUP_SIZE))
-                .build();
-            log.debug("Successfully created local Parquet file : " + path);
+            writer = OrcFile.createWriter(new Path(path),
+                OrcFile.writerOptions(new Configuration())
+                    .setSchema(schema));
 
         } catch (IOException e) {
             log.error("Tried to create Parquet local file : " + path + " with no success :", e);

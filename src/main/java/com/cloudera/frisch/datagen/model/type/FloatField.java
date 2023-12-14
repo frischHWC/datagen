@@ -68,7 +68,7 @@ public class FloatField extends Field<Float> {
         } else {
             float randomFloat = random.nextFloat();
             while(randomFloat < min && randomFloat > max) {
-                randomFloat = random.nextLong();
+                randomFloat = random.nextFloat();
             }
             return randomFloat;
         }

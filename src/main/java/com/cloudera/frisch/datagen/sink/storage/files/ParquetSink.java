@@ -15,9 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.sink;
+package com.cloudera.frisch.datagen.sink.storage.files;
 
 
+import com.cloudera.frisch.datagen.sink.SinkInterface;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
@@ -52,7 +53,7 @@ public class ParquetSink implements SinkInterface {
     /**
      * Init local Parquet file
      */
-    ParquetSink(Model model, Map<ApplicationConfigs, String> properties) {
+    public ParquetSink(Model model, Map<ApplicationConfigs, String> properties) {
         this.counter = 0;
         this.model = model;
         this.directoryName = (String) model.getTableNames().get(OptionsConverter.TableNames.LOCAL_FILE_PATH);

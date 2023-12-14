@@ -15,9 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.sink;
+package com.cloudera.frisch.datagen.sink.storage.ozone;
 
 
+import com.cloudera.frisch.datagen.sink.SinkInterface;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
@@ -65,7 +66,7 @@ public class OzoneCSVSink implements SinkInterface {
     private OzoneBucket bucket;
 
 
-    OzoneCSVSink(Model model, Map<ApplicationConfigs, String> properties) {
+    public OzoneCSVSink(Model model, Map<ApplicationConfigs, String> properties) {
         this.lineSeparator = System.getProperty("line.separator");
         this.volumeName = (String) model.getTableNames().get(OptionsConverter.TableNames.OZONE_VOLUME);
         this.bucketName = (String) model.getTableNames().get(OptionsConverter.TableNames.OZONE_BUCKET);

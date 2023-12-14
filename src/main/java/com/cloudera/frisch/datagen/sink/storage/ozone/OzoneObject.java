@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.sink.storedobjects;
+package com.cloudera.frisch.datagen.sink.storage.ozone;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

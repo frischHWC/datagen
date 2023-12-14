@@ -17,15 +17,25 @@
 # under the License.
 #
 ---
-##############################################
-############# CREATE DATAGEN #############
+- name: Clean Directory for this project
+  file:
+    path: "{{ target_dir }}/"
+    state: absent
 
-- name: Create Datagen
-  hosts: edge
-  gather_facts: true
-  roles:
-    - { role: create_datagen/copy_local_datagen, when: create_in_local }
-    - { role: create_datagen/init, when: not create_in_local }
-    - { role: create_datagen/compile_datagen, when: not create_in_local }
-    - { role: create_datagen/create_csd, when: not create_in_local }
-    - { role: create_datagen/create_parcel, when: not create_in_local }
+- name: Create Directory for Project
+  file:
+    path: "{{ target_dir }}/"
+    state: directory
+    mode: '0755'
+
+- name: Copy CSD file
+  copy:
+    src: "{{ csd_local_file }}"
+    dest: "{{ target_dir }}/csd/"
+    mode: '0755'
+
+- name: Copy Parcel files
+  copy:
+    src: "{{ parcel_local_dir }}"
+    dest: "{{ target_dir }}/parcel/"
+    mode: '0755'

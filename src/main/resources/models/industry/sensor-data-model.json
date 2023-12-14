@@ -44,6 +44,7 @@
     {"KUDU_RANGE_KEYS":  "timestamp"}
   ],
   "Options": [
-    {"HBASE_COLUMN_FAMILIES_MAPPING": "id:sensor_id;values:timestamp,value"}
+    {"HBASE_COLUMN_FAMILIES_MAPPING": "id:sensor_id;values:timestamp,value"},
+    {"HIVE_TABLE_TYPE":  "PARQUET"}
   ]
 }

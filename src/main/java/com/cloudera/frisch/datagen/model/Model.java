@@ -303,6 +303,7 @@ public class Model<T extends Field> {
             case HIVE_TABLE_TYPE:
                 optionResult = "external";
                 break;
+            case HIVE_TABLE_FORMAT:
             case HIVE_TABLE_BUCKETS_COLS:
             case HIVE_TABLE_PARTITIONS_COLS:
                 optionResult = "";
@@ -609,6 +610,42 @@ public class Model<T extends Field> {
             return HiveTableType.MANAGED;
         default:
             return HiveTableType.EXTERNAL;
+        }
+    }
+
+    public enum HiveTableFormat {
+        PARQUET,
+        ORC,
+        AVRO,
+        JSON,
+        CSV
+    }
+
+    public HiveTableFormat getHiveTableFormat() {
+        switch (this.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_TYPE).toString().toLowerCase(Locale.ROOT)) {
+        case "parquet":
+            return HiveTableFormat.PARQUET;
+        case "avro":
+            return HiveTableFormat.AVRO;
+        case "json":
+            return HiveTableFormat.JSON;
+        default:
+            return HiveTableFormat.ORC;
+        }
+    }
+
+    public String HiveTFtoString(HiveTableFormat hiveTableFormat) {
+        switch (hiveTableFormat) {
+        case PARQUET:
+            return " STORED AS PARQUET ";
+        case AVRO:
+            return " STORED AS AVRO ";
+        case JSON:
+            return " STORED AS JSONFILE ";
+        case CSV:
+            return " ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE ";
+        default:
+            return " STORED AS ORC ";
         }
     }
 

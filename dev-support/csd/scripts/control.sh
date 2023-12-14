@@ -22,6 +22,11 @@ CMD=$1
 case $CMD in
   (start)
     echo "Starting DATAGEN"
+    if [ -z ${KEYTAB_PATH} ]
+    then
+      export KEYTAB_PATH="${CONF_DIR}/${USER}.keytab"
+    fi
+
     envsubst < "${CONF_DIR}/service.properties" > "${CONF_DIR}/service.properties.tmp"
     mv "${CONF_DIR}/service.properties.tmp" "${CONF_DIR}/service.properties"
     chmod 700 "${CONF_DIR}/service.properties"

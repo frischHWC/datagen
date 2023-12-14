@@ -22,40 +22,46 @@
     repo: "https://github.com/cloudera/cm_ext"
     dest: "{{ target_dir }}/cm_ext/"
     version: "master"
+  when: not create_in_local
 
 - name: Create Manifest.json
   shell:
     cmd: "python make_manifest.py {{ target_dir }}/parcel/"
     chdir: "{{ target_dir }}/cm_ext/make_manifest/"
+  when: not create_in_local
 
 - name: Slurp manifest.json 
   slurp:
     path: "{{ target_dir }}/parcel/manifest.json"
   register: manifest_content
+  when: not create_in_local
 
 - name: Set Manifest content decoded
   set_fact:
     manifest_content_decoded: "{{ manifest_content.content | b64decode }}"
+  when: not create_in_local
 
 - name: DEBUG - manifest_content_decoded
   debug:
     msg: "{{ manifest_content_decoded }}"
-  when: debug | default(false)
+  when: not create_in_local and debug | default(false)
 
 - name: Get Hash from Manifest.json
   set_fact:
     parcel_hash: "{{ manifest_content_decoded | community.general.json_query(query) }}"
   vars:
     query: "parcels[0].hash"
+  when: not create_in_local
     
 - name: DEBUG - parcel_hash
   debug:
     msg: "{{ parcel_hash }}"
-  when: debug | default(false)
+  when: not create_in_local and debug | default(false)
 
 - name: Push hash in the hash file
   shell:
-    cmd: "echo {{ parcel_hash }} >> {{ target_dir }}/parcel/{{ parcel_name }}.sha"
+    cmd: "echo {{ parcel_hash }} >> {{ target_dir }}/parcel/{{ parcel_name }}.parcel.sha1"
+  when: not create_in_local
 
 
 - name: Install HTTPD
@@ -96,8 +102,8 @@
 
 - name: Copy parcel's hash
   copy:
-    src: "{{ target_dir }}/parcel/{{ parcel_name }}.sha"
-    dest: "/var/www/html/datagen-repo/{{ parcel_name }}.sha"
+    src: "{{ target_dir }}/parcel/{{ parcel_name }}.parcel.sha1"
+    dest: "/var/www/html/datagen-repo/{{ parcel_name }}.parcel.sha1"
     mode: '0755'
     remote_src: true
 

@@ -15,9 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.sink;
+package com.cloudera.frisch.datagen.sink.db;
 
 
+import com.cloudera.frisch.datagen.sink.SinkInterface;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
@@ -52,7 +53,7 @@ public class HbaseSink implements SinkInterface {
     private Admin admin;
     private Boolean useKerberos;
 
-    HbaseSink(Model model, Map<ApplicationConfigs, String> properties) {
+    public HbaseSink(Model model, Map<ApplicationConfigs, String> properties) {
         this.fullTableName = model.getTableNames().get(OptionsConverter.TableNames.HBASE_NAMESPACE) + ":" +
             model.getTableNames().get(OptionsConverter.TableNames.HBASE_TABLE_NAME);
         this.tableName = TableName.valueOf(fullTableName);

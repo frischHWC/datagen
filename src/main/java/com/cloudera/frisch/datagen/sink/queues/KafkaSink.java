@@ -15,8 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.sink;
+package com.cloudera.frisch.datagen.sink.queues;
 
+import com.cloudera.frisch.datagen.sink.SinkInterface;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
@@ -52,7 +53,7 @@ public class KafkaSink implements SinkInterface {
     private final MessageType messagetype;
     private Boolean useKerberos;
 
-    KafkaSink(Model model, Map<ApplicationConfigs, String> properties) {
+    public KafkaSink(Model model, Map<ApplicationConfigs, String> properties) {
         this.topic =  (String) model.getTableNames().get(OptionsConverter.TableNames.KAFKA_TOPIC);
         this.schema = model.getAvroSchema();
         this.messagetype = convertStringToMessageType((String) model.getOptionsOrDefault(OptionsConverter.Options.KAFKA_MESSAGE_TYPE));

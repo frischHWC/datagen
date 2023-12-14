@@ -299,9 +299,11 @@ A definition with a formula to evaluate value of the column:
       "name": "percentage",
       "type": "INTEGER",
       "conditionals": {
-            "always": "2 * $very_low_int + 56 - $low_int"
+            "formula": "2 * $very_low_int + 56 - $low_int"
         }
     }
+
+__ The formula is in fact evaluated by a Java Script Engine, hence many functions are available and it is even possible to make if else statements for example__
 
 A definition with some conditions (equalities and inequalities) to evaluate its value:
 

@@ -1,4 +1,4 @@
 New Features:
-- Support for CDP 7.1.9
-- Use of shell script (instead of python) to launch actions
-- Set hive table type: External or Managed
+- Hive table format: Parquet, ORC, JSON, CSV
+- Safety Valve Keytab & Principal
+- Start Public Cloud adaptation

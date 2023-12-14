@@ -237,6 +237,7 @@
     {"SOLR_JAAS_FILE_PATH":  "/tmp/solr.jaas"},
     {"HIVE_THREAD_NUMBER":  1},
     {"HIVE_TABLE_TYPE":  "MANAGED"},
+    {"HIVE_TABLE_TYPE":  "PARQUET"},
     {"HIVE_ON_HDFS":  true},
     {"HIVE_TEZ_QUEUE_NAME":  "root.default"},
     {"HIVE_TABLE_PARTITIONS_COLS": "person_department"},

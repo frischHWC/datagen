@@ -15,13 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.sink;
+package com.cloudera.frisch.datagen.sink.storage;
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.sink.SinkInterface;
 import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
@@ -47,7 +48,7 @@ public class KuduSink implements SinkInterface {
     private Boolean useKerberos;
 
 
-    KuduSink(Model model, Map<ApplicationConfigs, String> properties) {
+    public KuduSink(Model model, Map<ApplicationConfigs, String> properties) {
         this.tableName = (String) model.getTableNames().get(OptionsConverter.TableNames.KUDU_TABLE_NAME);
         this.model = model;
         this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.KUDU_AUTH_KERBEROS));

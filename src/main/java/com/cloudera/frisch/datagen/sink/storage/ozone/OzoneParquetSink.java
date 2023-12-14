@@ -15,9 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.sink;
+package com.cloudera.frisch.datagen.sink.storage.ozone;
 
 
+import com.cloudera.frisch.datagen.sink.SinkInterface;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
@@ -25,16 +26,18 @@ import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
-import org.apache.avro.file.DataFileWriter;
-import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.io.DatumWriter;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdds.client.ReplicationFactor;
 import org.apache.hadoop.hdds.client.ReplicationType;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.ozone.client.*;
 import org.apache.hadoop.ozone.client.io.OzoneOutputStream;
 import org.apache.hadoop.ozone.om.exceptions.OMException;
+import org.apache.parquet.avro.AvroParquetWriter;
+import org.apache.parquet.hadoop.ParquetWriter;
+import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,7 +52,7 @@ import java.util.Map;
  * Note that it could produce some Timeout on heavy workload but it still inserts correctly
  */
 @Slf4j
-public class OzoneAvroSink implements SinkInterface {
+public class OzoneParquetSink implements SinkInterface {
 
     private OzoneClient ozClient;
     private ObjectStore objectStore;
@@ -62,26 +65,23 @@ public class OzoneAvroSink implements SinkInterface {
     private Boolean useKerberos;
 
     private final Schema schema;
-    private DataFileWriter<GenericRecord> dataFileWriter;
-    private final DatumWriter<GenericRecord> datumWriter;
-    private File file;
+    private ParquetWriter<GenericRecord> writer;
     private final Boolean oneFilePerIteration;
     private final Model model;
     private int counter;
     private OzoneBucket bucket;
 
 
-    OzoneAvroSink(Model model, Map<ApplicationConfigs, String> properties) {
+    public OzoneParquetSink(Model model, Map<ApplicationConfigs, String> properties) {
         this.volumeName = (String) model.getTableNames().get(OptionsConverter.TableNames.OZONE_VOLUME);
         this.bucketName = (String) model.getTableNames().get(OptionsConverter.TableNames.OZONE_BUCKET);
         this.keyNamePrefix = (String) model.getTableNames().get(OptionsConverter.TableNames.OZONE_KEY_NAME);
-        this.localFileTempDir = (String) model.getTableNames().get(OptionsConverter.TableNames.OZONE_LOCAL_FILE_PATH);
         this.replicationFactor = ReplicationFactor.valueOf((int) model.getOptionsOrDefault(OptionsConverter.Options.OZONE_REPLICATION_FACTOR));
+        this.localFileTempDir = (String) model.getTableNames().get(OptionsConverter.TableNames.OZONE_LOCAL_FILE_PATH);
         this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(OptionsConverter.Options.ONE_FILE_PER_ITERATION);
         this.model = model;
         this.counter = 0;
         this.schema = model.getAvroSchema();
-        this.datumWriter = new GenericDatumWriter<>(schema);
         this.useKerberos = Boolean.parseBoolean(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS));
 
         try {
@@ -106,11 +106,10 @@ public class OzoneAvroSink implements SinkInterface {
 
             // Will use a local directory before pushing data to Ozone
             Utils.createLocalDirectory(localFileTempDir);
-            Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "avro");
+            Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "parquet");
 
             if (!oneFilePerIteration) {
-                createLocalFileWithOverwrite(localFileTempDir + keyNamePrefix + ".avro");
-                appendAvscHeader();
+                createLocalFileWithOverwrite(localFileTempDir + keyNamePrefix + ".parquet");
             }
 
         } catch (IOException e) {
@@ -123,10 +122,9 @@ public class OzoneAvroSink implements SinkInterface {
     public void terminate() {
         try {
             if (!oneFilePerIteration) {
-                dataFileWriter.flush();
-                dataFileWriter.close();
+                writer.close();
                 // Send local file to Ozone
-                String keyName = keyNamePrefix + ".avro";
+                String keyName = keyNamePrefix + ".parquet";
                 try {
                     byte[] dataToWrite = Files.readAllBytes(java.nio.file.Path.of(localFileTempDir + keyName));
                     OzoneOutputStream os = bucket.createKey(keyName, dataToWrite.length, ReplicationType.RATIS, replicationFactor, new HashMap<>());
@@ -138,7 +136,7 @@ public class OzoneAvroSink implements SinkInterface {
                 }
             }
             ozClient.close();
-            Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "avro");
+            Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "parquet");
         } catch (IOException e) {
             log.warn("Could not close properly Ozone connection, due to error: ", e);
         }
@@ -150,23 +148,22 @@ public class OzoneAvroSink implements SinkInterface {
     @Override
     public void sendOneBatchOfRows(List<Row> rows) {
         // Let's create a temp local file and then pushes it to ozone ?
-        String keyName = keyNamePrefix + "-" + String.format("%010d", counter) + ".avro";
+        String keyName = keyNamePrefix + "-" + String.format("%010d", counter) + ".parquet";
         // Write to local file
         if (oneFilePerIteration) {
             createLocalFileWithOverwrite( localFileTempDir + keyName);
-            appendAvscHeader();
             counter++;
         }
         rows.stream().map(row -> row.toGenericRecord(schema)).forEach(genericRecord -> {
             try {
-                dataFileWriter.append(genericRecord);
+                writer.write(genericRecord);
             } catch (IOException e) {
                 log.error("Can not write data to the local file due to error: ", e);
             }
         });
         if (oneFilePerIteration) {
             try {
-                dataFileWriter.close();
+                writer.close();
             } catch (IOException e) {
                 log.error(" Unable to close local file with error :", e);
             }
@@ -181,13 +178,7 @@ public class OzoneAvroSink implements SinkInterface {
             } catch (IOException e) {
                 log.error("Could not write row to Ozone volume: {} bucket: {}, key: {} ; error: ", volumeName, bucketName, keyName, e);
             }
-            Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "avro");
-        } else {
-            try {
-                dataFileWriter.flush();
-            } catch (IOException e) {
-                log.error("Can not flush data to the local file due to error: ", e);
-            }
+            Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix , "parquet");
         }
 
     }
@@ -281,23 +272,24 @@ public class OzoneAvroSink implements SinkInterface {
         }
     }
 
-    void createLocalFileWithOverwrite(String path) {
+    private void createLocalFileWithOverwrite(String path) {
         try {
-            file = new File(path);
-            file.getParentFile().mkdirs();
-            if(!file.createNewFile()) { log.warn("Could not create file");}
-            dataFileWriter = new DataFileWriter<>(datumWriter);
-            log.debug("Successfully created local file : " + path);
-        } catch (IOException e) {
-            log.error("Tried to create file : " + path + " with no success :", e);
-        }
-    }
+            Utils.deleteLocalFile(path);
+            new File(path).getParentFile().mkdirs();
+            this.writer = AvroParquetWriter
+                .<GenericRecord>builder(new Path(path))
+                .withSchema(schema)
+                .withConf(new Configuration())
+                .withCompressionCodec(CompressionCodecName.SNAPPY)
+                .withPageSize((int) model.getOptionsOrDefault(OptionsConverter.Options.PARQUET_PAGE_SIZE))
+                .withDictionaryEncoding((Boolean) model.getOptionsOrDefault(OptionsConverter.Options.PARQUET_DICTIONARY_ENCODING))
+                .withDictionaryPageSize((int) model.getOptionsOrDefault(OptionsConverter.Options.PARQUET_DICTIONARY_PAGE_SIZE))
+                .withRowGroupSize((int) model.getOptionsOrDefault(OptionsConverter.Options.PARQUET_ROW_GROUP_SIZE))
+                .build();
+            log.debug("Successfully created local Parquet file : " + path);
 
-    void appendAvscHeader() {
-        try {
-            dataFileWriter.create(schema, file);
         } catch (IOException e) {
-            log.error("Can not write header to the local file due to error: ", e);
+            log.error("Tried to create Parquet local file : " + path + " with no success :", e);
         }
     }
 

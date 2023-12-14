@@ -15,23 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.sink;
+package com.cloudera.frisch.datagen.sink.storage.hdfs;
 
 
+import com.cloudera.frisch.datagen.sink.SinkInterface;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.orc.OrcFile;
-import org.apache.orc.TypeDescription;
-import org.apache.orc.Writer;
+import org.apache.parquet.avro.AvroParquetWriter;
+import org.apache.parquet.hadoop.ParquetWriter;
+import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
 import java.io.IOException;
 import java.net.URI;
@@ -39,17 +40,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This is an ORC HDFS sink using Hadoop 3.2 API
+ * This is an HDFS PARQUET sink using Hadoop 3.2 API
  */
-@SuppressWarnings("unchecked")
 @Slf4j
-public class HdfsOrcSink implements SinkInterface {
+public class HdfsParquetSink implements SinkInterface {
 
     private FileSystem fileSystem;
-    private final TypeDescription schema;
-    private Writer writer;
-    private final Map<String, ColumnVector> vectors;
-    private final VectorizedRowBatch batch;
+    private Schema schema;
+    private ParquetWriter<GenericRecord> writer;
     private int counter;
     private final Model model;
     private final String directoryName;
@@ -62,15 +60,22 @@ public class HdfsOrcSink implements SinkInterface {
 
     /**
      * Initiate HDFS connection with Kerberos or not
-     *
      * @return filesystem connection to HDFS
      */
-    public HdfsOrcSink(Model model, Map<ApplicationConfigs, String> properties) {
-        this.model = model;
-        this.counter = 0;
-        this.directoryName = (String) model.getTableNames().get(OptionsConverter.TableNames.HDFS_FILE_PATH);
+    public HdfsParquetSink(Model model, Map<ApplicationConfigs, String> properties) {
+        // If using an HDFS sink, we want it to use the Hive HDFS File path and not the Hdfs file path
+        if(properties.get(ApplicationConfigs.HDFS_FOR_HIVE)!=null && properties.get(ApplicationConfigs.HDFS_FOR_HIVE).equalsIgnoreCase("true")) {
+            this.directoryName = (String) model.getTableNames()
+                .get(OptionsConverter.TableNames.HIVE_HDFS_FILE_PATH);
+        } else {
+            this.directoryName = (String) model.getTableNames()
+                .get(OptionsConverter.TableNames.HDFS_FILE_PATH);
+        }
+
         this.fileName = (String) model.getTableNames().get(OptionsConverter.TableNames.HDFS_FILE_NAME);
         this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(OptionsConverter.Options.ONE_FILE_PER_ITERATION);
+        this.model = model;
+        this.counter = 0;
         this.replicationFactor = (short) model.getOptionsOrDefault(OptionsConverter.Options.HDFS_REPLICATION_FACTOR);
         this.conf = new Configuration();
         conf.set("dfs.replication", String.valueOf(replicationFactor));
@@ -87,88 +92,80 @@ public class HdfsOrcSink implements SinkInterface {
         }
 
         try {
-            fileSystem = FileSystem.get(URI.create(hdfsUri), config);
+            this.fileSystem = FileSystem.get(URI.create(hdfsUri), config);
         } catch (IOException e) {
-            log.error("Could not access to ORC HDFS !", e);
+            log.error("Could not access to HDFS PARQUET !", e);
         }
 
-        this.schema = model.getOrcSchema();
-        this.batch = schema.createRowBatch();
-        this.vectors = model.createOrcVectors(batch);
+        this.schema = model.getAvroSchema();
 
         Utils.createHdfsDirectory(fileSystem, directoryName);
 
         if ((Boolean) model.getOptionsOrDefault(OptionsConverter.Options.DELETE_PREVIOUS)) {
-            Utils.deleteAllHdfsFiles(fileSystem, directoryName, fileName, "orc");
+            Utils.deleteAllHdfsFiles(fileSystem, directoryName, fileName, "parquet");
         }
 
         if (!oneFilePerIteration) {
-            creatFileWithOverwrite(hdfsUri + directoryName + fileName + ".orc");
+            createFileWithOverwrite(hdfsUri + directoryName + fileName + ".parquet");
         }
 
     }
+
 
     @Override
     public void terminate() {
         try {
-            if (!oneFilePerIteration) {
-                writer.close();
-            }
-            if(useKerberos) {
-                Utils.logoutUserWithKerberos();
-            }
+        writer.close();
+        if(useKerberos) {
+            Utils.logoutUserWithKerberos();
+        }
         } catch (IOException e) {
-            log.error(" Unable to close ORC HDFS file with error :", e);
+            log.error(" Unable to close HDFS PARQUET file with error :", e);
         }
     }
 
     @Override
-    public void sendOneBatchOfRows(List<Row> rows) {
-        if (oneFilePerIteration) {
-            creatFileWithOverwrite(hdfsUri + directoryName + fileName + "-" + String.format("%010d", counter) + ".orc");
-            counter++;
-        }
-
-        for (Row row : rows) {
-            int rowNumber = batch.size++;
-            row.fillinOrcVector(rowNumber, vectors);
-            try {
-                if (batch.size == batch.getMaxSize()) {
-                    writer.addRowBatch(batch);
-                    batch.reset();
-                }
-            } catch (IOException e) {
-                log.error("Can not write data to the ORC HDFS file due to error: ", e);
-            }
-        }
-
+    public void sendOneBatchOfRows(List<Row> rows){
         try {
-            if (batch.size != 0) {
-                writer.addRowBatch(batch);
-                batch.reset();
+            if (oneFilePerIteration) {
+                createFileWithOverwrite(hdfsUri + directoryName + fileName + "-" + String.format("%010d", counter) + ".parquet");
+                counter++;
+            }
+
+            rows.stream().map(row -> row.toGenericRecord(schema)).forEach(genericRecord -> {
+                try {
+                    writer.write(genericRecord);
+                } catch (IOException e) {
+                    log.error("Can not write data to the HDFS PARQUET file due to error: ", e);
+                }
+            });
+
+            if (oneFilePerIteration) {
+                writer.close();
             }
         } catch (IOException e) {
-            log.error("Can not write data to the ORC HDFS file due to error: ", e);
+            log.error("Can not write data to the HDFS PARQUET file due to error: ", e);
         }
-
-        if (oneFilePerIteration) {
-            try {
-                writer.close();
-            } catch (IOException e) {
-                log.error(" Unable to close ORC HDFS file with error :", e);
-            }
-        }
-
     }
 
-    private void creatFileWithOverwrite(String path) {
+    private void createFileWithOverwrite(String path) {
         try {
             Utils.deleteHdfsFile(fileSystem, path);
-            writer = OrcFile.createWriter(new Path(path),
-                OrcFile.writerOptions(conf)
-                    .setSchema(schema));
+            this.writer = AvroParquetWriter
+                .<GenericRecord>builder(new Path(path))
+                .withSchema(schema)
+                .withConf(conf)
+                .withCompressionCodec(CompressionCodecName.SNAPPY)
+                .withPageSize((int) model.getOptionsOrDefault(OptionsConverter.Options.PARQUET_PAGE_SIZE))
+                .withDictionaryEncoding((Boolean) model.getOptionsOrDefault(OptionsConverter.Options.PARQUET_DICTIONARY_ENCODING))
+                .withDictionaryPageSize((int) model.getOptionsOrDefault(OptionsConverter.Options.PARQUET_DICTIONARY_PAGE_SIZE))
+                .withRowGroupSize((int) model.getOptionsOrDefault(OptionsConverter.Options.PARQUET_ROW_GROUP_SIZE))
+                .build();
+            log.debug("Successfully created local Parquet file : " + path);
+
         } catch (IOException e) {
-            log.warn("Could not create writer to ORC HDFS file due to error:", e);
+            log.error("Tried to create Parquet local file : " + path + " with no success :", e);
         }
     }
+
 }

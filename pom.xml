@@ -20,7 +20,7 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <!-- Check your EXACT version of CDP as all platform jars depends on it -->
-        <cdp.version>7.2.17.0-334</cdp.version>
+        <cdp.version>7.1.9.3-4</cdp.version>
     </properties>
 
     <!-- Cloudera repository needed to get good CDP versions of jars -->

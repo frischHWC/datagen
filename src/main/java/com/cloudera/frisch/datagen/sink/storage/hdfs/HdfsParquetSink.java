@@ -64,7 +64,8 @@ public class HdfsParquetSink implements SinkInterface {
      */
     public HdfsParquetSink(Model model, Map<ApplicationConfigs, String> properties) {
         // If using an HDFS sink, we want it to use the Hive HDFS File path and not the Hdfs file path
-        if(properties.get(ApplicationConfigs.HDFS_FOR_HIVE)!=null && properties.get(ApplicationConfigs.HDFS_FOR_HIVE).equalsIgnoreCase("true")) {
+        if(properties.get(ApplicationConfigs.HDFS_FOR_HIVE)!=null
+            && properties.get(ApplicationConfigs.HDFS_FOR_HIVE).equalsIgnoreCase("true")) {
             this.directoryName = (String) model.getTableNames()
                 .get(OptionsConverter.TableNames.HIVE_HDFS_FILE_PATH);
         } else {

@@ -181,12 +181,16 @@ public class HiveSink implements SinkInterface {
                 switch (this.hiveTableFormat) {
                 case PARQUET:
                     this.hdfsSink = new HdfsParquetSink(model, properties);
+                    break;
                 case AVRO:
                     this.hdfsSink = new HdfsAvroSink(model, properties);
+                    break;
                 case JSON:
                     this.hdfsSink = new HdfsJsonSink(model, properties);
+                    break;
                 case CSV:
                     this.hdfsSink = new HdfsCsvSink(model, properties);
+                    break;
                 default:
                     this.hdfsSink = new HdfsOrcSink(model, properties);
                 }

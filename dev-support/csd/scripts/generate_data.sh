@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -16,23 +17,16 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-#!/bin/bash
 
 CMD=$1
 SERVER_PORT=$2
 TLS_ENABLED=$3
 DATAGEN_USER=$4
 DATAGEN_PASSWORD=$5
+USE_EXTRA_HEADER=$6
 
 set -x
 . ${COMMON_SCRIPT}
-
-USE_RHEL_8="false"
-RHEL_VERSION="$(cat /etc/redhat-release | grep 8. | wc -l)"
-if [ "${RHEL_VERSION}" = 1 ]
-then
-  USE_RHEL_8="true"
-fi
 
 # Checking that jq command is present to process
 if ! command -v jq &> /dev/null
@@ -81,15 +75,15 @@ generate_data() {
 
   echo "Will call URL: ${URL_TO_CALL}"
 
-  EXTRA_HEADER='-H "Content-Type: multipart/form-data ; boundary=toto"'
-  if [ ${USE_RHEL_8} == "true" ]
+  EXTRA_HEADER=""
+  if [ ${USE_EXTRA_HEADER} == "true" ]
   then
-    EXTRA_HEADER=""
+    EXTRA_HEADER='-H "Content-Type: multipart/form-data"'
   fi
 
-  COMMAND_ID=$(curl -s -k -X POST -H "Accept: */*" ${EXTRA_HEADER} \
-      -F "model_file=@${MODEL_FILE}" -u ${DATAGEN_USER}:${DATAGEN_PASSWORD} \
-      "$URL_TO_CALL" | jq -r '.commandUuid' )
+  COMMAND_RESPONSE=$(curl -s -k -X POST -H "Accept: */*" ${EXTRA_HEADER} -F "model_file=@${MODEL_FILE}" -u ${DATAGEN_USER}:${DATAGEN_PASSWORD} "$URL_TO_CALL")
+  echo "Received Command Response: ${COMMAND_RESPONSE}"
+  COMMAND_ID=$(echo $COMMAND_RESPONSE | jq -r '.commandUuid')
 
   echo "Received Command UUID: ${COMMAND_ID}"
 

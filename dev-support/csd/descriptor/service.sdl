@@ -2,7 +2,7 @@
   "name": "DATAGEN",
   "label": "Datagen",
   "description": "The service to generate Data into various services of CDP platform",
-  "version": "0.4.12",
+  "version": "0.4.13",
   "parcel": {
     "requiredTags": [
       "datagen"
@@ -323,7 +323,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${use_extra_header}"
             ]
           }
         },
@@ -342,7 +343,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${use_extra_header}"
             ]
           }
         },
@@ -361,7 +363,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${use_extra_header}"
             ]
           }
         },
@@ -380,7 +383,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${use_extra_header}"
             ]
           }
         },
@@ -399,7 +403,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${use_extra_header}"
             ]
           }
         },
@@ -418,7 +423,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${use_extra_header}"
             ]
           }
         },
@@ -437,7 +443,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${use_extra_header}"
             ]
           }
         },
@@ -456,7 +463,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${use_extra_header}"
             ]
           }
         },
@@ -475,7 +483,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${use_extra_header}"
             ]
           }
         },
@@ -494,7 +503,8 @@
               "${app_port}",
               "${ssl_enabled}",
               "${admin_user}",
-              "${admin_password}"
+              "${admin_password}",
+              "${use_extra_header}"
             ]
           }
         }
@@ -632,6 +642,15 @@
           "configurableInWizard": true,
           "default": "",
           "type": "string"
+        },
+        {
+          "name": "use_extra_header",
+          "label": "Datagen Use Extra Header for API calls from CM",
+          "description": "To use a extra header with multipart/form-data when making calls from Cloudera Manager",
+          "required": false,
+          "configurableInWizard": false,
+          "default": "false",
+          "type": "boolean"
         },
         {
           "name": "hdfs_uri",

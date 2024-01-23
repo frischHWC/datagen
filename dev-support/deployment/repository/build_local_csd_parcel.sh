@@ -187,6 +187,7 @@ then
   export PARCEL_VERSION="${DATAGEN_VERSION}.${CDP_VERSION}"
   export PARCEL_NAME="DATAGEN-${PARCEL_VERSION}"
   LOCAL_PARCEL_DIR="${TEMP_DIR}/${PARCEL_NAME}"
+  echo "Local Parcel Directory is: $LOCAL_PARCEL_DIR"
 
   rm -rf "${LOCAL_PARCEL_DIR}"
   rm -rf "${TEMP_DIR}/${PARCEL_NAME}.parcel"
@@ -196,14 +197,14 @@ then
   mkdir -p "${LOCAL_PARCEL_DIR}/dictionaries/"
 
   # Place all needed files in a temp_dir with right structure
-  cp meta/parcel.json "${LOCAL_PARCEL_DIR}/meta/"
-  cp meta/release-notes.txt "${LOCAL_PARCEL_DIR}/meta/"
-  cp meta/datagen_env.sh "${LOCAL_PARCEL_DIR}/meta/"
-  cp -R ../../src/main/resources/dictionaries/* "${LOCAL_PARCEL_DIR}/dictionaries/"
-  cp -R ../../src/main/resources/models/* "${LOCAL_PARCEL_DIR}/models/"
-  cp -R ../../src/main/resources/logback-spring.xml "${LOCAL_PARCEL_DIR}/"
-  cp -R ../../src/main/resources/application.properties "${LOCAL_PARCEL_DIR}/"
-  cp -R ../../target/datagen*.jar "${LOCAL_PARCEL_DIR}/${PARCEL_NAME}.jar"
+  cp -p meta/parcel.json "${LOCAL_PARCEL_DIR}/meta/"
+  cp -p meta/release-notes.txt "${LOCAL_PARCEL_DIR}/meta/"
+  cp -p meta/datagen_env.sh "${LOCAL_PARCEL_DIR}/meta/"
+  cp -Rp ../../src/main/resources/dictionaries/* "${LOCAL_PARCEL_DIR}/dictionaries/"
+  cp -Rp ../../src/main/resources/models/* "${LOCAL_PARCEL_DIR}/models/"
+  cp -Rp ../../src/main/resources/logback-spring.xml "${LOCAL_PARCEL_DIR}/"
+  cp -Rp ../../src/main/resources/application.properties "${LOCAL_PARCEL_DIR}/"
+  cp -Rp ../../target/datagen*.jar "${LOCAL_PARCEL_DIR}/${PARCEL_NAME}.jar"
 
   envsubst < "${LOCAL_PARCEL_DIR}/meta/parcel.json" > "${LOCAL_PARCEL_DIR}/meta/parcel.json.tmp" \
     && mv "${LOCAL_PARCEL_DIR}/meta/parcel.json.tmp" "${LOCAL_PARCEL_DIR}/meta/parcel.json"

@@ -72,7 +72,7 @@ public class HdfsParquetSink implements SinkInterface {
             this.directoryName = (String) model.getTableNames()
                 .get(OptionsConverter.TableNames.HDFS_FILE_PATH);
         }
-
+        log.debug("HDFS sink will generates data into HDFS directory: "+ this.directoryName);
         this.fileName = (String) model.getTableNames().get(OptionsConverter.TableNames.HDFS_FILE_NAME);
         this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(OptionsConverter.Options.ONE_FILE_PER_ITERATION);
         this.model = model;

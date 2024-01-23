@@ -177,22 +177,24 @@ public class HiveSink implements SinkInterface {
 
             if (hiveOnHDFS) {
                 // If using an HDFS sink, we want it to use the Hive HDFS File path and not the Hdfs file path
-                properties.put(ApplicationConfigs.HDFS_FOR_HIVE, "true");
+                Map<ApplicationConfigs, String> propertiesForHiveSink = new HashMap<>();
+                propertiesForHiveSink.putAll(properties);
+                propertiesForHiveSink.put(ApplicationConfigs.HDFS_FOR_HIVE, "true");
                 switch (this.hiveTableFormat) {
                 case PARQUET:
-                    this.hdfsSink = new HdfsParquetSink(model, properties);
+                    this.hdfsSink = new HdfsParquetSink(model, propertiesForHiveSink);
                     break;
                 case AVRO:
-                    this.hdfsSink = new HdfsAvroSink(model, properties);
+                    this.hdfsSink = new HdfsAvroSink(model, propertiesForHiveSink);
                     break;
                 case JSON:
-                    this.hdfsSink = new HdfsJsonSink(model, properties);
+                    this.hdfsSink = new HdfsJsonSink(model, propertiesForHiveSink);
                     break;
                 case CSV:
-                    this.hdfsSink = new HdfsCsvSink(model, properties);
+                    this.hdfsSink = new HdfsCsvSink(model, propertiesForHiveSink);
                     break;
                 default:
-                    this.hdfsSink = new HdfsOrcSink(model, properties);
+                    this.hdfsSink = new HdfsOrcSink(model, propertiesForHiveSink);
                 }
 
                 if(hiveTableType == Model.HiveTableType.MANAGED) {
@@ -203,8 +205,6 @@ public class HiveSink implements SinkInterface {
                     log.info("Hive temporary Table statement creation : " + tableStatementCreationTemp);
                     prepareAndExecuteStatement(tableStatementCreationTemp);
                 }
-                // Reset it to false, so if another sink is hdfs, it does not initialize like Hive
-                properties.put(ApplicationConfigs.HDFS_FOR_HIVE, "false");
             }
 
             log.info("SQL Insert schema for hive: " + model.getInsertSQLStatement() + this.extraInsert );

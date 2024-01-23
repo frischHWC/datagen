@@ -67,6 +67,7 @@ public class HdfsCsvSink implements SinkInterface {
             this.directoryName = (String) model.getTableNames()
                 .get(OptionsConverter.TableNames.HDFS_FILE_PATH);
         }
+        log.debug("HDFS sink will generates data into HDFS directory: "+ this.directoryName);
         this.counter = 0;
         this.model = model;
         this.fileName = (String) model.getTableNames().get(OptionsConverter.TableNames.HDFS_FILE_NAME);

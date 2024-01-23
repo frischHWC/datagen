@@ -58,9 +58,18 @@ public class HdfsCsvSink implements SinkInterface {
      * Initiate HDFSCSV connection with Kerberos or not
      */
     public HdfsCsvSink(Model model, Map<ApplicationConfigs, String> properties) {
+        // If using an HDFS sink, we want it to use the Hive HDFS File path and not the Hdfs file path
+        if(properties.get(ApplicationConfigs.HDFS_FOR_HIVE)!=null
+            && properties.get(ApplicationConfigs.HDFS_FOR_HIVE).equalsIgnoreCase("true")) {
+            this.directoryName = (String) model.getTableNames()
+                .get(OptionsConverter.TableNames.HIVE_HDFS_FILE_PATH);
+        } else {
+            this.directoryName = (String) model.getTableNames()
+                .get(OptionsConverter.TableNames.HDFS_FILE_PATH);
+        }
+        log.debug("HDFS sink will generates data into HDFS directory: "+ this.directoryName);
         this.counter = 0;
         this.model = model;
-        this.directoryName = (String) model.getTableNames().get(OptionsConverter.TableNames.HDFS_FILE_PATH);
         this.fileName = (String) model.getTableNames().get(OptionsConverter.TableNames.HDFS_FILE_NAME);
         this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(OptionsConverter.Options.ONE_FILE_PER_ITERATION);
         this.replicationFactor = (short) model.getOptionsOrDefault(OptionsConverter.Options.HDFS_REPLICATION_FACTOR);

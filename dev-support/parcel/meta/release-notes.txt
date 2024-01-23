@@ -1,4 +1,4 @@
 New Features:
-- Hive table format: Parquet, ORC, JSON, CSV
+- Hive table format: Avro, Parquet, ORC, JSON, CSV
+- Hive Choose External or Managed type
 - Safety Valve Keytab & Principal
-- Start Public Cloud adaptation

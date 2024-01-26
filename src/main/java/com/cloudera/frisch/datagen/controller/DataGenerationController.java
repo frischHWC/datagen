@@ -19,6 +19,7 @@ package com.cloudera.frisch.datagen.controller;
 
 
 import com.cloudera.frisch.datagen.config.PropertiesLoader;
+import com.cloudera.frisch.datagen.service.APISevice;
 import com.cloudera.frisch.datagen.service.CommandRunnerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 
 @Slf4j
@@ -37,6 +39,9 @@ public class DataGenerationController {
 
   @Autowired
   private CommandRunnerService commandRunnerService;
+
+  @Autowired
+  private APISevice apiSevice;
 
   @Autowired
   private PropertiesLoader propertiesLoader;
@@ -425,6 +430,25 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads, numberOfBatches,rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("KUDU"), null);
+  }
+
+  @PostMapping(value = "/api", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public String generateAPI(
+      @RequestPart(required = false, name = "model_file") MultipartFile modelFile,
+      @RequestParam(required = false, name = "model") String modelFilePath
+  ) {
+    log.debug("Received request for API with model: {}", modelFilePath);
+
+    return "{ modelId : " + apiSevice.saveModel(modelFile, modelFilePath) + " }";
+  }
+
+  @GetMapping(value = "/api/gen")
+  @ResponseBody
+  public String getFromAPI(@RequestParam(name = "modelId") UUID modelId) {
+    log.debug("Received request for API to generate data from model: {}", modelId);
+
+    return apiSevice.generateData(modelId);
   }
 
 

@@ -246,13 +246,13 @@ public class Model<T extends Field> {
                     || op == OptionsConverter.Options.PARQUET_PAGE_SIZE || op == OptionsConverter.Options.PARQUET_DICTIONARY_PAGE_SIZE
                     || op == OptionsConverter.Options.PARQUET_ROW_GROUP_SIZE || op == OptionsConverter.Options.KAFKA_RETRIES_CONFIG
                     || op == OptionsConverter.Options.OZONE_REPLICATION_FACTOR || op == OptionsConverter.Options.KUDU_BUCKETS
-                    || op == OptionsConverter.Options.KUDU_BUFFER ) {
+                    || op == OptionsConverter.Options.KUDU_BUFFER || op == OptionsConverter.Options.KAFKA_PARTITIONS_NUMBER) {
                     optionsFormatted.put(op, Integer.valueOf(v));
                 } else if (op == OptionsConverter.Options.ONE_FILE_PER_ITERATION || op == OptionsConverter.Options.HIVE_ON_HDFS
                             || op == OptionsConverter.Options.CSV_HEADER || op == OptionsConverter.Options.PARQUET_DICTIONARY_ENCODING
                             || op == OptionsConverter.Options.DELETE_PREVIOUS) {
                     optionsFormatted.put(op, Boolean.valueOf(v));
-                } else if (op == OptionsConverter.Options.HDFS_REPLICATION_FACTOR) {
+                    } else if (op == OptionsConverter.Options.HDFS_REPLICATION_FACTOR || op == OptionsConverter.Options.KAFKA_REPLICATION_FACTOR) {
                     optionsFormatted.put(op, Short.valueOf(v));
                 } else {
                     optionsFormatted.put(op, v);
@@ -319,6 +319,7 @@ public class Model<T extends Field> {
                 optionResult = 134217728;
                 break;
             case KAFKA_RETRIES_CONFIG:
+            case KAFKA_PARTITIONS_NUMBER:
             case OZONE_REPLICATION_FACTOR:
                 optionResult = 3;
                 break;
@@ -334,6 +335,9 @@ public class Model<T extends Field> {
                 break;
             case KUDU_FLUSH:
                 optionResult = "MANUAL_FLUSH";
+                break;
+            case KAFKA_REPLICATION_FACTOR:
+                optionResult = (short) 1;
                 break;
             default: break;
             }

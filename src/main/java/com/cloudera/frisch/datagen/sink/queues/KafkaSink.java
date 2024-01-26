@@ -17,26 +17,32 @@
  */
 package com.cloudera.frisch.datagen.sink.queues;
 
-import com.cloudera.frisch.datagen.sink.SinkInterface;
-import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
+import com.cloudera.frisch.datagen.sink.SinkInterface;
+import com.cloudera.frisch.datagen.utils.Utils;
 import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.KafkaAdminClient;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.config.SslConfigs;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
+
 import static com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotSerializer.SERDES_PROTOCOL_VERSION;
 import static com.hortonworks.registries.schemaregistry.serdes.avro.SerDesProtocolHandlerRegistry.METADATA_ID_VERSION_PROTOCOL;
 
@@ -48,13 +54,18 @@ public class KafkaSink implements SinkInterface {
 
     private Producer<String, GenericRecord> producer;
     private Producer<String, String> producerString;
+    private AdminClient kafkaAdminClient;
     private final String topic;
+    private final int partitions;
+    private final short replicationFactor;
     private final Schema schema;
     private final MessageType messagetype;
     private Boolean useKerberos;
 
     public KafkaSink(Model model, Map<ApplicationConfigs, String> properties) {
         this.topic =  (String) model.getTableNames().get(OptionsConverter.TableNames.KAFKA_TOPIC);
+        this.partitions =  (int) model.getOptionsOrDefault(OptionsConverter.Options.KAFKA_PARTITIONS_NUMBER);
+        this.replicationFactor =  (short) model.getOptionsOrDefault(OptionsConverter.Options.KAFKA_REPLICATION_FACTOR);
         this.schema = model.getAvroSchema();
         this.messagetype = convertStringToMessageType((String) model.getOptionsOrDefault(OptionsConverter.Options.KAFKA_MESSAGE_TYPE));
         this.useKerberos = Boolean.FALSE;
@@ -130,8 +141,17 @@ public class KafkaSink implements SinkInterface {
             props.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, properties.get(ApplicationConfigs.KAFKA_TRUSTSTORE_PASSWORD));
         }
 
-        if ((Boolean) model.getOptionsOrDefault(OptionsConverter.Options.DELETE_PREVIOUS)) {
-            KafkaAdminClient.create(props).deleteTopics(List.of(topic));
+        // Topic Creation
+        try {
+            this.kafkaAdminClient = KafkaAdminClient.create(props);
+            if ((Boolean) model.getOptionsOrDefault(OptionsConverter.Options.DELETE_PREVIOUS)) {
+                this.kafkaAdminClient.deleteTopics(List.of(topic));
+            }
+            this.kafkaAdminClient.createTopics(
+                Collections.singleton(new NewTopic(this.topic, this.partitions, this.replicationFactor)))
+                .values().get(this.topic).get();
+        } catch (Exception e) {
+            log.warn("Cannot create Kafka topic, due to error: ", e);
         }
 
         if(messagetype==MessageType.AVRO) {
@@ -143,13 +163,18 @@ public class KafkaSink implements SinkInterface {
 
     @Override
     public void terminate() {
-        if(messagetype==MessageType.AVRO) {
-            producer.close();
-        } else {
-            producerString.close();
-        }
-        if(useKerberos) {
-            Utils.logoutUserWithKerberos();
+        try {
+            if (messagetype == MessageType.AVRO) {
+                producer.close();
+            } else {
+                producerString.close();
+            }
+            if (useKerberos) {
+                Utils.logoutUserWithKerberos();
+            }
+            this.kafkaAdminClient.close();
+        } catch (Exception e) {
+            log.warn("Could not close Kafka Client");
         }
     }
 

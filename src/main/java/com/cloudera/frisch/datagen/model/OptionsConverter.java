@@ -127,7 +127,6 @@ public class OptionsConverter {
         SOLR_JAAS_FILE_PATH,
         KUDU_REPLICAS,
         ONE_FILE_PER_ITERATION,
-        KAFKA_MESSAGE_TYPE,
         HIVE_THREAD_NUMBER,
         HIVE_TABLE_TYPE,
         HIVE_TABLE_FORMAT,
@@ -145,6 +144,9 @@ public class OptionsConverter {
         KAFKA_ACKS_CONFIG,
         KAFKA_RETRIES_CONFIG,
         KAFKA_JAAS_FILE_PATH,
+        KAFKA_REPLICATION_FACTOR,
+        KAFKA_PARTITIONS_NUMBER,
+        KAFKA_MESSAGE_TYPE,
         KUDU_BUCKETS,
         KUDU_BUFFER,
         KUDU_FLUSH,
@@ -202,6 +204,10 @@ public class OptionsConverter {
                 return Options.KAFKA_ACKS_CONFIG;
             case "KAFKA_RETRIES_CONFIG":
                 return Options.KAFKA_RETRIES_CONFIG;
+            case "KAFKA_REPLICATION_FACTOR":
+                return Options.KAFKA_REPLICATION_FACTOR;
+            case "KAFKA_PARTITIONS_NUMBER":
+                return Options.KAFKA_PARTITIONS_NUMBER;
             case "KUDU_BUCKETS":
                 return Options.KUDU_BUCKETS;
             case "KUDU_BUFFER":

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,99 +35,106 @@ import java.util.List;
 @Slf4j
 public class BytesField extends Field<byte[]> {
 
-    BytesField(String name, Integer length, List<byte[]> possibleValues) {
-        this.name = name;
-        if (length == null || length < 1) {
-            this.length = 20;
-        } else {
-            this.length = length;
-        }
-        this.possibleValues = possibleValues;
+  BytesField(String name, Integer length, List<byte[]> possibleValues) {
+    this.name = name;
+    if (length == null || length < 1) {
+      this.length = 20;
+    } else {
+      this.length = length;
     }
+    this.possibleValues = possibleValues;
+  }
 
-    public byte[] generateRandomValue() {
-        if (possibleValues.isEmpty()) {
-            byte[] bytesArray = new byte[length];
-            random.nextBytes(bytesArray);
-            return bytesArray;
-        } else {
-            return possibleValues.get(random.nextInt(possibleValues.size()));
-        }
+  public byte[] generateRandomValue() {
+    if (possibleValues.isEmpty()) {
+      byte[] bytesArray = new byte[length];
+      random.nextBytes(bytesArray);
+      return bytesArray;
+    } else {
+      return possibleValues.get(random.nextInt(possibleValues.size()));
     }
+  }
 
-    @Override
-    public String toString(byte[] value) {
-        return " " + name + " : " + DatatypeConverter.printHexBinary(value).toUpperCase() + " ;";
-    }
+  @Override
+  public String toString(byte[] value) {
+    return " " + name + " : " +
+        DatatypeConverter.printHexBinary(value).toUpperCase() + " ;";
+  }
 
-    @Override
-    public String toCSVString(byte[] value) {
-        return DatatypeConverter.printHexBinary(value).toUpperCase() + ",";
-    }
+  @Override
+  public String toCSVString(byte[] value) {
+    return DatatypeConverter.printHexBinary(value).toUpperCase() + ",";
+  }
 
 
-    /*
-     Override if needed Field function to insert into special sinks
-     */
-    @Override
-    public String toStringValue(byte[] value) {
-        return DatatypeConverter.printHexBinary(value);
-    }
-    @Override
-    public byte[] toCastValue(String value) {
-        return value.getBytes();
-    }
+  /*
+   Override if needed Field function to insert into special sinks
+   */
+  @Override
+  public String toStringValue(byte[] value) {
+    return DatatypeConverter.printHexBinary(value);
+  }
 
-    @Override
-    public Put toHbasePut(byte[] value, Put hbasePut) {
-        hbasePut.addColumn(Bytes.toBytes(hbaseColumnQualifier), Bytes.toBytes(name), value);
-        return hbasePut;
-    }
+  @Override
+  public byte[] toCastValue(String value) {
+    return value.getBytes();
+  }
 
-    @Override
-    public PartialRow toKudu(byte[] value, PartialRow partialRow) {
-        partialRow.addBinary(name, value);
-        return partialRow;
-    }
+  @Override
+  public Put toHbasePut(byte[] value, Put hbasePut) {
+    hbasePut.addColumn(Bytes.toBytes(hbaseColumnQualifier), Bytes.toBytes(name),
+        value);
+    return hbasePut;
+  }
 
-    @Override
-    public Type getKuduType() {
-        return Type.BINARY;
-    }
+  @Override
+  public PartialRow toKudu(byte[] value, PartialRow partialRow) {
+    partialRow.addBinary(name, value);
+    return partialRow;
+  }
 
-    @Override
-    public HivePreparedStatement toHive(byte[] value, int index, HivePreparedStatement hivePreparedStatement) {
-        try {
-            hivePreparedStatement.setString(index, DatatypeConverter.printHexBinary(value).toUpperCase());
-        } catch (SQLException e) {
-            log.warn("Could not set value : " + DatatypeConverter.printHexBinary(value).toUpperCase() + " into hive statement due to error :", e);
-        }
-        return hivePreparedStatement;
-    }
+  @Override
+  public Type getKuduType() {
+    return Type.BINARY;
+  }
 
-    @Override
-    public String getHiveType() {
-        return "STRING";
+  @Override
+  public HivePreparedStatement toHive(byte[] value, int index,
+                                      HivePreparedStatement hivePreparedStatement) {
+    try {
+      hivePreparedStatement.setString(index,
+          DatatypeConverter.printHexBinary(value).toUpperCase());
+    } catch (SQLException e) {
+      log.warn("Could not set value : " +
+          DatatypeConverter.printHexBinary(value).toUpperCase() +
+          " into hive statement due to error :", e);
     }
+    return hivePreparedStatement;
+  }
 
-    @Override
-    public String getGenericRecordType() {
-        return "bytes";
-    }
+  @Override
+  public String getHiveType() {
+    return "STRING";
+  }
 
-    @Override
-    public Object toAvroValue(byte[] value) {
-        return ByteBuffer.wrap(value);
-    }
+  @Override
+  public String getGenericRecordType() {
+    return "bytes";
+  }
 
-    @Override
-    public ColumnVector getOrcColumnVector(VectorizedRowBatch batch, int cols) {
-        return batch.cols[cols];
-    }
+  @Override
+  public Object toAvroValue(byte[] value) {
+    return ByteBuffer.wrap(value);
+  }
 
-    @Override
-    public TypeDescription getTypeDescriptionOrc() {
-        return TypeDescription.createBinary();
-    }
+  @Override
+  public ColumnVector getOrcColumnVector(VectorizedRowBatch batch, int cols) {
+    return batch.cols[cols];
+  }
+
+  @Override
+  public TypeDescription getTypeDescriptionOrc() {
+    return TypeDescription.createBinary();
+  }
 
 }

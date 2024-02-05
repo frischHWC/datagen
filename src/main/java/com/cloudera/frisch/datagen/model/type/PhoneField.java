@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,122 +41,130 @@ import java.util.stream.Collectors;
 @Slf4j
 public class PhoneField extends Field<String> {
 
-    public class Phone {
-        @Getter
-        String indicator;
-        @Getter
-        String country;
+  public class Phone {
+    @Getter
+    String indicator;
+    @Getter
+    String country;
 
-        public Phone(String indicator, String country) {
-            this.indicator = indicator;
-            this.country = country;
-        }
-
-        @Override
-        public String toString() {
-            return "Name{" +
-                "indicator='" + indicator + '\'' +
-                ", country='" + country + '\'' +
-                '}';
-        }
+    public Phone(String indicator, String country) {
+      this.indicator = indicator;
+      this.country = country;
     }
 
-    private List<Phone> phoneIndicatorDico;
+    @Override
+    public String toString() {
+      return "Name{" +
+          "indicator='" + indicator + '\'' +
+          ", country='" + country + '\'' +
+          '}';
+    }
+  }
 
-    PhoneField(String name, Integer length, List<String> filters) {
-        this.name = name;
-        this.length = length;
-        this.phoneIndicatorDico = loadPhoneDico();
+  private List<Phone> phoneIndicatorDico;
 
-        this.possibleValues = new ArrayList<>();
+  PhoneField(String name, Integer length, List<String> filters) {
+    this.name = name;
+    this.length = length;
+    this.phoneIndicatorDico = loadPhoneDico();
 
-        filters.forEach(filterOnCountry -> {
-            this.possibleValues.addAll(
-                phoneIndicatorDico.stream().filter(n -> n.country.equalsIgnoreCase(filterOnCountry))
-                    .map(n -> n.indicator)
-                    .collect(Collectors.toList()));
-        });
+    this.possibleValues = new ArrayList<>();
+
+    filters.forEach(filterOnCountry -> {
+      this.possibleValues.addAll(
+          phoneIndicatorDico.stream()
+              .filter(n -> n.country.equalsIgnoreCase(filterOnCountry))
+              .map(n -> n.indicator)
+              .collect(Collectors.toList()));
+    });
+  }
+
+  public String generateRandomValue() {
+    String indicator =
+        possibleValues.get(random.nextInt(possibleValues.size()));
+    StringBuffer sb = new StringBuffer();
+    sb.append("+");
+    sb.append(indicator);
+    sb.append(" ");
+    int counter = 1;
+    while (counter <= (11 - indicator.length())) {
+      sb.append(random.nextInt(10));
+      counter++;
     }
 
-    public String generateRandomValue() {
-        String indicator = possibleValues.get(random.nextInt(possibleValues.size()));
-        StringBuffer sb = new StringBuffer();
-        sb.append("+");
-        sb.append(indicator);
-        sb.append(" ");
-        int counter = 1;
-        while (counter <= (11-indicator.length())) {
-            sb.append(random.nextInt(10));
-            counter++;
-        }
+    return sb.toString();
+  }
 
-        return sb.toString();
+  private List<Phone> loadPhoneDico() {
+    try {
+      InputStream is = this.getClass().getClassLoader().getResourceAsStream(
+          "dictionaries/phone-country-codes.csv");
+      return new BufferedReader(
+          new InputStreamReader(is, StandardCharsets.UTF_8))
+          .lines()
+          .map(l -> {
+            String[] lineSplitted = l.split(";");
+            return new PhoneField.Phone(lineSplitted[0], lineSplitted[1]);
+          })
+          .collect(Collectors.toList());
+    } catch (Exception e) {
+      log.warn("Could not load names-dico with error : " + e);
+      return Collections.singletonList(new PhoneField.Phone("00", ""));
     }
-
-    private List<Phone> loadPhoneDico() {
-        try {
-            InputStream is = this.getClass().getClassLoader().getResourceAsStream(
-                "dictionaries/phone-country-codes.csv");
-            return new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
-                    .lines()
-                    .map(l -> {
-                        String[] lineSplitted = l.split(";");
-                        return new PhoneField.Phone(lineSplitted[0], lineSplitted[1]);
-                    })
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            log.warn("Could not load names-dico with error : " + e);
-            return Collections.singletonList(new PhoneField.Phone("00", ""));
-        }
-    }
+  }
 
     /*
      Override if needed Field function to insert into special sinks
      */
 
-    @Override
-    public Put toHbasePut(String value, Put hbasePut) {
-        hbasePut.addColumn(Bytes.toBytes(hbaseColumnQualifier), Bytes.toBytes(name), Bytes.toBytes(value));
-        return hbasePut;
-    }
+  @Override
+  public Put toHbasePut(String value, Put hbasePut) {
+    hbasePut.addColumn(Bytes.toBytes(hbaseColumnQualifier), Bytes.toBytes(name),
+        Bytes.toBytes(value));
+    return hbasePut;
+  }
 
-    @Override
-    public PartialRow toKudu(String value, PartialRow partialRow) {
-        partialRow.addString(name, value);
-        return partialRow;
-    }
+  @Override
+  public PartialRow toKudu(String value, PartialRow partialRow) {
+    partialRow.addString(name, value);
+    return partialRow;
+  }
 
-    @Override
-    public Type getKuduType() {
-        return Type.STRING;
-    }
+  @Override
+  public Type getKuduType() {
+    return Type.STRING;
+  }
 
-    @Override
-    public HivePreparedStatement toHive(String value, int index, HivePreparedStatement hivePreparedStatement) {
-        try {
-            hivePreparedStatement.setString(index, value);
-        } catch (SQLException e) {
-            log.warn("Could not set value : " +value.toString() + " into hive statement due to error :", e);
-        }
-        return hivePreparedStatement;
+  @Override
+  public HivePreparedStatement toHive(String value, int index,
+                                      HivePreparedStatement hivePreparedStatement) {
+    try {
+      hivePreparedStatement.setString(index, value);
+    } catch (SQLException e) {
+      log.warn("Could not set value : " + value.toString() +
+          " into hive statement due to error :", e);
     }
+    return hivePreparedStatement;
+  }
 
-    @Override
-    public String getHiveType() {
-        return "STRING";
-    }
+  @Override
+  public String getHiveType() {
+    return "STRING";
+  }
 
-    @Override
-    public String getGenericRecordType() { return "string"; }
+  @Override
+  public String getGenericRecordType() {
+    return "string";
+  }
 
-    @Override
-    public ColumnVector getOrcColumnVector(VectorizedRowBatch batch, int cols) {
-        return batch.cols[cols];
-    }
+  @Override
+  public ColumnVector getOrcColumnVector(VectorizedRowBatch batch, int cols) {
+    return batch.cols[cols];
+  }
 
-    @Override
-    public TypeDescription getTypeDescriptionOrc() {
-        return TypeDescription.createString();
-    }
+  @Override
+  public TypeDescription getTypeDescriptionOrc() {
+    return TypeDescription.createString();
+  }
 
 }

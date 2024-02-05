@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,7 +40,8 @@ public class CommandRunnerController {
   @Autowired
   private CommandRunnerService commandRunnerService;
 
-  @PostMapping(value = "/getCommandStatus", produces = {MediaType.APPLICATION_JSON_VALUE})
+  @PostMapping(value = "/getCommandStatus", produces = {
+      MediaType.APPLICATION_JSON_VALUE})
   public CommandSoft getStatusOfACommand(
       @RequestParam(name = "commandUuid") UUID commandUUID
   ) {
@@ -54,7 +55,8 @@ public class CommandRunnerController {
     return commandRunnerService.getCommandAsString(commandUUID);
   }
 
-  @PostMapping(value = "/getByStatus", produces = {MediaType.APPLICATION_JSON_VALUE})
+  @PostMapping(value = "/getByStatus", produces = {
+      MediaType.APPLICATION_JSON_VALUE})
   public List<CommandSoft> getCommandsByStatus(
       @RequestParam(name = "status") Command.CommandStatus commandStatus
   ) {
@@ -66,7 +68,8 @@ public class CommandRunnerController {
     return commandRunnerService.getAllCommands();
   }
 
-  @PostMapping(value = "/getAllScheduled", produces = {MediaType.APPLICATION_JSON_VALUE})
+  @PostMapping(value = "/getAllScheduled", produces = {
+      MediaType.APPLICATION_JSON_VALUE})
   public List<CommandSoft> getAllScheduledCommands() {
     return commandRunnerService.getAllScheduledCommands();
   }

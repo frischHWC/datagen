@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,36 +44,45 @@ public class APISevice {
 
   private final Map<UUID, Model> modelMap = new HashMap<>();
 
-  public String saveModel(@Nullable MultipartFile modelFileAsFile, @Nullable String modelFilePath)
-  {
+  public String saveModel(@Nullable MultipartFile modelFileAsFile,
+                          @Nullable String modelFilePath) {
     log.info("Starting Generation");
     long start = System.currentTimeMillis();
 
     // Get default values if some are not set
-    Map<ApplicationConfigs, String> properties = propertiesLoader.getPropertiesCopy();
+    Map<ApplicationConfigs, String> properties =
+        propertiesLoader.getPropertiesCopy();
 
     String modelFile = modelFilePath;
-    if(modelFilePath==null) {
-      log.info("No model file passed, will default to custom data model or default defined one in configuration");
-      if(properties.get(ApplicationConfigs.CUSTOM_DATA_MODEL_DEFAULT)!=null) {
-        modelFile = properties.get(ApplicationConfigs.CUSTOM_DATA_MODEL_DEFAULT);
+    if (modelFilePath == null) {
+      log.info(
+          "No model file passed, will default to custom data model or default defined one in configuration");
+      if (properties.get(ApplicationConfigs.CUSTOM_DATA_MODEL_DEFAULT) !=
+          null) {
+        modelFile =
+            properties.get(ApplicationConfigs.CUSTOM_DATA_MODEL_DEFAULT);
       } else {
         modelFile = properties.get(ApplicationConfigs.DATA_MODEL_PATH_DEFAULT) +
             properties.get(ApplicationConfigs.DATA_MODEL_DEFAULT);
       }
     }
-    if(modelFilePath!=null && !modelFilePath.contains("/")){
-      log.info("Model file passed is identified as one of the one provided, so will look for it in data model path: {} ",
+    if (modelFilePath != null && !modelFilePath.contains("/")) {
+      log.info(
+          "Model file passed is identified as one of the one provided, so will look for it in data model path: {} ",
           properties.get(ApplicationConfigs.DATA_MODEL_PATH_DEFAULT));
-      modelFile = properties.get(ApplicationConfigs.DATA_MODEL_PATH_DEFAULT) + modelFilePath;
+      modelFile = properties.get(ApplicationConfigs.DATA_MODEL_PATH_DEFAULT) +
+          modelFilePath;
     }
-    if(modelFileAsFile!=null && !modelFileAsFile.isEmpty()) {
+    if (modelFileAsFile != null && !modelFileAsFile.isEmpty()) {
       log.info("Model passed is an uploaded file");
-      modelFile = properties.get(ApplicationConfigs.DATA_MODEL_RECEIVED_PATH) + "/model-test-" + new Random().nextInt() + ".json";
+      modelFile = properties.get(ApplicationConfigs.DATA_MODEL_RECEIVED_PATH) +
+          "/model-test-" + new Random().nextInt() + ".json";
       try {
         modelFileAsFile.transferTo(new File(modelFile));
       } catch (IOException e) {
-        log.error("Could not save model file passed in request locally, due to error:", e);
+        log.error(
+            "Could not save model file passed in request locally, due to error:",
+            e);
         return "{ \"commandUuid\": \"\" , \"error\": \"Error with Model File - Cannot save it locally\" }";
       }
     }
@@ -81,7 +90,7 @@ public class APISevice {
     // Parsing model
     log.info("Parsing of model file: {}", modelFile);
     JsonParser parser = new JsonParser(modelFile);
-    if(parser.getRoot()==null) {
+    if (parser.getRoot() == null) {
       log.warn("Error when parsing model file");
       return "{ \"commandUuid\": \"\" , \"error\": \"Error with Model File - Verify its path and structure\" }";
     }

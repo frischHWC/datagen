@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,132 +41,141 @@ import java.util.stream.Collectors;
 @Slf4j
 public class NameField extends Field<String> {
 
-    public class Name {
-        @Getter
-        String first_name;
-        @Getter
-        String country;
-        @Getter
-        Boolean unisex;
-        @Getter
-        Boolean female;
-        @Getter
-        Boolean male;
+  public class Name {
+    @Getter
+    String first_name;
+    @Getter
+    String country;
+    @Getter
+    Boolean unisex;
+    @Getter
+    Boolean female;
+    @Getter
+    Boolean male;
 
-        public Name(String name, String country, String male, String female, String unisex ) {
-            this.first_name = name;
-            this.country = country;
-            this.unisex = unisex.equalsIgnoreCase("true");
-            this.male = male.equalsIgnoreCase("true");
-            this.female = female.equalsIgnoreCase("true");
-        }
-
-        @Override
-        public String toString() {
-            return "Name{" +
-                "name='" + first_name + '\'' +
-                ", country='" + country + '\'' +
-                ", unisex='" + unisex.toString() + '\'' +
-                ", male='" + male.toString() + '\'' +
-                ", female='" + female.toString() + '\'' +
-                '}';
-        }
+    public Name(String name, String country, String male, String female,
+                String unisex) {
+      this.first_name = name;
+      this.country = country;
+      this.unisex = unisex.equalsIgnoreCase("true");
+      this.male = male.equalsIgnoreCase("true");
+      this.female = female.equalsIgnoreCase("true");
     }
 
-    private List<Name> nameDico;
-
-    NameField(String name, Integer length, List<String> filters) {
-        this.name = name;
-        this.length = length;
-        this.nameDico = loadNameDico();
-
-        this.possibleValues = new ArrayList<>();
-
-        if(!filters.isEmpty()) {
-            filters.forEach(filterOnCountry -> {
-                this.possibleValues.addAll(
-                    nameDico.stream().filter(
-                            n -> n.country.equalsIgnoreCase(filterOnCountry))
-                        .map(n -> n.first_name)
-                        .collect(Collectors.toList()));
-            });
-        } else {
-            this.possibleValues.addAll(
-                nameDico.stream()
-                    .map(n -> n.first_name)
-                    .collect(Collectors.toList())
-            );
-        }
+    @Override
+    public String toString() {
+      return "Name{" +
+          "name='" + first_name + '\'' +
+          ", country='" + country + '\'' +
+          ", unisex='" + unisex.toString() + '\'' +
+          ", male='" + male.toString() + '\'' +
+          ", female='" + female.toString() + '\'' +
+          '}';
     }
+  }
 
-    public String generateRandomValue() {
-        return possibleValues.get(random.nextInt(possibleValues.size()));
-    }
+  private List<Name> nameDico;
 
-    private List<Name> loadNameDico() {
-        try {
-            InputStream is = this.getClass().getClassLoader().getResourceAsStream(
-                "dictionaries/names.csv");
-            return new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
-                    .lines()
-                    .map(l -> {
-                        String[] lineSplitted = l.split(";");
-                        return new NameField.Name(lineSplitted[0], lineSplitted[1], lineSplitted[2], lineSplitted[3], lineSplitted[4]);
-                    })
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            log.warn("Could not load names-dico with error : " + e);
-            return Collections.singletonList(new NameField.Name("Anonymous", "", "", "", ""));
-        }
+  NameField(String name, Integer length, List<String> filters) {
+    this.name = name;
+    this.length = length;
+    this.nameDico = loadNameDico();
+
+    this.possibleValues = new ArrayList<>();
+
+    if (!filters.isEmpty()) {
+      filters.forEach(filterOnCountry -> {
+        this.possibleValues.addAll(
+            nameDico.stream().filter(
+                    n -> n.country.equalsIgnoreCase(filterOnCountry))
+                .map(n -> n.first_name)
+                .collect(Collectors.toList()));
+      });
+    } else {
+      this.possibleValues.addAll(
+          nameDico.stream()
+              .map(n -> n.first_name)
+              .collect(Collectors.toList())
+      );
     }
+  }
+
+  public String generateRandomValue() {
+    return possibleValues.get(random.nextInt(possibleValues.size()));
+  }
+
+  private List<Name> loadNameDico() {
+    try {
+      InputStream is = this.getClass().getClassLoader().getResourceAsStream(
+          "dictionaries/names.csv");
+      return new BufferedReader(
+          new InputStreamReader(is, StandardCharsets.UTF_8))
+          .lines()
+          .map(l -> {
+            String[] lineSplitted = l.split(";");
+            return new NameField.Name(lineSplitted[0], lineSplitted[1],
+                lineSplitted[2], lineSplitted[3], lineSplitted[4]);
+          })
+          .collect(Collectors.toList());
+    } catch (Exception e) {
+      log.warn("Could not load names-dico with error : " + e);
+      return Collections.singletonList(
+          new NameField.Name("Anonymous", "", "", "", ""));
+    }
+  }
 
     /*
      Override if needed Field function to insert into special sinks
      */
 
-    @Override
-    public Put toHbasePut(String value, Put hbasePut) {
-        hbasePut.addColumn(Bytes.toBytes(hbaseColumnQualifier), Bytes.toBytes(name), Bytes.toBytes(value));
-        return hbasePut;
-    }
+  @Override
+  public Put toHbasePut(String value, Put hbasePut) {
+    hbasePut.addColumn(Bytes.toBytes(hbaseColumnQualifier), Bytes.toBytes(name),
+        Bytes.toBytes(value));
+    return hbasePut;
+  }
 
-    @Override
-    public PartialRow toKudu(String value, PartialRow partialRow) {
-        partialRow.addString(name, value);
-        return partialRow;
-    }
+  @Override
+  public PartialRow toKudu(String value, PartialRow partialRow) {
+    partialRow.addString(name, value);
+    return partialRow;
+  }
 
-    @Override
-    public Type getKuduType() {
-        return Type.STRING;
-    }
+  @Override
+  public Type getKuduType() {
+    return Type.STRING;
+  }
 
-    @Override
-    public HivePreparedStatement toHive(String value, int index, HivePreparedStatement hivePreparedStatement) {
-        try {
-            hivePreparedStatement.setString(index, value);
-        } catch (SQLException e) {
-            log.warn("Could not set value : " +value.toString() + " into hive statement due to error :", e);
-        }
-        return hivePreparedStatement;
+  @Override
+  public HivePreparedStatement toHive(String value, int index,
+                                      HivePreparedStatement hivePreparedStatement) {
+    try {
+      hivePreparedStatement.setString(index, value);
+    } catch (SQLException e) {
+      log.warn("Could not set value : " + value.toString() +
+          " into hive statement due to error :", e);
     }
+    return hivePreparedStatement;
+  }
 
-    @Override
-    public String getHiveType() {
-        return "STRING";
-    }
+  @Override
+  public String getHiveType() {
+    return "STRING";
+  }
 
-    @Override
-    public String getGenericRecordType() { return "string"; }
+  @Override
+  public String getGenericRecordType() {
+    return "string";
+  }
 
-    @Override
-    public ColumnVector getOrcColumnVector(VectorizedRowBatch batch, int cols) {
-        return batch.cols[cols];
-    }
+  @Override
+  public ColumnVector getOrcColumnVector(VectorizedRowBatch batch, int cols) {
+    return batch.cols[cols];
+  }
 
-    @Override
-    public TypeDescription getTypeDescriptionOrc() {
-        return TypeDescription.createString();
-    }
+  @Override
+  public TypeDescription getTypeDescriptionOrc() {
+    return TypeDescription.createString();
+  }
 
 }

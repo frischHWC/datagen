@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,52 +26,67 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Condition {
-  
-  @Getter @Setter
+
+  @Getter
+  @Setter
   String columnName1;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   String columnName2;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   String value2;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   Operators operator;
 
 
-  @Getter @Setter
+  @Getter
+  @Setter
   String columnType;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   Integer value2AsInt;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   Long value2AsLong;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   Float value2AsFloat;
 
 
-  Condition(String columnName1, String columnName2, String value2, String operator) {
+  Condition(String columnName1, String columnName2, String value2,
+            String operator) {
     this.columnName1 = columnName1;
     this.columnName2 = columnName2;
     this.value2 = value2;
-    switch(operator) {
-      case "=": this.operator = Operators.EQUALS;
-                break;
-      case "!": this.operator = Operators.UNEQUALS;
-                break;
-      case ">": this.operator = Operators.SUPERIOR;
-                break;
-      case "<": this.operator = Operators.INFERIOR;
-                break;
+    switch (operator) {
+    case "=":
+      this.operator = Operators.EQUALS;
+      break;
+    case "!":
+      this.operator = Operators.UNEQUALS;
+      break;
+    case ">":
+      this.operator = Operators.SUPERIOR;
+      break;
+    case "<":
+      this.operator = Operators.INFERIOR;
+      break;
     }
 
-    log.debug("Comparison will be made between two columns: " + columnName1 + " and " + columnName2);
+    log.debug("Comparison will be made between two columns: " + columnName1 +
+        " and " + columnName2);
 
-    if(value2 != null) {
-      log.debug("Comparison will be made between column: " + columnName1 + " and value: " + value2 );
+    if (value2 != null) {
+      log.debug("Comparison will be made between column: " + columnName1 +
+          " and value: " + value2);
     }
 
   }
@@ -79,25 +94,25 @@ public class Condition {
   // After creating the whole model, this function must be called to guess the column type and speed up future comparisons/evaluations
   public void guessColumnType(Model model) {
     Field field = (Field) model.getFields().get(columnName1);
-    if (field==null){
+    if (field == null) {
       log.error("Could not find column: " + columnName1 + " in list of fields");
     }
 
-    switch(field.getClass().getSimpleName()) {
+    switch (field.getClass().getSimpleName()) {
     case "LongField":
-      if(value2!=null) {
+      if (value2 != null) {
         this.value2AsLong = Long.valueOf(value2);
       }
       this.columnType = "Long";
       break;
     case "IntegerField":
-      if(value2!=null) {
+      if (value2 != null) {
         this.value2AsInt = Integer.valueOf(value2);
       }
       this.columnType = "Integer";
       break;
     case "FloatField":
-      if(value2!=null) {
+      if (value2 != null) {
         this.value2AsFloat = Float.valueOf(value2);
       }
       this.columnType = "Float";
@@ -137,7 +152,9 @@ public class Condition {
       break;
     }
 
-    log.debug("Evaluated condition between {} and {} using operator {} and result is {}", firstValue, secondValue, operator, result);
+    log.debug(
+        "Evaluated condition between {} and {} using operator {} and result is {}",
+        firstValue, secondValue, operator, result);
 
     return result;
   }
@@ -145,19 +162,21 @@ public class Condition {
   private boolean isSuperior(String firstValue, String secondValue) {
     switch (this.columnType) {
     case "Long":
-      return value2AsLong == null ?  Long.parseLong(firstValue) > Long.parseLong(secondValue) : Long.parseLong(firstValue) > value2AsLong;
+      return value2AsLong == null ?
+          Long.parseLong(firstValue) > Long.parseLong(secondValue) :
+          Long.parseLong(firstValue) > value2AsLong;
     case "Integer":
-      return value2AsInt == null ?  Integer.parseInt(firstValue) > Integer.parseInt(secondValue) : Long.parseLong(firstValue) > value2AsInt;
+      return value2AsInt == null ?
+          Integer.parseInt(firstValue) > Integer.parseInt(secondValue) :
+          Long.parseLong(firstValue) > value2AsInt;
     case "Float":
-      return value2AsFloat == null ?  Float.parseFloat(firstValue) > Float.parseFloat(secondValue) : Float.parseFloat(firstValue) > value2AsFloat;
+      return value2AsFloat == null ?
+          Float.parseFloat(firstValue) > Float.parseFloat(secondValue) :
+          Float.parseFloat(firstValue) > value2AsFloat;
     default:
       return firstValue.compareTo(secondValue) > 0;
     }
   }
-
-
-
-
 
 
 }

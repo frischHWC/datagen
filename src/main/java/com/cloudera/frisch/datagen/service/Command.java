@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,7 +18,7 @@
 package com.cloudera.frisch.datagen.service;
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
-import com.cloudera.frisch.datagen.config.SinkParser;
+import com.cloudera.frisch.datagen.config.ConnectorParser;
 import com.cloudera.frisch.datagen.model.Model;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,7 +50,7 @@ public class Command implements Serializable {
   private Long rowsPerBatch;
   private Boolean scheduled;
   private Long delayBetweenExecutions;
-  private List<SinkParser.Sink> sinksListAsString;
+  private List<ConnectorParser.Sink> sinksListAsString;
   private Map<ApplicationConfigs, String> properties;
   private Long durationSeconds;
   private Long lastFinishedTimestamp;
@@ -74,7 +74,8 @@ public class Command implements Serializable {
     oos.writeObject(progress);
   }
 
-  private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+  private void readObject(ObjectInputStream ois)
+      throws ClassNotFoundException, IOException {
     this.commandUuid = (UUID) ois.readObject();
     this.status = (CommandStatus) ois.readObject();
     this.commandComment = (String) ois.readObject();
@@ -84,7 +85,7 @@ public class Command implements Serializable {
     this.rowsPerBatch = (Long) ois.readObject();
     this.scheduled = (Boolean) ois.readObject();
     this.delayBetweenExecutions = (Long) ois.readObject();
-    this.sinksListAsString = (List<SinkParser.Sink>) ois.readObject();
+    this.sinksListAsString = (List<ConnectorParser.Sink>) ois.readObject();
     this.properties = (Map<ApplicationConfigs, String>) ois.readObject();
     this.durationSeconds = (Long) ois.readObject();
     this.lastFinishedTimestamp = (Long) ois.readObject();
@@ -94,7 +95,10 @@ public class Command implements Serializable {
   @Override
   public String toString() {
     StringBuffer sinkList = new StringBuffer();
-    sinksListAsString.forEach(s -> {sinkList.append(s) ; sinkList.append(" ; ");});
+    sinksListAsString.forEach(s -> {
+      sinkList.append(s);
+      sinkList.append(" ; ");
+    });
 
     StringBuffer propertiesAsString = new StringBuffer();
     properties.forEach((config, value) -> {
@@ -128,8 +132,8 @@ public class Command implements Serializable {
                  Long numberOfBatches,
                  Long rowsPerBatch,
                  Boolean scheduled,
-                 Long delayBewtweenExecutions,
-                 List<SinkParser.Sink> sinksListAsString,
+                 Long delayBetweenExecutions,
+                 List<ConnectorParser.Sink> sinksListAsString,
                  Map<ApplicationConfigs, String> properties) {
     this.commandUuid = UUID.randomUUID();
     this.status = CommandStatus.QUEUED;
@@ -140,7 +144,7 @@ public class Command implements Serializable {
     this.numberOfBatches = numberOfBatches;
     this.rowsPerBatch = rowsPerBatch;
     this.scheduled = scheduled;
-    this.delayBetweenExecutions = delayBewtweenExecutions;
+    this.delayBetweenExecutions = delayBetweenExecutions;
     this.lastFinishedTimestamp = 0L;
     this.sinksListAsString = sinksListAsString;
     this.properties = properties;

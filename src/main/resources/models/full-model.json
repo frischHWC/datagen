@@ -171,7 +171,7 @@
       "name": "person",
       "type": "CSV",
       "filters": ["country=France"],
-      "file": "/opt/cloudera/parcels/DATAGEN/dictionaries/person_test.csv",
+      "file": "/tmp/datagen/person_test.csv",
       "separator": ";",
       "field": "name"
     },
@@ -233,6 +233,8 @@
     {"KUDU_REPLICAS":  1},
     {"ONE_FILE_PER_ITERATION":  true},
     {"KAFKA_MESSAGE_TYPE":  "json"},
+    {"KAFKA_REPLICATION_FACTOR":  3},
+    {"KAFKA_PARTITIONS_NUMBER":  3},
     {"KAFKA_JAAS_FILE_PATH":  "/tmp/kafka.jaas"},
     {"SOLR_JAAS_FILE_PATH":  "/tmp/solr.jaas"},
     {"HIVE_THREAD_NUMBER":  1},

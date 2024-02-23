@@ -20,23 +20,15 @@
     {
       "accesses": [
         {
-          "type": "configure",
-          "isAllowed": true
-        },
-        {
-          "type": "describe",
-          "isAllowed": true
-        },
-        {
-          "type": "kafka_admin",
-          "isAllowed": true
-        },
-        {
           "type": "create",
           "isAllowed": true
         },
         {
-          "type": "idempotent_write",
+          "type": "configure",
+          "isAllowed": true
+        },
+        {
+          "type": "alter",
           "isAllowed": true
         },
         {
@@ -44,15 +36,23 @@
           "isAllowed": true
         },
         {
+          "type": "describe",
+          "isAllowed": true
+        },
+        {
           "type": "describe_configs",
           "isAllowed": true
         },
         {
-          "type": "cluster_action",
+          "type": "kafka_admin",
           "isAllowed": true
         },
         {
-          "type": "alter",
+          "type": "idempotent_write",
+          "isAllowed": true
+        },
+        {
+          "type": "cluster_action",
           "isAllowed": true
         }
       ],

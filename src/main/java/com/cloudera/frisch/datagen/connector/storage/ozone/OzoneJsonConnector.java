@@ -219,7 +219,7 @@ public class OzoneJsonConnector implements ConnectorInterface {
   }
 
   @Override
-  public Model generateModel() {
+  public Model generateModel(Boolean deepAnalysis) {
     LinkedHashMap<String, Field> fields = new LinkedHashMap<String, Field>();
     Map<String, List<String>> primaryKeys = new HashMap<>();
     Map<String, String> tableNames = new HashMap<>();

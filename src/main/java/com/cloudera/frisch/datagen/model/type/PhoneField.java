@@ -63,7 +63,7 @@ public class PhoneField extends Field<String> {
 
   private List<Phone> phoneIndicatorDico;
 
-  PhoneField(String name, Integer length, List<String> filters) {
+  public PhoneField(String name, Integer length, List<String> filters) {
     this.name = name;
     this.length = length;
     this.phoneIndicatorDico = loadPhoneDico();

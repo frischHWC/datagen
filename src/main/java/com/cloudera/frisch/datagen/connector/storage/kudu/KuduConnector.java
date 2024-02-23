@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.connector.storage;
+package com.cloudera.frisch.datagen.connector.storage.kudu;
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
@@ -181,7 +181,7 @@ public class KuduConnector implements ConnectorInterface {
   }
 
   @Override
-  public Model generateModel() {
+  public Model generateModel(Boolean deepAnalysis) {
     LinkedHashMap<String, Field> fields = new LinkedHashMap<String, Field>();
     Map<String, List<String>> primaryKeys = new HashMap<>();
     Map<String, String> tableNames = new HashMap<>();

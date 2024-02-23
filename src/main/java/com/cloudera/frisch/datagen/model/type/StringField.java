@@ -35,8 +35,8 @@ import java.util.List;
 @Slf4j
 public class StringField extends Field<String> {
 
-  StringField(String name, Integer length, List<String> possibleValues,
-              LinkedHashMap<String, Long> possible_values_weighted) {
+  public StringField(String name, Integer length, List<String> possibleValues,
+                     LinkedHashMap<String, Long> possible_values_weighted) {
     this.name = name;
     if (length == null || length < 1) {
       this.length = 20;

@@ -19,6 +19,7 @@ package com.cloudera.frisch.datagen.connector.storage.hdfs;
 
 
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.OrcUtils;
 import com.cloudera.frisch.datagen.model.type.Field;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
@@ -32,6 +33,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.orc.OrcFile;
+import org.apache.orc.Reader;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.Writer;
 
@@ -195,12 +197,33 @@ public class HdfsOrcConnector implements ConnectorInterface {
   }
 
   @Override
-  public Model generateModel() {
+  public Model generateModel(Boolean deepAnalysis) {
     LinkedHashMap<String, Field> fields = new LinkedHashMap<String, Field>();
     Map<String, List<String>> primaryKeys = new HashMap<>();
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
-    // TODO : Implement logic to create a model with at least names, pk, options and column names/types
+
+    tableNames.put("HDFS_FILE_PATH",
+        this.directoryName.substring(0, this.directoryName.lastIndexOf("/")) +
+            "/");
+    tableNames.put("HDFS_FILE_NAME",
+        this.directoryName.substring(this.directoryName.lastIndexOf("/") + 1));
+
+    try {
+      Reader reader =
+          OrcFile.createReader(new Path(this.hdfsUri + this.directoryName),
+              OrcFile.readerOptions(new Configuration()));
+
+      OrcUtils.setBasicFields(fields, reader);
+      if (deepAnalysis) {
+        OrcUtils.analyzeFields(fields, reader);
+      }
+
+      fileSystem.close();
+    } catch (IOException e) {
+      log.warn("Could not create reader to ORC local file due to error:", e);
+    }
+
     return new Model(fields, primaryKeys, tableNames, options);
   }
 

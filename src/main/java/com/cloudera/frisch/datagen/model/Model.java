@@ -20,6 +20,8 @@ package com.cloudera.frisch.datagen.model;
 
 import com.cloudera.frisch.datagen.model.conditions.ConditionalEvaluator;
 import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.parsers.JsonUnparser;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -55,14 +57,17 @@ public class Model<T extends Field> {
 
   @Getter
   @Setter
+  @JsonIgnore
   private final LinkedHashMap<String, T> fieldsToPrint;
 
   // This is for convenience when generating data
   @Getter
   @Setter
+  @JsonIgnore
   private List<String> fieldsRandomName;
   @Getter
   @Setter
+  @JsonIgnore
   private List<String> fieldsComputedName;
 
   @Getter
@@ -133,6 +138,18 @@ public class Model<T extends Field> {
     }
   }
 
+
+  /**
+   * Empty model used for data modelling from data
+   */
+  public Model() {
+    this.fields = new LinkedHashMap<>();
+    this.fieldsToPrint = new LinkedHashMap<>();
+    this.options = new HashMap<>();
+    this.primaryKeys = new HashMap<>();
+    this.tableNames = new HashMap<>();
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
@@ -167,6 +184,16 @@ public class Model<T extends Field> {
     sb.append(System.getProperty("line.separator"));
 
     return sb.toString();
+  }
+
+  /**
+   * Create a JSON Schema from the model, being able to pass it to any other Datagen Service
+   * @return json schema as a string
+   */
+  public String toJsonSchema(String pathToWriteModel) {
+    String json = new JsonUnparser().renderFileFromModel(this, pathToWriteModel);
+    log.debug("JSON schema for model is: {}", json);
+    return json;
   }
 
   /**

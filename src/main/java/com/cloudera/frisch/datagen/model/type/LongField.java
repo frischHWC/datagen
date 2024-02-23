@@ -34,14 +34,10 @@ import java.util.List;
 @Slf4j
 public class LongField extends Field<Long> {
 
-  LongField(String name, Integer length, List<Long> possibleValues,
-            LinkedHashMap<String, Long> possible_values_weighted, String min,
-            String max) {
-    if (length == null || length == -1) {
-      this.length = Integer.MAX_VALUE;
-    } else {
-      this.length = length;
-    }
+  public LongField(String name, List<Long> possibleValues,
+                   LinkedHashMap<String, Long> possible_values_weighted,
+                   String min,
+                   String max) {
     if (max == null) {
       this.max = Long.MAX_VALUE - 1;
     } else {

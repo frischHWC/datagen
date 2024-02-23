@@ -18,13 +18,14 @@
 package com.cloudera.frisch.datagen.connector.storage.ozone;
 
 
-import com.cloudera.frisch.datagen.connector.ConnectorInterface;
-import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
+import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.ParquetUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
+import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
@@ -37,10 +38,12 @@ import org.apache.hadoop.ozone.client.*;
 import org.apache.hadoop.ozone.client.io.OzoneOutputStream;
 import org.apache.hadoop.ozone.om.exceptions.OMException;
 import org.apache.parquet.avro.AvroParquetWriter;
+import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -223,12 +226,61 @@ public class OzoneParquetConnector implements ConnectorInterface {
   }
 
   @Override
-  public Model generateModel() {
+  public Model generateModel(Boolean deepAnalysis) {
     LinkedHashMap<String, Field> fields = new LinkedHashMap<String, Field>();
     Map<String, List<String>> primaryKeys = new HashMap<>();
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
-    // TODO : Implement logic to create a model with at least names, pk, options and column names/types
+    try {
+      OzoneKeyDetails ozoneKeyDetails = this.bucket.getKey(this.keyNamePrefix);
+      // To prevent OOM, we will not get and read file over 1GB
+      long dataSize = ozoneKeyDetails.getDataSize();
+      if (dataSize < 1073741824) {
+        byte[] readBuffer = new byte[(int) (dataSize + 1)];
+        ozoneKeyDetails.getContent().read(readBuffer);
+
+        // Use of a local temp file to write Ozone file and finally delete it
+        String filepath =
+            "/tmp/" + this.keyNamePrefix + "_" + System.currentTimeMillis();
+        File file = new File(filepath);
+        if (file.exists()) {
+          file.delete();
+        }
+        file.setReadable(true, true);
+        file.setWritable(true, true);
+        file.setExecutable(true, true);
+
+        try {
+          file.createNewFile();
+          FileOutputStream localTempFile = new FileOutputStream(file);
+          localTempFile.write(readBuffer);
+          localTempFile.close();
+
+          ParquetFileReader parquetReader =
+              ParquetFileReader.open(new Configuration(),
+                  new Path(filepath));
+          ParquetUtils.setBasicFields(fields, parquetReader);
+          if (deepAnalysis) {
+            ParquetUtils.analyzeFields(fields, parquetReader);
+          }
+          parquetReader.close();
+        } catch (Exception e) {
+          log.warn("Cannot write and read local file taken from Ozone");
+        } finally {
+          file.delete();
+        }
+
+      } else {
+        log.warn(
+            "File {} under volume {} in bucket {} is more than 1GB, so cannot be read",
+            this.keyNamePrefix, this.volume, this.bucket);
+      }
+      ozClient.close();
+    } catch (IOException e) {
+      log.error(
+          "Could not connect and read key: {} into Ozone, due to error: ",
+          keyNamePrefix, e);
+    }
     return new Model(fields, primaryKeys, tableNames, options);
   }
 

@@ -35,14 +35,10 @@ public class IncrementLongField extends Field<Long> {
 
   private Long counter = 0L;
 
-  IncrementLongField(String name, Integer length, List<Long> possibleValues,
-                     String min, String max) {
+  public IncrementLongField(String name,
+                            List<Long> possibleValues,
+                            String min, String max) {
     this.name = name;
-    if (length == null || length == -1) {
-      this.length = Integer.MAX_VALUE;
-    } else {
-      this.length = length;
-    }
     if (min == null) {
       this.min = 0L;
     } else {

@@ -49,6 +49,8 @@ public class ApplicationConfigMapper {
       return ApplicationConfigs.DATA_MODEL_PATH_DEFAULT;
     case "data.model.received.path":
       return ApplicationConfigs.DATA_MODEL_RECEIVED_PATH;
+    case "data.model.generated.path":
+      return ApplicationConfigs.DATA_MODEL_GENERATED_PATH;
     case "data.model.default":
       return ApplicationConfigs.DATA_MODEL_DEFAULT;
     case "custom.data.model":

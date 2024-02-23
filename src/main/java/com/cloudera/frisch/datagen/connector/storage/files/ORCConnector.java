@@ -18,7 +18,8 @@
 package com.cloudera.frisch.datagen.connector.storage.files;
 
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
-import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.connector.storage.utils.OrcUtils;
+import com.cloudera.frisch.datagen.model.type.*;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
@@ -30,15 +31,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.orc.OrcFile;
+import org.apache.orc.Reader;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.Writer;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -149,12 +148,31 @@ public class ORCConnector implements ConnectorInterface {
   }
 
   @Override
-  public Model generateModel() {
+  public Model generateModel(Boolean deepAnalysis) {
     LinkedHashMap<String, Field> fields = new LinkedHashMap<String, Field>();
     Map<String, List<String>> primaryKeys = new HashMap<>();
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
-    // TODO : Implement logic to create a model with at least names, pk, options and column names/types
+
+    tableNames.put("LOCAL_FILE_PATH",
+        this.directoryName.substring(0, this.directoryName.lastIndexOf("/")) +
+            "/");
+    tableNames.put("LOCAL_FILE_NAME",
+        this.directoryName.substring(this.directoryName.lastIndexOf("/") + 1));
+
+    try {
+      Reader reader = OrcFile.createReader(new Path(this.directoryName),
+          OrcFile.readerOptions(new Configuration()));
+
+      OrcUtils.setBasicFields(fields, reader);
+      if (deepAnalysis) {
+        OrcUtils.analyzeFields(fields, reader);
+      }
+
+    } catch (IOException e) {
+      log.warn("Could not create reader to ORC local file due to error:", e);
+    }
+
     return new Model(fields, primaryKeys, tableNames, options);
   }
 
@@ -166,7 +184,7 @@ public class ORCConnector implements ConnectorInterface {
           OrcFile.writerOptions(new Configuration())
               .setSchema(schema));
     } catch (IOException e) {
-      log.warn("Could not create writer to ORC HDFS file due to error:", e);
+      log.warn("Could not create writer to ORC local file due to error:", e);
     }
   }
 

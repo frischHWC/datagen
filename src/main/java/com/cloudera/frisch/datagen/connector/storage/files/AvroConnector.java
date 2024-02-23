@@ -17,26 +17,27 @@
  */
 package com.cloudera.frisch.datagen.connector.storage.files;
 
-import com.cloudera.frisch.datagen.connector.ConnectorInterface;
-import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
+import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.AvroUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
+import com.cloudera.frisch.datagen.model.type.*;
+import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
+import org.apache.avro.file.DataFileReader;
 import org.apache.avro.file.DataFileWriter;
+import org.apache.avro.file.FileReader;
+import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumWriter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Avro Sink to create Local Avro files
@@ -72,7 +73,7 @@ public class AvroConnector implements ConnectorInterface {
   @Override
   public void init(Model model, boolean writer) {
     if (writer) {
-      model = model;
+      this.model = model;
       schema = model.getAvroSchema();
       datumWriter = new GenericDatumWriter<>(schema);
       Utils.createLocalDirectory(directoryName);
@@ -136,12 +137,35 @@ public class AvroConnector implements ConnectorInterface {
   }
 
   @Override
-  public Model generateModel() {
+  public Model generateModel(Boolean deepAnalysis) {
     LinkedHashMap<String, Field> fields = new LinkedHashMap<String, Field>();
     Map<String, List<String>> primaryKeys = new HashMap<>();
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
-    // TODO : Implement logic to create a model with at least names, pk, options and column names/types
+
+    tableNames.put("LOCAL_FILE_PATH",
+        this.directoryName.substring(0, this.directoryName.lastIndexOf("/")) +
+            "/");
+    tableNames.put("LOCAL_FILE_NAME",
+        this.directoryName.substring(this.directoryName.lastIndexOf("/") + 1));
+    tableNames.put("AVRO_NAME",
+        this.directoryName.substring(this.directoryName.lastIndexOf("/") + 1) +
+            "_avro");
+
+    try {
+      FileReader<GenericRecord> fileReader =
+          DataFileReader.openReader(new File(this.directoryName),
+              new GenericDatumReader<>());
+      AvroUtils.setBasicFields(fields, fileReader.getSchema());
+      if (deepAnalysis) {
+        AvroUtils.analyzeFields(fields, fileReader);
+      }
+      fileReader.close();
+    } catch (IOException e) {
+      log.warn("Could not read Avro local file: {} due to error",
+          this.directoryName, e);
+    }
+
     return new Model(fields, primaryKeys, tableNames, options);
   }
 

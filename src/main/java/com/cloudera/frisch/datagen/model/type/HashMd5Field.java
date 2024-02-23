@@ -39,7 +39,8 @@ import java.util.List;
 @Slf4j
 public class HashMd5Field extends Field<byte[]> {
 
-  HashMd5Field(String name, Integer length, List<byte[]> possibleValues) {
+  public HashMd5Field(String name, Integer length,
+                      List<byte[]> possibleValues) {
     this.name = name;
     if (length == null || length < 1) {
       this.length = 20;

@@ -20,7 +20,7 @@ package com.cloudera.frisch.datagen.service;
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.config.PropertiesLoader;
-import com.cloudera.frisch.datagen.config.SinkParser;
+import com.cloudera.frisch.datagen.config.ConnectorParser;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.parsers.JsonParser;
@@ -321,14 +321,14 @@ public class CommandRunnerService {
     Model model = parser.renderModelFromFile();
 
     // Creation of sinks
-    List<SinkParser.Sink> sinksList = new ArrayList<>();
+    List<ConnectorParser.Sink> sinksList = new ArrayList<>();
     try {
       if (sinksListAsString == null || sinksListAsString.isEmpty()) {
         log.info("No Sink has been defined, so defaulting to JSON sink");
-        sinksList.add(SinkParser.stringToSink("JSON"));
+        sinksList.add(ConnectorParser.stringToSink("JSON"));
       } else {
         for (String s : sinksListAsString) {
-          sinksList.add(SinkParser.stringToSink(s));
+          sinksList.add(ConnectorParser.stringToSink(s));
         }
       }
     } catch (Exception e) {
@@ -391,8 +391,8 @@ public class CommandRunnerService {
          *  WARNING 3 : If Kudu is in the list of sinks, it should be initialized first as it changes columns orders if there are partitions
          *  Hence, we need to order sinks properly: Ozone first, Hive always before other (except for ozone) and then the rest
          **/
-        List<SinkParser.Sink> sinkList = command.getSinksListAsString();
-        sinkList.sort(SinkParser.Sink.sinkInitPrecedence);
+        List<ConnectorParser.Sink> sinkList = command.getSinksListAsString();
+        sinkList.sort(ConnectorParser.Sink.sinkInitPrecedence);
 
         log.debug("Print sink in order: ");
         sinkList.forEach(s -> log.debug("sink: {}", s.toString()));

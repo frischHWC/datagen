@@ -18,12 +18,12 @@
 package com.cloudera.frisch.datagen.connector;
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
-import com.cloudera.frisch.datagen.config.SinkParser;
+import com.cloudera.frisch.datagen.config.ConnectorParser;
 import com.cloudera.frisch.datagen.connector.db.HbaseConnector;
 import com.cloudera.frisch.datagen.connector.db.HiveConnector;
 import com.cloudera.frisch.datagen.connector.index.SolRConnector;
 import com.cloudera.frisch.datagen.connector.queues.KafkaConnector;
-import com.cloudera.frisch.datagen.connector.storage.KuduConnector;
+import com.cloudera.frisch.datagen.connector.storage.kudu.KuduConnector;
 import com.cloudera.frisch.datagen.connector.storage.files.*;
 import com.cloudera.frisch.datagen.connector.storage.hdfs.*;
 import com.cloudera.frisch.datagen.connector.storage.ozone.*;
@@ -50,7 +50,7 @@ public class ConnectorsUtils {
     public static List<ConnectorInterface> sinksInit(
         Model model,
         Map<ApplicationConfigs, String> properties,
-        List<SinkParser.Sink> sinks,
+        List<ConnectorParser.Sink> sinks,
         boolean writer)
     {
         List<ConnectorInterface> connectorList = new LinkedList<>();
@@ -78,9 +78,6 @@ public class ConnectorsUtils {
                     break;
                 case HIVE:
                     connectorToInit = new HiveConnector(model, properties);
-                    break;
-                case OZONE:
-                    connectorToInit = new OzoneConnector(model, properties);
                     break;
                 case OZONE_PARQUET:
                     connectorToInit = new OzoneParquetConnector(model, properties);

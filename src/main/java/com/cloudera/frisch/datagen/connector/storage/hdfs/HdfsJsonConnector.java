@@ -59,6 +59,7 @@ public class HdfsJsonConnector implements ConnectorInterface {
 
   /**
    * Initiate HDFSJSON connection with Kerberos or not
+   *
    * @return filesystem connection to HDFSJSON
    */
   public HdfsJsonConnector(Model model,
@@ -129,6 +130,7 @@ public class HdfsJsonConnector implements ConnectorInterface {
   public void terminate() {
     try {
       fsDataOutputStream.close();
+      fileSystem.close();
       if (useKerberos) {
         Utils.logoutUserWithKerberos();
       }
@@ -162,7 +164,7 @@ public class HdfsJsonConnector implements ConnectorInterface {
   }
 
   @Override
-  public Model generateModel() {
+  public Model generateModel(Boolean deepAnalysis) {
     LinkedHashMap<String, Field> fields = new LinkedHashMap<String, Field>();
     Map<String, List<String>> primaryKeys = new HashMap<>();
     Map<String, String> tableNames = new HashMap<>();

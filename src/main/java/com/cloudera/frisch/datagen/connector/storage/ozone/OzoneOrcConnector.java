@@ -18,13 +18,14 @@
 package com.cloudera.frisch.datagen.connector.storage.ozone;
 
 
-import com.cloudera.frisch.datagen.connector.ConnectorInterface;
-import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
+import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.OrcUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
+import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -37,10 +38,12 @@ import org.apache.hadoop.ozone.client.*;
 import org.apache.hadoop.ozone.client.io.OzoneOutputStream;
 import org.apache.hadoop.ozone.om.exceptions.OMException;
 import org.apache.orc.OrcFile;
+import org.apache.orc.Reader;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.Writer;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -240,12 +243,62 @@ public class OzoneOrcConnector implements ConnectorInterface {
   }
 
   @Override
-  public Model generateModel() {
+  public Model generateModel(Boolean deepAnalysis) {
     LinkedHashMap<String, Field> fields = new LinkedHashMap<String, Field>();
     Map<String, List<String>> primaryKeys = new HashMap<>();
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
-    // TODO : Implement logic to create a model with at least names, pk, options and column names/types
+    try {
+      OzoneKeyDetails ozoneKeyDetails = this.bucket.getKey(this.keyNamePrefix);
+      // To prevent OOM, we will not get and read file over 1GB
+      long dataSize = ozoneKeyDetails.getDataSize();
+      if (dataSize < 1073741824) {
+        byte[] readBuffer = new byte[(int) (dataSize + 1)];
+        ozoneKeyDetails.getContent().read(readBuffer);
+
+        // Use of a local temp file to write Ozone file and finally delete it
+        String filepath =
+            "/tmp/" + this.keyNamePrefix + "_" + System.currentTimeMillis();
+        File file = new File(filepath);
+        if (file.exists()) {
+          file.delete();
+        }
+        file.setReadable(true, true);
+        file.setWritable(true, true);
+        file.setExecutable(true, true);
+
+        try {
+          file.createNewFile();
+          FileOutputStream localTempFile = new FileOutputStream(file);
+          localTempFile.write(readBuffer);
+          localTempFile.close();
+
+          Reader reader =
+              OrcFile.createReader(new Path(filepath),
+                  OrcFile.readerOptions(new Configuration()));
+
+          OrcUtils.setBasicFields(fields, reader);
+          if (deepAnalysis) {
+            OrcUtils.analyzeFields(fields, reader);
+          }
+
+        } catch (Exception e) {
+          log.warn("Cannot write and read local file taken from Ozone");
+        } finally {
+          file.delete();
+        }
+
+      } else {
+        log.warn(
+            "File {} under volume {} in bucket {} is more than 1GB, so cannot be read",
+            this.keyNamePrefix, this.volume, this.bucket);
+      }
+      ozClient.close();
+    } catch (IOException e) {
+      log.error(
+          "Could not connect and read key: {} into Ozone, due to error: ",
+          keyNamePrefix, e);
+    }
     return new Model(fields, primaryKeys, tableNames, options);
   }
 

@@ -17,7 +17,7 @@
  */
 package com.cloudera.frisch.datagen.service;
 
-import com.cloudera.frisch.datagen.config.SinkParser;
+import com.cloudera.frisch.datagen.config.ConnectorParser;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -44,7 +44,7 @@ public class MetricsService {
   }
 
   public synchronized void updateMetrics(long numberOfBatches, long rowPerBatch,
-                                         List<SinkParser.Sink> sinks) {
+                                         List<ConnectorParser.Sink> sinks) {
 
     synchronized (allMetrics) {
       sinks.forEach(sink -> {

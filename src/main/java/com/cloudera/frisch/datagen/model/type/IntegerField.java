@@ -34,15 +34,10 @@ import java.util.List;
 @Slf4j
 public class IntegerField extends Field<Integer> {
 
-  IntegerField(String name, Integer length, List<Integer> possibleValues,
+  public IntegerField(String name, List<Integer> possibleValues,
                LinkedHashMap<String, Long> possible_values_weighted, String min,
                String max) {
     this.name = name;
-    if (length == null || length == -1) {
-      this.length = Integer.MAX_VALUE;
-    } else {
-      this.length = length;
-    }
     if (max == null) {
       this.max = Long.valueOf(Integer.MAX_VALUE);
     } else {

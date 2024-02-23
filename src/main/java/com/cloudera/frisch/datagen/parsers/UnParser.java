@@ -6,30 +6,27 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.connector;
+package com.cloudera.frisch.datagen.parsers;
+
 
 import com.cloudera.frisch.datagen.model.Model;
-import com.cloudera.frisch.datagen.model.Row;
 
-import java.util.List;
+/**
+ * A parser is an entity able to read one type of file and render a {@see #com.cloudera.frisch.randomdatagen.model.Model}
+ * based on that file
+ */
+public interface UnParser {
 
-public interface ConnectorInterface {
+  // TODO: Implement a yaml unparser
 
-    void init(Model model, boolean writer);
-
-    void terminate();
-
-    void sendOneBatchOfRows(List<Row> rows);
-
-    Model generateModel(Boolean deepAnalysis);
-
+  String renderFileFromModel(Model model, String pathToWriteModel);
 }

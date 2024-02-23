@@ -35,14 +35,10 @@ public class IncrementIntegerField extends Field<Integer> {
 
   private Integer counter = 0;
 
-  IncrementIntegerField(String name, Integer length,
-                        List<Integer> possibleValues, String min, String max) {
+  public IncrementIntegerField(String name,
+                               List<Integer> possibleValues, String min,
+                               String max) {
     this.name = name;
-    if (length == null || length == -1) {
-      this.length = Integer.MAX_VALUE;
-    } else {
-      this.length = length;
-    }
     if (min == null) {
       this.min = 0L;
     } else {

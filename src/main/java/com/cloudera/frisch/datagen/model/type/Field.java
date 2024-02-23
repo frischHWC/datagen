@@ -190,35 +190,35 @@ public abstract class Field<T> {
               .collect(Collectors.toList()));
       break;
     case "INTEGER":
-      field = new IntegerField(name, length,
+      field = new IntegerField(name,
           possibleValues.stream().map(JsonNode::asInt)
               .collect(Collectors.toList()), possible_values_weighted, min,
           max);
       break;
     case "INCREMENT_INTEGER":
-      field = new IncrementIntegerField(name, length,
+      field = new IncrementIntegerField(name,
           possibleValues.stream().map(JsonNode::asInt)
               .collect(Collectors.toList()), min, max);
       break;
     case "BOOLEAN":
-      field = new BooleanField(name, length,
+      field = new BooleanField(name,
           possibleValues.stream().map(JsonNode::asBoolean)
               .collect(Collectors.toList()), possible_values_weighted);
       break;
     case "FLOAT":
-      field = new FloatField(name, length,
+      field = new FloatField(name,
           possibleValues.stream().map(j -> (float) j.asDouble())
               .collect(Collectors.toList()), possible_values_weighted, min,
           max);
       break;
     case "LONG":
-      field = new LongField(name, length,
+      field = new LongField(name,
           possibleValues.stream().map(JsonNode::asLong)
               .collect(Collectors.toList()), possible_values_weighted, min,
           max);
       break;
     case "INCREMENT_LONG":
-      field = new IncrementLongField(name, length,
+      field = new IncrementLongField(name,
           possibleValues.stream().map(JsonNode::asLong)
               .collect(Collectors.toList()), min, max);
       break;
@@ -313,6 +313,55 @@ public abstract class Field<T> {
     }
 
     return field;
+  }
+
+  public String getTypeForModel() {
+    switch (this.getClass().getSimpleName().toLowerCase(Locale.ROOT)) {
+    case "birthdatefield":
+      return "BIRTHDATE";
+    case "blobfield":
+      return "BLOB";
+    case "booleanfield":
+      return "BOOLEAN";
+    case "bytesfield":
+      return "BYTES";
+    case "cityfield":
+      return "CITY";
+    case "csvfield":
+      return "CSV";
+    case "emailfield":
+      return "EMAIL";
+    case "floatfield":
+      return "FLOAT";
+    case "hashmd5field":
+      return "HASHMD5";
+    case "incrementintegerfield":
+      return "INCREMENT_INTEGER";
+    case "incrementlongfield":
+      return "INCREMENT_LONG";
+    case "integerfield":
+      return "INTEGER";
+    case "ipfield":
+      return "IP";
+    case "linkfield":
+      return "LINK";
+    case "longfield":
+      return "LONG";
+    case "namefield":
+      return "NAME";
+    case "phonefield":
+      return "PHONE";
+    case "stringazfield":
+      return "STRINGAZ";
+    case "stringfield":
+      return "STRING";
+    case "timestampfield":
+      return "TIMESTAMP";
+    case "uuidfiel":
+      return "UUID";
+    default:
+      return "STRING";
+    }
   }
 
     /*

@@ -34,14 +34,10 @@ import java.util.List;
 @Slf4j
 public class FloatField extends Field<Float> {
 
-  FloatField(String name, Integer length, List<Float> possibleValues,
-             LinkedHashMap<String, Long> possible_values_weighted, String min,
-             String max) {
-    if (length == null || length == -1) {
-      this.length = Integer.MAX_VALUE;
-    } else {
-      this.length = length;
-    }
+  public FloatField(String name, List<Float> possibleValues,
+                    LinkedHashMap<String, Long> possible_values_weighted,
+                    String min,
+                    String max) {
     if (max == null) {
       this.max = Long.MAX_VALUE;
     } else {

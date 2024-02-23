@@ -20,6 +20,7 @@ package com.cloudera.frisch.datagen.connector.storage.hdfs;
 
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
 import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.model.type.StringField;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
@@ -27,16 +28,14 @@ import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -128,6 +127,7 @@ public class HdfsCsvConnector implements ConnectorInterface {
   public void terminate() {
     try {
       fsDataOutputStream.close();
+      fileSystem.close();
       if (useKerberos) {
         Utils.logoutUserWithKerberos();
       }
@@ -162,12 +162,34 @@ public class HdfsCsvConnector implements ConnectorInterface {
   }
 
   @Override
-  public Model generateModel() {
+  public Model generateModel(Boolean deepAnalysis) {
     LinkedHashMap<String, Field> fields = new LinkedHashMap<String, Field>();
     Map<String, List<String>> primaryKeys = new HashMap<>();
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
-    // TODO : Implement logic to create a model with at least names, pk, options and column names/types
+
+    tableNames.put("HDFS_FILE_PATH",
+        this.directoryName.substring(0, this.directoryName.lastIndexOf("/")) +
+            "/");
+    tableNames.put("HDFS_FILE_NAME",
+        this.directoryName.substring(this.directoryName.lastIndexOf("/") + 1));
+
+    try {
+      FSDataInputStream fsDataInputStream =
+          fileSystem.open(new Path(this.directoryName));
+      String csvHeader = new BufferedReader(
+          new InputStreamReader(fsDataInputStream)).readLine();
+      Arrays.stream(csvHeader.split(","))
+          .forEach(f -> fields.put(f,
+              new StringField(f, null, Collections.emptyList(),
+                  new LinkedHashMap<>())));
+      fsDataInputStream.close();
+      fileSystem.close();
+    } catch (IOException e) {
+      log.error("Tried to read file : {} with no success :", this.directoryName,
+          e);
+    }
+
     return new Model(fields, primaryKeys, tableNames, options);
   }
 

@@ -19,7 +19,7 @@ package com.cloudera.frisch.datagen.utils;
 
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
-import com.cloudera.frisch.datagen.config.SinkParser;
+import com.cloudera.frisch.datagen.config.ConnectorParser;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import lombok.extern.slf4j.Slf4j;
@@ -410,7 +410,7 @@ public class Utils {
    * Log in the recap of what's been generated
    */
   public static void recap(long numberOfBatches, long rowPerBatch,
-                           List<SinkParser.Sink> sinks, Model model) {
+                           List<ConnectorParser.Sink> sinks, Model model) {
     log.info(
         " ************************* Recap of data generation ****************** ");
     log.info("Generated " + formatNumber(rowPerBatch * numberOfBatches) +

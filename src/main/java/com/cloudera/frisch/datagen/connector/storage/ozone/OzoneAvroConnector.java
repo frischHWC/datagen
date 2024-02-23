@@ -18,16 +18,19 @@
 package com.cloudera.frisch.datagen.connector.storage.ozone;
 
 
-import com.cloudera.frisch.datagen.connector.ConnectorInterface;
-import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
+import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.AvroUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
+import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
+import org.apache.avro.file.DataFileStream;
 import org.apache.avro.file.DataFileWriter;
+import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumWriter;
@@ -38,6 +41,7 @@ import org.apache.hadoop.ozone.client.*;
 import org.apache.hadoop.ozone.client.io.OzoneOutputStream;
 import org.apache.hadoop.ozone.om.exceptions.OMException;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -145,6 +149,16 @@ public class OzoneAvroConnector implements ConnectorInterface {
             "Could not connect and create Volume into Ozone, due to error: ",
             e);
       }
+    } else {
+      try {
+        this.volume = objectStore.getVolume(volumeName);
+        this.bucket = volume.getBucket(bucketName);
+      } catch (IOException e) {
+        log.error(
+            "Could not connect and read Volume {} and bucket: {} into Ozone, due to error: ",
+            volume, bucket,
+            e);
+      }
     }
 
   }
@@ -234,12 +248,36 @@ public class OzoneAvroConnector implements ConnectorInterface {
   }
 
   @Override
-  public Model generateModel() {
+  public Model generateModel(Boolean deepAnalysis) {
     LinkedHashMap<String, Field> fields = new LinkedHashMap<String, Field>();
     Map<String, List<String>> primaryKeys = new HashMap<>();
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
-    // TODO : Implement logic to create a model with at least names, pk, options and column names/types
+
+    try {
+      OzoneKeyDetails ozoneKeyDetails = this.bucket.getKey(this.keyNamePrefix);
+      // To prevent OOM, we will not get and read file over 1GB
+      long dataSize = ozoneKeyDetails.getDataSize();
+      if (dataSize < 1073741824) {
+        byte[] readBuffer = new byte[(int) (dataSize + 1)];
+        ozoneKeyDetails.getContent().read(readBuffer);
+
+        DataFileStream<GenericRecord> dataFileStream = new DataFileStream<>(new ByteArrayInputStream(readBuffer), new GenericDatumReader<>());
+        AvroUtils.setBasicFields(fields, dataFileStream.getSchema());
+        dataFileStream.close();
+      } else {
+        log.warn(
+            "File {} under volume {} in bucket {} is more than 1GB, so cannot be read",
+            this.keyNamePrefix, this.volume, this.bucket);
+      }
+      ozClient.close();
+    } catch (IOException e) {
+      log.error(
+          "Could not connect and read key: {} into Ozone, due to error: ",
+          keyNamePrefix, e);
+    }
+
+
     return new Model(fields, primaryKeys, tableNames, options);
   }
 

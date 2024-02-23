@@ -33,7 +33,7 @@ import java.util.List;
 @Slf4j
 public class IpField extends Field<String> {
 
-  IpField(String name, Integer length, List<String> possibleValues) {
+  public IpField(String name, Integer length, List<String> possibleValues) {
     this.name = name;
     this.length = length;
     this.possibleValues = possibleValues;

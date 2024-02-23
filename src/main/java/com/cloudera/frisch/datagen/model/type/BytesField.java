@@ -35,7 +35,7 @@ import java.util.List;
 @Slf4j
 public class BytesField extends Field<byte[]> {
 
-  BytesField(String name, Integer length, List<byte[]> possibleValues) {
+  public BytesField(String name, Integer length, List<byte[]> possibleValues) {
     this.name = name;
     if (length == null || length < 1) {
       this.length = 20;

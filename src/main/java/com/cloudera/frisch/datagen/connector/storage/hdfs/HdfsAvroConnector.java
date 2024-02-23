@@ -19,6 +19,7 @@ package com.cloudera.frisch.datagen.connector.storage.hdfs;
 
 
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.AvroUtils;
 import com.cloudera.frisch.datagen.model.type.Field;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
@@ -27,7 +28,10 @@ import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
+import org.apache.avro.file.DataFileReader;
 import org.apache.avro.file.DataFileWriter;
+import org.apache.avro.file.FileReader;
+import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumWriter;
@@ -35,6 +39,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
@@ -65,7 +70,6 @@ public class HdfsAvroConnector implements ConnectorInterface {
 
   /**
    * Initiate HDFS-AVRO connection with Kerberos or not
-   *
    */
   public HdfsAvroConnector(Model model,
                            Map<ApplicationConfigs, String> properties) {
@@ -140,6 +144,7 @@ public class HdfsAvroConnector implements ConnectorInterface {
     try {
       dataFileWriter.close();
       fsDataOutputStream.close();
+      fileSystem.close();
       if (useKerberos) {
         Utils.logoutUserWithKerberos();
       }
@@ -186,12 +191,36 @@ public class HdfsAvroConnector implements ConnectorInterface {
   }
 
   @Override
-  public Model generateModel() {
+  public Model generateModel(Boolean deepAnalysis) {
     LinkedHashMap<String, Field> fields = new LinkedHashMap<String, Field>();
     Map<String, List<String>> primaryKeys = new HashMap<>();
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
-    // TODO : Implement logic to create a model with at least names, pk, options and column names/types
+
+    tableNames.put("HDFS_FILE_PATH",
+        this.directoryName.substring(0, this.directoryName.lastIndexOf("/")) +
+            "/");
+    tableNames.put("HDFS_FILE_NAME",
+        this.directoryName.substring(this.directoryName.lastIndexOf("/") + 1));
+    tableNames.put("AVRO_NAME",
+        this.directoryName.substring(this.directoryName.lastIndexOf("/") + 1) +
+            "_avro");
+
+    try {
+      FileReader<GenericRecord> fileReader =
+          DataFileReader.openReader(new File(this.directoryName),
+              new GenericDatumReader<>());
+      AvroUtils.setBasicFields(fields, fileReader.getSchema());
+      if (deepAnalysis) {
+        AvroUtils.analyzeFields(fields, fileReader);
+      }
+      fileReader.close();
+      fileSystem.close();
+    } catch (IOException e) {
+      log.warn("Could not read Avro local file: {} due to error",
+          this.directoryName, e);
+    }
+
     return new Model(fields, primaryKeys, tableNames, options);
   }
 

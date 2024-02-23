@@ -18,7 +18,7 @@
 package com.cloudera.frisch.datagen.service;
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
-import com.cloudera.frisch.datagen.config.SinkParser;
+import com.cloudera.frisch.datagen.config.ConnectorParser;
 import com.cloudera.frisch.datagen.model.Model;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,7 +50,7 @@ public class Command implements Serializable {
   private Long rowsPerBatch;
   private Boolean scheduled;
   private Long delayBetweenExecutions;
-  private List<SinkParser.Sink> sinksListAsString;
+  private List<ConnectorParser.Sink> sinksListAsString;
   private Map<ApplicationConfigs, String> properties;
   private Long durationSeconds;
   private Long lastFinishedTimestamp;
@@ -85,7 +85,7 @@ public class Command implements Serializable {
     this.rowsPerBatch = (Long) ois.readObject();
     this.scheduled = (Boolean) ois.readObject();
     this.delayBetweenExecutions = (Long) ois.readObject();
-    this.sinksListAsString = (List<SinkParser.Sink>) ois.readObject();
+    this.sinksListAsString = (List<ConnectorParser.Sink>) ois.readObject();
     this.properties = (Map<ApplicationConfigs, String>) ois.readObject();
     this.durationSeconds = (Long) ois.readObject();
     this.lastFinishedTimestamp = (Long) ois.readObject();
@@ -133,7 +133,7 @@ public class Command implements Serializable {
                  Long rowsPerBatch,
                  Boolean scheduled,
                  Long delayBetweenExecutions,
-                 List<SinkParser.Sink> sinksListAsString,
+                 List<ConnectorParser.Sink> sinksListAsString,
                  Map<ApplicationConfigs, String> properties) {
     this.commandUuid = UUID.randomUUID();
     this.status = CommandStatus.QUEUED;

@@ -49,8 +49,9 @@ public class CsvField extends Field<Map<String, String>> {
   private LinkedList<String> columnNames;
 
 
-  CsvField(String name, Integer length, List<String> filters, String file,
-           String separator, String mainField) {
+  public CsvField(String name, Integer length, List<String> filters,
+                  String file,
+                  String separator, String mainField) {
     this.name = name;
     this.length = length;
     this.file = file;

@@ -36,7 +36,7 @@ import java.util.List;
 @Slf4j
 public class BlobField extends Field<byte[]> {
 
-  BlobField(String name, Integer length, List<byte[]> possibleValues) {
+  public BlobField(String name, Integer length, List<byte[]> possibleValues) {
     this.name = name;
     if (length == null || length < 1) {
       this.length = 1_000_000;

@@ -42,7 +42,8 @@ public class CountryField extends Field<String> {
 
   private List<String> countryDico;
 
-  CountryField(String name, Integer length, List<String> possibleValues) {
+  public CountryField(String name, Integer length,
+                      List<String> possibleValues) {
     this.name = name;
     this.length = length;
     this.possibleValues = possibleValues;

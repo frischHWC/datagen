@@ -19,10 +19,12 @@ package com.cloudera.frisch.datagen.service;
 
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
+import com.cloudera.frisch.datagen.config.ConnectorParser;
 import com.cloudera.frisch.datagen.config.PropertiesLoader;
-import com.cloudera.frisch.datagen.config.SinkParser;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
 import com.cloudera.frisch.datagen.connector.ConnectorsUtils;
+import com.cloudera.frisch.datagen.model.Model;
+import com.cloudera.frisch.datagen.model.OptionsConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Random;
 
 
 @Service
@@ -42,22 +45,38 @@ public class ModelGeneraterSevice {
 
   public String generateModel(
       String source,
+      Boolean deepAnalysis,
+      @Nullable String filepath,
       @Nullable String database,
-      @Nullable String table
+      @Nullable String table,
+      @Nullable String volume,
+      @Nullable String bucket,
+      @Nullable String key
   ) {
     Map<ApplicationConfigs, String> properties =
         propertiesLoader.getPropertiesCopy();
 
-    ConnectorInterface sink = ConnectorsUtils
-        .sinksInit(null, properties,
-            Collections.singletonList(SinkParser.stringToSink(source)), false)
+    Model modelEmpty = new Model();
+    Map<OptionsConverter.TableNames, String> tableNames = modelEmpty.getTableNames();
+    tableNames.put(OptionsConverter.TableNames.HIVE_DATABASE, database);
+    tableNames.put(OptionsConverter.TableNames.HIVE_TABLE_NAME, table);
+    if(source.contains("hdfs")) {
+      tableNames.put(OptionsConverter.TableNames.HDFS_FILE_PATH, filepath);
+    } else {
+      tableNames.put(OptionsConverter.TableNames.LOCAL_FILE_PATH, filepath);
+    }
+    tableNames.put(OptionsConverter.TableNames.OZONE_VOLUME, volume);
+    tableNames.put(OptionsConverter.TableNames.OZONE_BUCKET, bucket);
+    tableNames.put(OptionsConverter.TableNames.OZONE_KEY_NAME, key);
+
+    String outputPath = properties.get(ApplicationConfigs.DATA_MODEL_GENERATED_PATH) +
+            "/model-generated-" + new Random().nextInt() + ".json";
+
+    ConnectorInterface connector = ConnectorsUtils
+        .sinksInit(modelEmpty, properties,
+            Collections.singletonList(ConnectorParser.stringToSink(source)), false)
         .get(0);
 
-    // TODO: Call generate models
-    // => Refactor Sink to be "connectors" and have init/terminate/sendRows/GenModel
-
-    // TODO : Implement logic foreach connector to get model
-
-    return "";
+    return connector.generateModel(deepAnalysis).toJsonSchema(outputPath);
   }
 }

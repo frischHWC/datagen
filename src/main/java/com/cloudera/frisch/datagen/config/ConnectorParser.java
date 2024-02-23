@@ -21,9 +21,9 @@ package com.cloudera.frisch.datagen.config;
 import java.util.Comparator;
 
 
-public class SinkParser {
+public class ConnectorParser {
 
-  private SinkParser() {
+  private ConnectorParser() {
     throw new IllegalStateException("Could not initialize this class");
   }
 
@@ -45,8 +45,6 @@ public class SinkParser {
       return Sink.HIVE;
     case "KAFKA":
       return Sink.KAFKA;
-    case "OZONE":
-      return Sink.OZONE;
     case "OZONE-PARQUET":
       return Sink.OZONE_PARQUET;
     case "OZONE-CSV":
@@ -102,28 +100,28 @@ public class SinkParser {
     public static Comparator<Sink> sinkInitPrecedence = new Comparator<>() {
       @Override
       public int compare(Sink s1, Sink s2) {
-        if (s1.equals(SinkParser.Sink.OZONE_AVRO) ||
-            s1.equals(SinkParser.Sink.OZONE_JSON) ||
-            s1.equals(SinkParser.Sink.OZONE_CSV) ||
-            s1.equals(SinkParser.Sink.OZONE_PARQUET) ||
-            s1.equals(SinkParser.Sink.OZONE_ORC)) {
-          if (s2.equals(SinkParser.Sink.OZONE_AVRO) ||
-              s2.equals(SinkParser.Sink.OZONE_JSON) ||
-              s2.equals(SinkParser.Sink.OZONE_CSV) ||
-              s2.equals(SinkParser.Sink.OZONE_PARQUET) ||
-              s2.equals(SinkParser.Sink.OZONE_ORC)) {
+        if (s1.equals(ConnectorParser.Sink.OZONE_AVRO) ||
+            s1.equals(ConnectorParser.Sink.OZONE_JSON) ||
+            s1.equals(ConnectorParser.Sink.OZONE_CSV) ||
+            s1.equals(ConnectorParser.Sink.OZONE_PARQUET) ||
+            s1.equals(ConnectorParser.Sink.OZONE_ORC)) {
+          if (s2.equals(ConnectorParser.Sink.OZONE_AVRO) ||
+              s2.equals(ConnectorParser.Sink.OZONE_JSON) ||
+              s2.equals(ConnectorParser.Sink.OZONE_CSV) ||
+              s2.equals(ConnectorParser.Sink.OZONE_PARQUET) ||
+              s2.equals(ConnectorParser.Sink.OZONE_ORC)) {
             return 0;
           } else {
             return -1;
           }
-        } else if (s1.equals(SinkParser.Sink.HIVE) || s1.equals(Sink.KUDU)) {
-          if (s2.equals(SinkParser.Sink.OZONE_AVRO) ||
-              s2.equals(SinkParser.Sink.OZONE_JSON) ||
-              s2.equals(SinkParser.Sink.OZONE_CSV) ||
-              s2.equals(SinkParser.Sink.OZONE_PARQUET) ||
-              s2.equals(SinkParser.Sink.OZONE_ORC)) {
+        } else if (s1.equals(ConnectorParser.Sink.HIVE) || s1.equals(Sink.KUDU)) {
+          if (s2.equals(ConnectorParser.Sink.OZONE_AVRO) ||
+              s2.equals(ConnectorParser.Sink.OZONE_JSON) ||
+              s2.equals(ConnectorParser.Sink.OZONE_CSV) ||
+              s2.equals(ConnectorParser.Sink.OZONE_PARQUET) ||
+              s2.equals(ConnectorParser.Sink.OZONE_ORC)) {
             return 1;
-          } else if (s2.equals(SinkParser.Sink.HIVE) || s2.equals(Sink.KUDU)) {
+          } else if (s2.equals(ConnectorParser.Sink.HIVE) || s2.equals(Sink.KUDU)) {
             return 0;
           } else {
             return -1;

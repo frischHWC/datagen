@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class BirthdateField extends Field<LocalDate> {
 
-  BirthdateField(String name, Integer length, List<String> possibleValues,
+  public BirthdateField(String name, Integer length, List<String> possibleValues,
                  String min, String max) {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     this.name = name;

@@ -33,7 +33,7 @@ import java.util.UUID;
 @Slf4j
 public class UuidField extends Field<String> {
 
-  UuidField(String name) {
+  public UuidField(String name) {
     this.name = name;
   }
 

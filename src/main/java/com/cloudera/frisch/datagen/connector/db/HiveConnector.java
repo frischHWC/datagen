@@ -18,11 +18,12 @@
 package com.cloudera.frisch.datagen.connector.db;
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
+import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.db.utils.HiveUtils;
+import com.cloudera.frisch.datagen.connector.storage.hdfs.*;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
-import com.cloudera.frisch.datagen.connector.ConnectorInterface;
-import com.cloudera.frisch.datagen.connector.storage.hdfs.*;
 import com.cloudera.frisch.datagen.model.type.Field;
 import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
@@ -30,10 +31,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.jdbc.HiveConnection;
 import org.apache.hive.jdbc.HivePreparedStatement;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
@@ -183,8 +181,8 @@ public class HiveConnector implements ConnectorInterface {
 
   @Override
   public void init(Model model, boolean writer) {
-    try {
-      if (writer) {
+    if (writer) {
+      try {
         prepareAndExecuteStatement(
             "CREATE DATABASE IF NOT EXISTS " + database);
 
@@ -249,6 +247,7 @@ public class HiveConnector implements ConnectorInterface {
             this.hdfsSink =
                 new HdfsOrcConnector(model, propertiesForHiveSink);
           }
+          this.hdfsSink.init(model, writer);
 
           if (hiveTableType == Model.HiveTableType.MANAGED) {
             String tableStatementCreationTemp =
@@ -267,10 +266,16 @@ public class HiveConnector implements ConnectorInterface {
         insertStatement =
             "INSERT INTO " + tableName + model.getInsertSQLStatement() +
                 this.extraInsert;
-      }
 
-    } catch (SQLException e) {
-      log.error("Could not create table due to error: ", e);
+      } catch (SQLException e) {
+        log.error("Could not create table due to error: ", e);
+      }
+    } else {
+      try {
+        hiveConnection.setSchema(database);
+      } catch (SQLException e) {
+        log.error("Could not read table due to error: ", e);
+      }
     }
 
   }
@@ -317,12 +322,44 @@ public class HiveConnector implements ConnectorInterface {
   }
 
   @Override
-  public Model generateModel() {
+  public Model generateModel(Boolean deepAnalysis) {
     LinkedHashMap<String, Field> fields = new LinkedHashMap<String, Field>();
     Map<String, List<String>> primaryKeys = new HashMap<>();
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
-    // TODO : Implement logic to create a model with at least names, pk, options and column names/types
+
+    tableNames.put("HIVE_DATABASE", database);
+    tableNames.put("HIVE_TABLE_NAME", tableName);
+    tableNames.put("HIVE_TEMPORARY_TABLE_NAME", tableName + "_tmp");
+    tableNames.put("AVRO_NAME", database + tableName + "avro");
+
+    try {
+      ResultSet columnsInfo = hiveConnection.getMetaData()
+          .getColumns(null, null, tableName, null);
+
+      HiveUtils.setBasicFields(fields, columnsInfo);
+
+      ResultSet descTableInfo =
+          hiveConnection.prepareStatement("DESCRIBE FORMATTED " + tableName)
+              .executeQuery();
+
+      HiveUtils.setTableInfo(tableNames, options, descTableInfo);
+
+      if (deepAnalysis) {
+        HiveUtils.analyzeFields(fields, columnsInfo);
+      }
+
+    } catch (SQLException e) {
+      log.warn("Cannot read table {} in database {} due to error", tableName,
+          database, e);
+    }
+
+    try {
+      hiveConnection.close();
+    } catch (SQLException e) {
+      log.warn("Unable to close Hive connection");
+    }
+
     return new Model(fields, primaryKeys, tableNames, options);
   }
 

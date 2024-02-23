@@ -76,7 +76,7 @@ public class NameField extends Field<String> {
 
   private List<Name> nameDico;
 
-  NameField(String name, Integer length, List<String> filters) {
+  public NameField(String name, Integer length, List<String> filters) {
     this.name = name;
     this.length = length;
     this.nameDico = loadNameDico();

@@ -34,10 +34,9 @@ import java.util.List;
 @Slf4j
 public class BooleanField extends Field<Boolean> {
 
-  BooleanField(String name, Integer length, List<Boolean> possibleValues,
-               LinkedHashMap<String, Long> possible_values_weighted) {
+  public BooleanField(String name, List<Boolean> possibleValues,
+                      LinkedHashMap<String, Long> possible_values_weighted) {
     this.name = name;
-    this.length = length;
     this.possibleValues = possibleValues;
     if (possible_values_weighted != null &&
         !possible_values_weighted.isEmpty()) {

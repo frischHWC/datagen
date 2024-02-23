@@ -34,7 +34,8 @@ import java.util.List;
 @Slf4j
 public class StringAZField extends Field<String> {
 
-  StringAZField(String name, Integer length, List<String> possibleValues) {
+  public StringAZField(String name, Integer length,
+                       List<String> possibleValues) {
     this.name = name;
     if (length == null || length < 1) {
       this.length = 20;

@@ -258,4 +258,5 @@ public class JsonParser<T extends Field> implements Parser {
       tbs.put(nodeName, jsonTb.get(nodeName).asText());
     }
   }
+
 }

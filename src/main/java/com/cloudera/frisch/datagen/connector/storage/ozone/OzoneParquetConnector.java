@@ -237,7 +237,7 @@ public class OzoneParquetConnector implements ConnectorInterface {
       long dataSize = ozoneKeyDetails.getDataSize();
       if (dataSize < 1073741824) {
         byte[] readBuffer = new byte[(int) (dataSize + 1)];
-        ozoneKeyDetails.getContent().read(readBuffer);
+        this.bucket.readFile(this.keyNamePrefix).read(readBuffer);
 
         // Use of a local temp file to write Ozone file and finally delete it
         String filepath =

@@ -260,7 +260,7 @@ public class OzoneAvroConnector implements ConnectorInterface {
       long dataSize = ozoneKeyDetails.getDataSize();
       if (dataSize < 1073741824) {
         byte[] readBuffer = new byte[(int) (dataSize + 1)];
-        ozoneKeyDetails.getContent().read(readBuffer);
+        this.bucket.readFile(this.keyNamePrefix).read(readBuffer);;
 
         DataFileStream<GenericRecord> dataFileStream = new DataFileStream<>(new ByteArrayInputStream(readBuffer), new GenericDatumReader<>());
         AvroUtils.setBasicFields(fields, dataFileStream.getSchema());

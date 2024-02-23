@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,12 +34,13 @@ public class Injection {
     String stringToPrint;
     Boolean toReplace;
   }
-  
-  private final LinkedList<InjectedField> injectedFieldNames = new LinkedList<>();
+
+  private final LinkedList<InjectedField> injectedFieldNames =
+      new LinkedList<>();
 
   Injection(String injection) {
-    for(String s: injection.split("[$]")) {
-      if(s.length()!=0) {
+    for (String s : injection.split("[$]")) {
+      if (s.length() != 0) {
         if (s.charAt(0) != '{') {
           log.debug(s + " is not a variable name");
           injectedFieldNames.add(new InjectedField(s, false));
@@ -62,16 +63,19 @@ public class Injection {
     Map<String, Object> rowValues = row.getValues();
     StringBuilder sb = new StringBuilder();
     try {
-      for(InjectedField fieldNameToReplace: injectedFieldNames) {
-        if(fieldNameToReplace.toReplace) {
-          sb.append(row.getModel().getFieldFromName(fieldNameToReplace.stringToPrint)
-              .toStringValue(rowValues.get(fieldNameToReplace.stringToPrint)));
+      for (InjectedField fieldNameToReplace : injectedFieldNames) {
+        if (fieldNameToReplace.toReplace) {
+          sb.append(
+              row.getModel().getFieldFromName(fieldNameToReplace.stringToPrint)
+                  .toStringValue(
+                      rowValues.get(fieldNameToReplace.stringToPrint)));
         } else {
-         sb.append(fieldNameToReplace.stringToPrint);
+          sb.append(fieldNameToReplace.stringToPrint);
         }
       }
     } catch (Exception e) {
-      log.error("Can not evaluate injection so returning empty value, see: ", e);
+      log.error("Can not evaluate injection so returning empty value, see: ",
+          e);
     }
 
     return sb.toString();

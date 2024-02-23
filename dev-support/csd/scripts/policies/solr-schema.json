@@ -1,0 +1,73 @@
+{
+  "isEnabled": true,
+  "version": 1,
+  "service": "cm_solr",
+  "name": "datagen policy for solr schema",
+  "policyType": 0,
+  "policyPriority": 0,
+  "description": "DATAGEN's policy SolR Schema for default generation",
+  "isAuditEnabled": true,
+  "resources": {
+    "schema": {
+      "values": [
+        "datagen*"
+      ],
+      "isExcludes": false,
+      "isRecursive": false
+    }
+  },
+  "policyItems": [
+    {
+      "accesses": [
+        {
+          "type": "query",
+          "isAllowed": true
+        },
+        {
+          "type": "update",
+          "isAllowed": true
+        }
+      ],
+      "users": [
+        "datagen"
+      ],
+      "groups": [
+
+      ],
+      "roles": [
+
+      ],
+      "conditions": [
+
+      ],
+      "delegateAdmin": true
+    }
+  ],
+  "denyPolicyItems": [
+
+  ],
+  "allowExceptions": [
+
+  ],
+  "denyExceptions": [
+
+  ],
+  "dataMaskPolicyItems": [
+
+  ],
+  "rowFilterPolicyItems": [
+
+  ],
+  "serviceType": "solr",
+  "options": {
+
+  },
+  "validitySchedules": [
+
+  ],
+  "policyLabels": [
+
+  ],
+  "zoneName": "",
+  "isDenyAllElse": false
+}

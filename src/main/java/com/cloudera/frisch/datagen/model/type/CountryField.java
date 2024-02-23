@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,80 +40,88 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CountryField extends Field<String> {
 
-    private List<String> countryDico;
+  private List<String> countryDico;
 
-    CountryField(String name, Integer length, List<String> possibleValues) {
-        this.name = name;
-        this.length = length;
-        this.possibleValues = possibleValues;
-        this.countryDico = possibleValues.isEmpty() ? loadCountryDico() : possibleValues;
-    }
+  public CountryField(String name, Integer length,
+                      List<String> possibleValues) {
+    this.name = name;
+    this.length = length;
+    this.possibleValues = possibleValues;
+    this.countryDico =
+        possibleValues.isEmpty() ? loadCountryDico() : possibleValues;
+  }
 
-    public String generateRandomValue() {
-        return countryDico.get(random.nextInt(countryDico.size()));
-    }
+  public String generateRandomValue() {
+    return countryDico.get(random.nextInt(countryDico.size()));
+  }
 
-    private List<String> loadCountryDico() {
-        try {
-            InputStream is = this.getClass().getClassLoader().getResourceAsStream(
-                "dictionaries/country-dico.txt");
-            return new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
-                    .lines()
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            log.warn("Could not load country-dico with error : " + e);
-            return Collections.singletonList("World");
-        }
+  private List<String> loadCountryDico() {
+    try {
+      InputStream is = this.getClass().getClassLoader().getResourceAsStream(
+          "dictionaries/country-dico.txt");
+      return new BufferedReader(
+          new InputStreamReader(is, StandardCharsets.UTF_8))
+          .lines()
+          .collect(Collectors.toList());
+    } catch (Exception e) {
+      log.warn("Could not load country-dico with error : " + e);
+      return Collections.singletonList("World");
     }
+  }
 
     /*
      Override if needed Field function to insert into special sinks
      */
 
-    @Override
-    public Put toHbasePut(String value, Put hbasePut) {
-        hbasePut.addColumn(Bytes.toBytes(hbaseColumnQualifier), Bytes.toBytes(name), Bytes.toBytes(value));
-        return hbasePut;
-    }
+  @Override
+  public Put toHbasePut(String value, Put hbasePut) {
+    hbasePut.addColumn(Bytes.toBytes(hbaseColumnQualifier), Bytes.toBytes(name),
+        Bytes.toBytes(value));
+    return hbasePut;
+  }
 
-    @Override
-    public PartialRow toKudu(String value, PartialRow partialRow) {
-        partialRow.addString(name, value);
-        return partialRow;
-    }
+  @Override
+  public PartialRow toKudu(String value, PartialRow partialRow) {
+    partialRow.addString(name, value);
+    return partialRow;
+  }
 
-    @Override
-    public Type getKuduType() {
-        return Type.STRING;
-    }
+  @Override
+  public Type getKuduType() {
+    return Type.STRING;
+  }
 
-    @Override
-    public HivePreparedStatement toHive(String value, int index, HivePreparedStatement hivePreparedStatement) {
-        try {
-            hivePreparedStatement.setString(index, value);
-        } catch (SQLException e) {
-            log.warn("Could not set value : " + value + " into hive statement due to error :", e);
-        }
-        return hivePreparedStatement;
+  @Override
+  public HivePreparedStatement toHive(String value, int index,
+                                      HivePreparedStatement hivePreparedStatement) {
+    try {
+      hivePreparedStatement.setString(index, value);
+    } catch (SQLException e) {
+      log.warn("Could not set value : " + value +
+          " into hive statement due to error :", e);
     }
+    return hivePreparedStatement;
+  }
 
-    @Override
-    public String getHiveType() {
-        return "STRING";
-    }
+  @Override
+  public String getHiveType() {
+    return "STRING";
+  }
 
-    @Override
-    public String getGenericRecordType() { return "string"; }
+  @Override
+  public String getGenericRecordType() {
+    return "string";
+  }
 
-    @Override
-    public ColumnVector getOrcColumnVector(VectorizedRowBatch batch, int cols) {
-        return batch.cols[cols];
-    }
+  @Override
+  public ColumnVector getOrcColumnVector(VectorizedRowBatch batch, int cols) {
+    return batch.cols[cols];
+  }
 
-    @Override
-    public TypeDescription getTypeDescriptionOrc() {
-        return TypeDescription.createString();
-    }
+  @Override
+  public TypeDescription getTypeDescriptionOrc() {
+    return TypeDescription.createString();
+  }
 
 
 }

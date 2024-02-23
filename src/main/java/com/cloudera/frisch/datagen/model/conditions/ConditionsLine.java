@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,39 +32,50 @@ import java.util.LinkedList;
 @Slf4j
 public class ConditionsLine {
 
-  @Getter @Setter
+  @Getter
+  @Setter
   private LinkedList<Condition> listOfConditions;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   private LinkedList<ConditionOperators> listOfConditionsOperators;
 
 
   // To indicate if there are multiple conditions on this line or only one
-  @Getter @Setter
+  @Getter
+  @Setter
   private boolean combinedCondition = false;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   private boolean formula = false;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   private Formula formulaToEvaluate;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   private boolean defaultValue = false;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   private String valueToReturn;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   private boolean link = false;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   private Link linkToEvaluate;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   private boolean injection = false;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   private Injection injectionToEvaluate;
 
 
@@ -76,37 +87,38 @@ public class ConditionsLine {
     // 1st: break using space => That will isolate if there are multiple parts
     String[] conditionSplitted = conditionLine.trim().split(" ");
 
-    if(conditionSplitted.length>1){
+    if (conditionSplitted.length > 1) {
       log.debug("Found a combined condition on this line");
-      this.combinedCondition=true;
-    } else if(conditionSplitted[0].equalsIgnoreCase("formula")) {
+      this.combinedCondition = true;
+    } else if (conditionSplitted[0].equalsIgnoreCase("formula")) {
       log.debug("Found a formula, that will need to be evaluated");
       this.formula = true;
       this.formulaToEvaluate = new Formula(valueToReturn);
       return;
-    } else if(conditionSplitted[0].equalsIgnoreCase("link")) {
+    } else if (conditionSplitted[0].equalsIgnoreCase("link")) {
       log.debug("Found a link, that will need to be evaluated");
       this.link = true;
       this.linkToEvaluate = new Link(valueToReturn);
       return;
-    } else if(conditionSplitted[0].equalsIgnoreCase("injection")) {
+    } else if (conditionSplitted[0].equalsIgnoreCase("injection")) {
       log.debug("Found an injection, that will need to be evaluated");
       this.injection = true;
       this.injectionToEvaluate = new Injection(valueToReturn);
       return;
-    } else if(conditionSplitted[0].equalsIgnoreCase("default")) {
+    } else if (conditionSplitted[0].equalsIgnoreCase("default")) {
       log.debug("Found a default, No evaluation needed");
       this.defaultValue = true;
       return;
     }
 
     int index = 0;
-    for(String s: conditionSplitted){
-      if(index%2==0) {
+    for (String s : conditionSplitted) {
+      if (index % 2 == 0) {
         log.debug("This is an expression that will create a condition");
         listOfConditions.add(createConditionFromExpression(s));
       } else {
-        log.debug("This is an expression that will create an operator between conditions");
+        log.debug(
+            "This is an expression that will create an operator between conditions");
         listOfConditionsOperators.add(createOperatorFromExpression(s));
       }
       index++;
@@ -114,8 +126,9 @@ public class ConditionsLine {
 
   }
 
-  private ConditionOperators createOperatorFromExpression(String operatorExpression) {
-    if(operatorExpression.trim().equalsIgnoreCase("|")) {
+  private ConditionOperators createOperatorFromExpression(
+      String operatorExpression) {
+    if (operatorExpression.trim().equalsIgnoreCase("|")) {
       return ConditionOperators.OR;
     } else {
       return ConditionOperators.AND;
@@ -153,18 +166,18 @@ public class ConditionsLine {
   }
 
   public boolean isLineSatisfied(Row row) {
-    if(!combinedCondition) {
-      if(!listOfConditions.isEmpty()) {
+    if (!combinedCondition) {
+      if (!listOfConditions.isEmpty()) {
         return listOfConditions.get(0).evaluateCondition(row);
-      } else if(this.formula) {
+      } else if (this.formula) {
         // Formula case
         this.valueToReturn = formulaToEvaluate.evaluateFormula(row);
         return true;
-      } else if(this.link) {
+      } else if (this.link) {
         // Formula case
         this.valueToReturn = linkToEvaluate.evaluateLink(row);
         return true;
-      } else if(this.injection) {
+      } else if (this.injection) {
         // Formula case
         this.valueToReturn = injectionToEvaluate.evaluateInjection(row);
         return true;
@@ -180,21 +193,24 @@ public class ConditionsLine {
       Boolean isConditionSatisfied = false;
       boolean previousResult = listOfConditions.get(0).evaluateCondition(row);
 
-      for(int i = 1; i<listOfConditions.size(); i++) {
+      for (int i = 1; i < listOfConditions.size(); i++) {
 
-        if(listOfConditionsOperators.get(i-1)==ConditionOperators.AND) {
-          log.debug("The operator between previous condition and this one is AND");
-          if(previousResult){
+        if (listOfConditionsOperators.get(i - 1) == ConditionOperators.AND) {
+          log.debug(
+              "The operator between previous condition and this one is AND");
+          if (previousResult) {
             log.debug("Previous condition was true, need to evaluate this one");
             previousResult = listOfConditions.get(i).evaluateCondition(row);
             isConditionSatisfied = previousResult;
           } else {
-            log.debug("Previous condition was false, no need to evaluate this one");
+            log.debug(
+                "Previous condition was false, no need to evaluate this one");
             break;
           }
         } else {
-          log.debug("The operator between previous condition and this one is OR, if previous result is true, escapes otherwise continue to evaluate conditions");
-          if(previousResult) {
+          log.debug(
+              "The operator between previous condition and this one is OR, if previous result is true, escapes otherwise continue to evaluate conditions");
+          if (previousResult) {
             isConditionSatisfied = true;
             break;
           } else {

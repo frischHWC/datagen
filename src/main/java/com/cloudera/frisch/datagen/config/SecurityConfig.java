@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -55,13 +55,15 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     return http
-          .requiresChannel(channel -> channel.anyRequest().requiresSecure())
-          .authorizeRequests(authorize -> authorize.antMatchers("/metrics/**").permitAll())
-          .authorizeRequests(authorize -> authorize.antMatchers("/health/status").permitAll())
-          .authorizeRequests(authorize -> authorize.anyRequest().authenticated())
-          .httpBasic(withDefaults())
-          .csrf().disable()
-          .build();
+        .requiresChannel(channel -> channel.anyRequest().requiresSecure())
+        .authorizeRequests(
+            authorize -> authorize.antMatchers("/metrics/**").permitAll())
+        .authorizeRequests(
+            authorize -> authorize.antMatchers("/health/status").permitAll())
+        .authorizeRequests(authorize -> authorize.anyRequest().authenticated())
+        .httpBasic(withDefaults())
+        .csrf().disable()
+        .build();
   }
 
   @Bean
@@ -69,8 +71,10 @@ public class SecurityConfig {
     // The builder will ensure the passwords are encoded before saving in memory
     User.UserBuilder users = User.builder();
     UserDetails admin = users
-        .username(propertiesLoader.getPropertiesCopy().get(ApplicationConfigs.ADMIN_USER))
-        .password(passwordEncoder().encode(propertiesLoader.getPropertiesCopy().get(ApplicationConfigs.ADMIN_PASSWORD)))
+        .username(propertiesLoader.getPropertiesCopy()
+            .get(ApplicationConfigs.ADMIN_USER))
+        .password(passwordEncoder().encode(propertiesLoader.getPropertiesCopy()
+            .get(ApplicationConfigs.ADMIN_PASSWORD)))
         .roles("ADMIN")
         .build();
     return new InMemoryUserDetailsManager(admin);

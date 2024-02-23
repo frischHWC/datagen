@@ -43,7 +43,7 @@
     {"HIVE_DATABASE": "datagen_finance"},
     {"HIVE_TABLE_NAME":  "transaction"},
     {"KUDU_TABLE_NAME":  "datagen-finance.transaction"},
-    {"LOCAL_FILE_PATH":  "/home/datagen/finance/transaction/"},
+    {"LOCAL_FILE_PATH":  "/home/datagen/"},
     {"LOCAL_FILE_NAME":  "transaction"},
     {"AVRO_NAME":  "datagenfinancetransaction"}
   ],

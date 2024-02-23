@@ -25,6 +25,7 @@ echo "Creating required local files"
 mkdir -p /home/${DATAGEN_USER}/
 mkdir -p /home/${DATAGEN_USER}/jaas/
 mkdir -p ${DATA_MODEL_RECEIVED}
+mkdir -p ${DATA_MODEL_GENERATED}
 touch ${SCHEDULER_FILE_PATH}
 chown -R ${DATAGEN_USER}:${DATAGEN_USER} /home/${DATAGEN_USER}/
 
@@ -39,46 +40,100 @@ if [ "${RANGER_SERVICE_NAME}" != "" ] && [ "${RANGER_SERVICE_NAME}" != "none" ] 
 then
   echo " Starting to push Ranger policies as Ranger is selected as a dependency"
 
-
+    echo ""
     echo "Pushing policy to HBase"
+    echo ""
     curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/hbase.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
-
+    echo ""
+    echo ""
     echo "Pushing policy to HDFS"
+    echo ""
     curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/hdfs.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
-
+    echo ""
+    echo ""
     echo "Pushing policy to Hive"
+    echo ""
     curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/hive.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
-
+    echo ""
+    echo ""
     echo "Pushing policy to Hive URL "
+    echo ""
     curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/hive-url.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
-
+    echo ""
+    echo ""
     echo "Pushing policy to Hive Storage"
+    echo ""
     curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/hive-storage.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
-
+    echo ""
+    echo ""
     echo "Pushing policy to Kafka"
+    echo ""
     curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/kafka.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
-
+    echo ""
+    echo ""
+    echo "Pushing policy to Kafka for cluster"
+    echo ""
+    curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/kafka-cluster.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
+    echo ""
+    echo ""
+    echo "Pushing policy to Kafka for transaction Id"
+    echo ""
+    curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/kafka-transactionalid.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
+    echo ""
+    echo ""
     echo "Pushing policy to Kafka Stream"
+    echo ""
     curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/kafka-stream.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
-
+    echo ""
+    echo ""
+    echo "Pushing policy to Kafka Stream for cluster"
+    echo ""
+    curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/kafka-cluster-stream.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
+    echo ""
+    echo ""
     echo "Pushing policy to Kudu"
+    echo ""
     curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/kudu.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
-
+    echo ""
+    echo ""
     echo "Pushing policy to Ozone"
+    echo ""
     curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/ozone.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
-
+    echo ""
+    echo ""
     echo "Pushing policy to Schema Registry"
+    echo ""
     curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/schemaregistry.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
-
+    echo ""
+    echo ""
     echo "Pushing policy to Schema Registry Service"
+    echo ""
     curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/schemaregistry_service.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
-
+    echo ""
+    echo ""
     echo "Pushing policy to Schema Registry Serde"
+    echo ""
     curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/schemaregistry_serde.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
-
+    echo ""
+    echo ""
     echo "Pushing policy to SolR"
+    echo ""
     curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/solr.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
-
+    echo ""
+    echo ""
+    echo "Pushing policy to SolR Admin"
+    echo ""
+    curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/solr-admin.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
+    echo ""
+    echo ""
+    echo "Pushing policy to SolR Config"
+    echo ""
+    curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/solr-config.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
+    echo ""
+    echo ""
+    echo "Pushing policy to SolR Schema"
+    echo ""
+    curl -k -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "@scripts/policies/solr-schema.json" -u ${RANGER_ADMIN_USER}:${RANGER_ADMIN_PASSWORD}  ${RANGER_URL}/service/public/v2/api/policy
 fi
 
 

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,36 +35,36 @@ import java.security.cert.X509Certificate;
 @Component
 public class RestTemplateProvider {
 
-    @Bean
-    public RestTemplate provideRestTemplate() {
-        RestTemplate restTemplate = new RestTemplate();
+  @Bean
+  public RestTemplate provideRestTemplate() {
+    RestTemplate restTemplate = new RestTemplate();
 
-        try {
+    try {
 
-            TrustStrategy acceptingTrustStrategy =
-                (X509Certificate[] chain, String authType) -> true;
+      TrustStrategy acceptingTrustStrategy =
+          (X509Certificate[] chain, String authType) -> true;
 
-            SSLContext sslContext = org.apache.http.ssl.SSLContexts.custom()
-                .loadTrustMaterial(null, acceptingTrustStrategy)
-                .build();
+      SSLContext sslContext = org.apache.http.ssl.SSLContexts.custom()
+          .loadTrustMaterial(null, acceptingTrustStrategy)
+          .build();
 
-            SSLConnectionSocketFactory csf =
-                new SSLConnectionSocketFactory(sslContext);
+      SSLConnectionSocketFactory csf =
+          new SSLConnectionSocketFactory(sslContext);
 
-            CloseableHttpClient httpClient = HttpClients.custom()
-                .setSSLSocketFactory(csf)
-                .build();
+      CloseableHttpClient httpClient = HttpClients.custom()
+          .setSSLSocketFactory(csf)
+          .build();
 
-            HttpComponentsClientHttpRequestFactory requestFactory =
-                new HttpComponentsClientHttpRequestFactory();
+      HttpComponentsClientHttpRequestFactory requestFactory =
+          new HttpComponentsClientHttpRequestFactory();
 
-            requestFactory.setHttpClient(httpClient);
+      requestFactory.setHttpClient(httpClient);
 
-            restTemplate = new RestTemplate(requestFactory);
-        } catch (Exception e) {
-            log.warn("Cannot create Rest Template due to error: ", e);
-        }
-
-        return restTemplate;
+      restTemplate = new RestTemplate(requestFactory);
+    } catch (Exception e) {
+      log.warn("Cannot create Rest Template due to error: ", e);
     }
+
+    return restTemplate;
+  }
 }

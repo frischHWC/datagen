@@ -1,4 +1,2 @@
 New Features:
-- Hive table format: Avro, Parquet, ORC, JSON, CSV
-- Hive Choose External or Managed type
-- Safety Valve Keytab & Principal
+Render a model from Data

@@ -52,37 +52,37 @@
       }
     }
   ],
-  "Table_Names": [
-    {"HDFS_FILE_PATH": "/user/datagen/hdfs/customer/"},
-    {"HDFS_FILE_NAME": "customer-us"},
-    {"HIVE_HDFS_FILE_PATH": "/user/datagen/hive/customer/"},
-    {"HBASE_TABLE_NAME": "customer"},
-    {"HBASE_NAMESPACE": "datagen"},
-    {"KAFKA_TOPIC": "datagen_customer"},
-    {"OZONE_VOLUME": "datagen"},
-    {"OZONE_BUCKET":  "customer"},
-    {"OZONE_KEY_NAME":  "customer-us"},
-    {"OZONE_LOCAL_FILE_PATH":  "/home/datagen/temp/customer/"},
-    {"SOLR_COLLECTION": "datagen_customer"},
-    {"HIVE_DATABASE": "datagen"},
-    {"HIVE_TABLE_NAME":  "customer"},
-    {"KUDU_TABLE_NAME":  "datagen.customer"},
-    {"LOCAL_FILE_PATH":  "/home/datagen/customer/"},
-    {"LOCAL_FILE_NAME":  "customer-us"},
-    {"AVRO_NAME":  "datagencustomer"}
-  ],
-  "Primary_Keys": [
-    {"KAFKA_MSG_KEY": "membership"},
-    {"HBASE_PRIMARY_KEY":  "id"},
-    {"KUDU_PRIMARY_KEYS":  "country,city,id"},
-    {"KUDU_HASH_KEYS":  "id"},
-    {"KUDU_RANGE_KEYS":  "country,city"}
-  ],
-  "Options": [
-    {"HBASE_COLUMN_FAMILIES_MAPPING": "details:name,email,country,birthdate,phone_number;technicals:membership,id"},
-    {"SOLR_SHARDS":  1},
-    {"SOLR_REPLICAS":  1},
-    {"KUDU_REPLICAS":  1},
-    {"HIVE_TABLE_PARTITIONS_COLS": "country"}
-  ]
+  "Table_Names": {
+    "HDFS_FILE_PATH": "/user/datagen/hdfs/customer/",
+    "HDFS_FILE_NAME": "customer-us",
+    "HIVE_HDFS_FILE_PATH": "/user/datagen/hive/customer/",
+    "HBASE_TABLE_NAME": "customer",
+    "HBASE_NAMESPACE": "datagen",
+    "KAFKA_TOPIC": "datagen_customer",
+    "OZONE_VOLUME": "datagen",
+    "OZONE_BUCKET":  "customer",
+    "OZONE_KEY_NAME":  "customer-us",
+    "OZONE_LOCAL_FILE_PATH":  "/home/datagen/temp/customer/",
+    "SOLR_COLLECTION": "datagen_customer",
+    "HIVE_DATABASE": "datagen",
+    "HIVE_TABLE_NAME":  "customer",
+    "KUDU_TABLE_NAME":  "datagen.customer",
+    "LOCAL_FILE_PATH":  "/home/datagen/customer/",
+    "LOCAL_FILE_NAME":  "customer-us",
+    "AVRO_NAME":  "datagencustomer"
+  },
+  "Primary_Keys": {
+    "KAFKA_MSG_KEY": "membership",
+    "HBASE_PRIMARY_KEY":  "id",
+    "KUDU_PRIMARY_KEYS":  "country,city,id",
+    "KUDU_HASH_KEYS":  "id",
+    "KUDU_RANGE_KEYS":  "country,city"
+  },
+  "Options": {
+    "HBASE_COLUMN_FAMILIES_MAPPING": "details:name,email,country,birthdate,phone_number;technicals:membership,id",
+    "SOLR_SHARDS":  1,
+    "SOLR_REPLICAS":  1,
+    "KUDU_REPLICAS":  1,
+    "HIVE_TABLE_PARTITIONS_COLS": "country"
+  }
 }

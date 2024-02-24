@@ -63,25 +63,45 @@ public class JsonParser<T extends Field> implements Parser {
    */
   public Model renderModelFromFile() {
 
-    Iterator<JsonNode> pksIterator = root.findPath("Primary_Keys").elements();
+    // Release 0.4.15 introduced an easier format with PK, TB & Options being just one JSON node instead of an array
+    // But we need to keep working wih old format for retro-compatbility.  (Fields is untouched)
     Map<String, List<String>> pks = new HashMap<>();
-
-    while (pksIterator.hasNext()) {
-      addPrimaryKeyToHashMap(pks, pksIterator.next());
+    JsonNode pkNode = root.findPath("Primary_Keys");
+    if(pkNode.isArray() && !pkNode.isEmpty()) {
+      log.debug("Detected array format (old version) for Primary Keys");
+      Iterator<JsonNode> pksIterator = pkNode.elements();
+      while (pksIterator.hasNext()) {
+        addPrimaryKeyToHashMap(pks, pksIterator.next());
+      }
+    } else if(!pkNode.isEmpty()) {
+      log.debug("Detected node format for Primary Keys");
+      addPrimaryKeyToHashMap(pks, pkNode);
     }
 
-    Iterator<JsonNode> tablesIterator = root.findPath("Table_Names").elements();
     Map<String, String> tbs = new HashMap<>();
-
-    while (tablesIterator.hasNext()) {
-      addTableNameToHashMap(tbs, tablesIterator.next());
+    JsonNode tbNode = root.findPath("Table_Names");
+    if(tbNode.isArray() && !tbNode.isEmpty()) {
+      log.debug("Detected array format (old version) for Table Names");
+      Iterator<JsonNode> tablesIterator = tbNode.elements();
+      while (tablesIterator.hasNext()) {
+        addTableNameToHashMap(tbs, tablesIterator.next());
+      }
+    } else if(!tbNode.isEmpty()) {
+      log.debug("Detected node format for Table Names");
+      addTableNameToHashMap(tbs, tbNode);
     }
 
-    Iterator<JsonNode> optionsIterator = root.findPath("Options").elements();
     Map<String, String> opsMap = new HashMap<>();
-
-    while (optionsIterator.hasNext()) {
-      addOptionToHashMap(opsMap, optionsIterator.next());
+    JsonNode oNode = root.findPath("Options");
+    if(oNode.isArray() && !oNode.isEmpty()) {
+      log.debug("Detected array format (old version) for Options");
+      Iterator<JsonNode> optionsIterator = oNode.elements();
+      while (optionsIterator.hasNext()) {
+        addOptionToHashMap(opsMap, optionsIterator.next());
+      }
+    } else if(!oNode.isEmpty()) {
+      log.debug("Detected node format for Options");
+      addOptionToHashMap(opsMap, oNode);
     }
 
     Iterator<JsonNode> fieldsIterator = root.findPath("Fields").elements();
@@ -92,7 +112,7 @@ public class JsonParser<T extends Field> implements Parser {
       hbaseFamilyColsMap =
           mapColNameToColQual(opsMap.get("HBASE_COLUMN_FAMILIES_MAPPING"));
     } catch (Exception e) {
-      log.warn(
+      log.info(
           "Could not get any column qualifier, defaulting to 'cq', check you are not using HBase ");
     }
 
@@ -151,7 +171,7 @@ public class JsonParser<T extends Field> implements Parser {
       separator = ",";
     }
 
-    Boolean ghost;
+    boolean ghost;
     try {
       ghost = jsonField.get("ghost").asBoolean();
     } catch (NullPointerException e) {

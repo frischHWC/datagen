@@ -641,9 +641,11 @@ public class Model<T extends Field> {
   }
 
   public org.apache.avro.Schema getAvroSchema() {
+    String avroName = tableNames.get(OptionsConverter.TableNames.AVRO_NAME).isEmpty() ? 
+        "default_avro_record_name" : tableNames.get(OptionsConverter.TableNames.AVRO_NAME);
     SchemaBuilder.FieldAssembler<org.apache.avro.Schema> schemaBuilder =
         SchemaBuilder
-            .record(tableNames.get(OptionsConverter.TableNames.AVRO_NAME))
+            .record(avroName)
             .namespace("org.apache.avro.ipc")
             .fields();
 
@@ -700,7 +702,7 @@ public class Model<T extends Field> {
   }
 
   public HiveTableFormat getHiveTableFormat() {
-    switch (this.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_TYPE)
+    switch (this.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_FORMAT)
         .toString().toLowerCase(Locale.ROOT)) {
     case "parquet":
       return HiveTableFormat.PARQUET;

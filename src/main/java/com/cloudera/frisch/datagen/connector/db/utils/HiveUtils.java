@@ -44,24 +44,26 @@ public class HiveUtils {
           break;
         case "Table Type:         ":
           hiveTableType = descTableInfo.getString("data_type")
-              .equalsIgnoreCase("EXTERNAL_TYPE") ? "EXTERNAL" : "MANAGED";
+              .equalsIgnoreCase("EXTERNAL_TABLE") ? "EXTERNAL" : "MANAGED";
           break;
         case "Num Buckets:        ":
-          numBuckets = descTableInfo.getString("data_type");
+          numBuckets = descTableInfo.getString("data_type").strip();
           break;
         case "Bucket Columns:     ":
           // remove [ and ] from the string and keep only cols separated by a string (and remove whitespace also)
           bucketCols = descTableInfo.getString("data_type").substring(1,
-              descTableInfo.getString("data_type").lastIndexOf(']')).replaceAll("\\\\s+", "");
+                  descTableInfo.getString("data_type").lastIndexOf(']'))
+              .replaceAll("\\\\s+", "");
           break;
         case "Sort Columns:       ":
           // remove [ and ] from the string and keep only cols separated by a string (and remove whitespace also)
           partCols = descTableInfo.getString("data_type").substring(1,
-              descTableInfo.getString("data_type").lastIndexOf(']')).replaceAll("\\\\s+", "");
+                  descTableInfo.getString("data_type").lastIndexOf(']'))
+              .replaceAll("\\\\s+", "");
           break;
         case "Location:           ":
-          // Remove hdfs:/ from Location
-          location = descTableInfo.getString("data_type").substring(6);
+          // Remove hdfs:/ from Location and add '/' at the end
+          location = descTableInfo.getString("data_type").substring(6) + "/";
           break;
         default:
           break;
@@ -88,9 +90,15 @@ public class HiveUtils {
       tableNames.put("HIVE_HDFS_FILE_PATH", location);
       options.put("HIVE_TABLE_TYPE", hiveTableType);
       options.put("HIVE_TABLE_FORMAT", hiveTableFormat);
-      options.put("HIVE_TABLE_PARTITIONS_COLS", "");
-      options.put("HIVE_TABLE_BUCKETS_COLS", "");
-      options.put("HIVE_TABLE_BUCKETS_NUMBER", numBuckets);
+      if (!partCols.isEmpty()) {
+        options.put("HIVE_TABLE_PARTITIONS_COLS", partCols);
+      }
+      if (!bucketCols.isEmpty()) {
+        options.put("HIVE_TABLE_BUCKETS_COLS", bucketCols);
+      }
+      if (!numBuckets.isEmpty() && !numBuckets.equalsIgnoreCase("-1")) {
+        options.put("HIVE_TABLE_BUCKETS_NUMBER", numBuckets);
+      }
 
     } catch (SQLException e) {
       log.warn("Cannot get information on table due to error", e);

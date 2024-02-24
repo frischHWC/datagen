@@ -160,6 +160,9 @@ public abstract class Field<T> {
                                        List<JsonNode> filters,
                                        String file,
                                        String separator,
+                                       String pattern,
+                                       Boolean useNow,
+                                       String regex,
                                        Boolean ghost,
                                        String mainField) {
     if (name == null || name.isEmpty()) {
@@ -287,6 +290,14 @@ public abstract class Field<T> {
       break;
     case "UUID":
       field = new UuidField(name);
+      break;
+    case "DATE":
+      field = new DateField(name, possibleValues.stream().map(JsonNode::asText)
+          .collect(Collectors.toList()), min, max, useNow);
+      break;
+    case "DATE_AS_STRING":
+      field = new DateAsStringField(name, possibleValues.stream().map(JsonNode::asText)
+          .collect(Collectors.toList()), min, max, useNow, pattern);
       break;
     default:
       log.warn("Type : " + type +

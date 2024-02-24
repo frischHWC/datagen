@@ -15,6 +15,11 @@
       "possible_values": ["hr", "consulting", "marketing", "finance"]
     },
     {
+      "name": "department_number",
+      "type": "STRING_REGEX",
+      "regex": "[A-G](1)-[b-l](2)-[3-7](4)__[A,Z,4,567,BBB,-6,&,?](1)-\\(\\(\\("
+    },
+    {
       "name": "country_of_provenance",
       "type": "STRING",
       "possible_values_weighted": {
@@ -89,6 +94,18 @@
       "type": "BIRTHDATE",
       "min": "1/1/1900",
       "max": "1/1/1950"
+    },
+    {
+      "name": "date_now",
+      "type": "DATE",
+      "use_now": true
+    },
+    {
+      "name": "date_string",
+      "type": "DATE_AS_STRING",
+      "pattern": "yyyy_MM_dd-K a mm:ss.SSS ZZZ",
+      "min": "2024_02_14-7 am 31:53.000 +0000",
+      "max": "2024_03_14-7 pm 31:53.050 +0330"
     },
     {
       "name": "name",

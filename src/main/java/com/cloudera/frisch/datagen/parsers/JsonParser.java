@@ -185,6 +185,27 @@ public class JsonParser<T extends Field> implements Parser {
       field = null;
     }
 
+    String pattern;
+    try {
+      pattern = jsonField.get("pattern").asText();
+    } catch (NullPointerException e) {
+      pattern = null;
+    }
+
+    boolean useNow;
+    try {
+      useNow = jsonField.get("use_now").asBoolean();
+    } catch (NullPointerException e) {
+      useNow = false;
+    }
+
+    String regex;
+    try {
+      regex = jsonField.get("regex").asText();
+    } catch (NullPointerException e) {
+      regex = null;
+    }
+
     JsonNode filtersArray = jsonField.get("filters");
     List<JsonNode> filters = new ArrayList<>();
     try {
@@ -237,7 +258,7 @@ public class JsonParser<T extends Field> implements Parser {
         jsonField.get("type").asText(), length,
         opsMap.get(jsonField.get("name").asText()), possibleValues,
         possible_values_weighted, conditionals,
-        min, max, filters, file, separator, ghost, field);
+        min, max, filters, file, separator, pattern, useNow, regex, ghost, field);
   }
 
   private Map<String, String> mapColNameToColQual(String mapping) {

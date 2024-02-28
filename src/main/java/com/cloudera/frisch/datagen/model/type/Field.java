@@ -299,6 +299,9 @@ public abstract class Field<T> {
       field = new DateAsStringField(name, possibleValues.stream().map(JsonNode::asText)
           .collect(Collectors.toList()), min, max, useNow, pattern);
       break;
+    case "STRING_REGEX":
+      field = new StringRegexField(name, regex);
+      break;
     default:
       log.warn("Type : " + type +
           " has not been recognized and hence will be ignored");
@@ -340,6 +343,10 @@ public abstract class Field<T> {
       return "CITY";
     case "csvfield":
       return "CSV";
+    case "dateasstringfield":
+      return "DATE_AS_STRING";
+    case "datefield":
+      return "DATE";
     case "emailfield":
       return "EMAIL";
     case "floatfield":
@@ -366,6 +373,8 @@ public abstract class Field<T> {
       return "STRINGAZ";
     case "stringfield":
       return "STRING";
+    case "stringregexfield":
+      return "STRING_REGEX";
     case "timestampfield":
       return "TIMESTAMP";
     case "uuidfiel":

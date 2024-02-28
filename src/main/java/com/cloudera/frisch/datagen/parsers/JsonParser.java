@@ -254,11 +254,24 @@ public class JsonParser<T extends Field> implements Parser {
       }
     }
 
-    return (T) Field.instantiateField(jsonField.get("name").asText(),
-        jsonField.get("type").asText(), length,
-        opsMap.get(jsonField.get("name").asText()), possibleValues,
-        possible_values_weighted, conditionals,
-        min, max, filters, file, separator, pattern, useNow, regex, ghost, field);
+    return (T) Field.instantiateField(
+        jsonField.get("name").asText(),
+        jsonField.get("type").asText(),
+        length,
+        opsMap.get(jsonField.get("name").asText()),
+        possibleValues,
+        possible_values_weighted,
+        conditionals,
+        min,
+        max,
+        filters,
+        file,
+        separator,
+        pattern,
+        useNow,
+        regex,
+        ghost,
+        field);
   }
 
   private Map<String, String> mapColNameToColQual(String mapping) {

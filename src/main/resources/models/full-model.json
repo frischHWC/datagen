@@ -15,9 +15,9 @@
       "possible_values": ["hr", "consulting", "marketing", "finance"]
     },
     {
-      "name": "department_number",
+      "name": "department_code",
       "type": "STRING_REGEX",
-      "regex": "[A-G](1)-[b-l](2)-[3-7](4)__[A,Z,4,567,BBB,-6,&,?](1)-\\(\\(\\("
+      "regex": "[A-G]{1}-[b-l]{2}-[3-7]{4}__[A,Z,4,567,BBB,-6,&,?]{1}-test-not interpreted here-\\[24\\]\\{4\\}"
     },
     {
       "name": "country_of_provenance",

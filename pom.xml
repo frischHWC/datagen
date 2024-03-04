@@ -20,7 +20,7 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <!-- Check your EXACT version of CDP as all platform jars depends on it -->
-        <cdp.version>7.1.9.3-4</cdp.version>
+        <cdp.version>7.1.9.4-4</cdp.version>
     </properties>
 
     <!-- Cloudera repository needed to get good CDP versions of jars -->
@@ -118,7 +118,7 @@
         <dependency>
             <groupId>org.apache.ozone</groupId>
             <artifactId>ozone-client</artifactId>
-            <version>1.2.0.${cdp.version}</version>
+            <version>1.4.0.${cdp.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>

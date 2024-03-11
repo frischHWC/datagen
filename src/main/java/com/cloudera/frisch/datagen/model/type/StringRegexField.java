@@ -173,7 +173,7 @@ public class StringRegexField extends Field<String> {
   }
 
     /*
-     Override if needed Field function to insert into special sinks
+     Override if needed Field function to insert into special connectors
      */
 
   @Override

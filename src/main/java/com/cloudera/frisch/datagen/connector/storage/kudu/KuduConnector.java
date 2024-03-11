@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This is a kudu sink based on Kudu 1.11.0 API
+ * This is a kudu connector based on Kudu 1.11.0 API
  */
 @SuppressWarnings("unchecked")
 @Slf4j

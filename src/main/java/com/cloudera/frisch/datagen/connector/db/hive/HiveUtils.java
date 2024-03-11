@@ -1,4 +1,4 @@
-package com.cloudera.frisch.datagen.connector.db.utils;
+package com.cloudera.frisch.datagen.connector.db.hive;
 
 import com.cloudera.frisch.datagen.model.type.*;
 import lombok.extern.slf4j.Slf4j;

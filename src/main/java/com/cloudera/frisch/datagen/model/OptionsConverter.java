@@ -26,8 +26,6 @@ public class OptionsConverter {
   public enum PrimaryKeys {
     KAFKA_MSG_KEY,
     HBASE_PRIMARY_KEY,
-    OZONE_BUCKET,
-    OZONE_KEY,
     KUDU_HASH_KEYS,
     KUDU_RANGE_KEYS,
     KUDU_PRIMARY_KEYS
@@ -39,10 +37,6 @@ public class OptionsConverter {
       return PrimaryKeys.KAFKA_MSG_KEY;
     case "HBASE_PRIMARY_KEY":
       return PrimaryKeys.HBASE_PRIMARY_KEY;
-    case "OZONE_BUCKET":
-      return PrimaryKeys.OZONE_BUCKET;
-    case "OZONE_KEY":
-      return PrimaryKeys.OZONE_KEY;
     case "KUDU_PRIMARY_KEYS":
       return PrimaryKeys.KUDU_PRIMARY_KEYS;
     case "KUDU_HASH_KEYS":
@@ -74,6 +68,9 @@ public class OptionsConverter {
     KUDU_TABLE_NAME,
     LOCAL_FILE_PATH,
     LOCAL_FILE_NAME,
+    S3_BUCKET,
+    S3_KEY_NAME,
+    S3_LOCAL_FILE_PATH,
     AVRO_NAME
   }
 
@@ -113,6 +110,12 @@ public class OptionsConverter {
       return TableNames.LOCAL_FILE_PATH;
     case "LOCAL_FILE_NAME":
       return TableNames.LOCAL_FILE_NAME;
+    case "S3_BUCKET":
+      return TableNames.S3_BUCKET;
+    case "S3_KEY_NAME":
+      return TableNames.S3_KEY_NAME;
+    case "S3_LOCAL_FILE_PATH":
+      return TableNames.S3_LOCAL_FILE_PATH;
     case "AVRO_NAME":
       return TableNames.AVRO_NAME;
     default:

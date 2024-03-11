@@ -39,9 +39,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * This is an HDFSCSV sink using Hadoop 3.2 API
+ * This is an HDFSCSV connector using Hadoop 3.2 API
  * Each instance manages one connection to a file system
  */
+// TODO: Refactor to use one abstract class
 @Slf4j
 public class HdfsCsvConnector implements ConnectorInterface {
 
@@ -61,7 +62,7 @@ public class HdfsCsvConnector implements ConnectorInterface {
    */
   public HdfsCsvConnector(Model model,
                           Map<ApplicationConfigs, String> properties) {
-    // If using an HDFS sink, we want it to use the Hive HDFS File path and not the Hdfs file path
+    // If using an HDFS connector, we want it to use the Hive HDFS File path and not the Hdfs file path
     if (properties.get(ApplicationConfigs.HDFS_FOR_HIVE) != null
         && properties.get(ApplicationConfigs.HDFS_FOR_HIVE)
         .equalsIgnoreCase("true")) {
@@ -71,7 +72,7 @@ public class HdfsCsvConnector implements ConnectorInterface {
       this.directoryName = (String) model.getTableNames()
           .get(OptionsConverter.TableNames.HDFS_FILE_PATH);
     }
-    log.debug("HDFS sink will generates data into HDFS directory: " +
+    log.debug("HDFS connector will generates data into HDFS directory: " +
         this.directoryName);
     this.counter = 0;
     this.model = model;

@@ -58,7 +58,7 @@ public class BooleanField extends Field<Boolean> {
   }
 
     /*
-     Override if needed Field function to insert into special sinks
+     Override if needed Field function to insert into special connectors
      */
 
   @Override

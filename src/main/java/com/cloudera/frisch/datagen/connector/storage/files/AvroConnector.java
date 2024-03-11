@@ -40,8 +40,9 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Avro Sink to create Local Avro files
+ * Avro connector to create Local Avro files
  */
+// TODO: Refactor to use utils class
 @Slf4j
 public class AvroConnector implements ConnectorInterface {
 

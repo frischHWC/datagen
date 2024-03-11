@@ -73,8 +73,8 @@ public class ModelGeneraterSevice {
             "/model-generated-" + new Random().nextInt() + ".json";
 
     ConnectorInterface connector = ConnectorsUtils
-        .sinksInit(modelEmpty, properties,
-            Collections.singletonList(ConnectorParser.stringToSink(source)), false)
+        .connectorInit(modelEmpty, properties,
+            Collections.singletonList(ConnectorParser.stringToConnector(source)), false)
         .get(0);
 
     return connector.generateModel(deepAnalysis).toJsonSchema(outputPath);

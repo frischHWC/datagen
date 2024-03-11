@@ -53,24 +53,24 @@ generate_data() {
   shift
   TIMEOUT=$1
   shift
-  SINKS=$@
+  CONNECTORS=$@
 
   echo "Launching command for model: ${MODEL_FILE} to server ${DATAGEN_URL}"
 
-  UNIQUE_SINKS=$( echo $SINKS | uniq )
-  SINK_ARRAY=( $UNIQUE_SINKS )
-  number_of_sinks="${#SINK_ARRAY[@]}"
+  UNIQUE_CONNECTORS=$( echo $CONNECTORS | uniq )
+  CONNECTOR_ARRAY=( $UNIQUE_CONNECTORS )
+  number_of_connectors="${#CONNECTOR_ARRAY[@]}"
 
-  if [ $number_of_sinks == 1 ]
+  if [ $number_of_connectors == 1 ]
   then
-    URL_TO_CALL="${DATAGEN_URL}/datagen/${SINK_ARRAY[0]}/?batches=${BATCHES}&rows=${ROWS}&threads=${THREADS}"
+    URL_TO_CALL="${DATAGEN_URL}/datagen/${CONNECTOR_ARRAY[0]}/?batches=${BATCHES}&rows=${ROWS}&threads=${THREADS}"
   else
-    SINK_STRING=""
-    for i in ${SINK_ARRAY[@]}
+    CONNECTOR_STRING=""
+    for i in ${CONNECTOR_ARRAY[@]}
     do
-      SINK_STRING="${SINK_STRING}sinks=${i}&"
+      CONNECTOR_STRING="${CONNECTOR_STRING}connectors=${i}&"
     done
-    URL_TO_CALL="${DATAGEN_URL}/datagen/multiplesinks?${SINK_STRING}batches=${BATCHES}&rows=${ROWS}&threads=${THREADS}"
+    URL_TO_CALL="${DATAGEN_URL}/datagen/multipleconnectors?${CONNECTOR_STRING}batches=${BATCHES}&rows=${ROWS}&threads=${THREADS}"
   fi
 
   echo "Will call URL: ${URL_TO_CALL}"

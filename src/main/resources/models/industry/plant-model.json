@@ -62,7 +62,7 @@
   "Options": {
     "HBASE_COLUMN_FAMILIES_MAPPING": "technical:plant_id;location:country,city,lat,long",
     "DELETE_PREVIOUS":  "true",
-    "HIVE_TABLE_TYPE":  "managed",
-    "HIVE_TABLE_TYPE":  "PARQUET"
+    "HIVE_TABLE_TYPE":  "MANAGED",
+    "HIVE_TABLE_FORMAT":  "PARQUET"
   }
 }

@@ -47,9 +47,9 @@ public class DataGenerationController {
   private PropertiesLoader propertiesLoader;
 
 
-  @PostMapping(value = "/multiplesinks", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/multipleconnectors", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
-  public String generateIntoMultipleSinks(
+  public String generateIntoMultipleConnectors(
       @RequestPart(required = false, name = "model_file")
           MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
@@ -58,19 +58,19 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
           Long delayBetweenExecutions,
-      @RequestParam(name = "sinks") List<String> sinks
+      @RequestParam(name = "connectors") List<String> connectors
   ) {
-    StringBuffer sinkList = new StringBuffer();
-    sinks.forEach(s -> {
-      sinkList.append(s);
-      sinkList.append(" ; ");
+    StringBuffer connectorList = new StringBuffer();
+    connectors.forEach(s -> {
+      connectorList.append(s);
+      connectorList.append(" ; ");
     });
     Boolean scheduled = delayBetweenExecutions != null;
     log.debug(
-        "Received request with model: {} , threads: {} , batches: {}, rows: {}, to sinks: {}",
-        modelFilePath, threads, numberOfBatches, rowsPerBatch, sinkList);
+        "Received request with model: {} , threads: {} , batches: {}, rows: {}, to connectors: {}",
+        modelFilePath, threads, numberOfBatches, rowsPerBatch, connectorList);
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
-        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions, sinks,
+        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions, connectors,
         null);
   }
 
@@ -566,6 +566,29 @@ public class DataGenerationController {
         modelId);
 
     return apiSevice.generateData(modelId);
+  }
+
+  @PostMapping(value = "/s3-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public String generateIntoS3CSV(
+      @RequestPart(required = false, name = "model_file")
+          MultipartFile modelFile,
+      @RequestParam(required = false, name = "model") String modelFilePath,
+      @RequestParam(required = false, name = "threads") Integer threads,
+      @RequestParam(required = false, name = "batches") Long numberOfBatches,
+      @RequestParam(required = false, name = "rows") Long rowsPerBatch,
+      @RequestParam(required = false, name = "delay_between_executions_seconds")
+          Long delayBetweenExecutions
+  ) {
+    log.debug(
+        "Received request for S3-CSV with model: {} , threads: {} , batches: {}, rows: {}",
+        modelFilePath, threads, numberOfBatches, rowsPerBatch);
+
+    Boolean scheduled = delayBetweenExecutions != null;
+
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads,
+        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
+        Collections.singletonList("S3-CSV"), null);
   }
 
 

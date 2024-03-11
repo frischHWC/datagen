@@ -70,7 +70,7 @@ public class LongField extends Field<Long> {
   }
 
   /*
-   Override if needed Field function to insert into special sinks
+   Override if needed Field function to insert into special connectors
    */
   @Override
   public String toStringValue(Long value) {

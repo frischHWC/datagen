@@ -81,8 +81,13 @@ public class DateField extends Field<LocalDateTime> {
   }
 
     /*
-     Override if needed Field function to insert into special sinks
+     Override if needed Field function to insert into special connectors
      */
+
+  @Override
+  public String toCSVString(LocalDateTime value) {
+    return "\"" + formatter.format(value.atZone(ZoneOffset.UTC)) + "\",";
+  }
 
   @Override
   public String toStringValue(LocalDateTime value) {

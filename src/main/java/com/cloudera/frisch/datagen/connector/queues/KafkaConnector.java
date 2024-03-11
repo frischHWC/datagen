@@ -45,7 +45,7 @@ import static com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshot
 import static com.hortonworks.registries.schemaregistry.serdes.avro.SerDesProtocolHandlerRegistry.METADATA_ID_VERSION_PROTOCOL;
 
 /**
- * This is a Kafka Sink
+ * This is a Kafka connector
  */
 @Slf4j
 public class KafkaConnector implements ConnectorInterface {

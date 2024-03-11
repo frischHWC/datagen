@@ -779,6 +779,27 @@
           "type": "string"
         },
         {
+          "name": "s3_region",
+          "label": "S3 Region",
+          "description": "Name of the S3 Region where to generate data",
+          "default": "eu-west-3",
+          "type": "string"
+        },
+        {
+          "name": "s3_access_key_id",
+          "label": "S3 Access Key ID",
+          "description": "ID of the S3 Access Key use to generate data",
+          "default": "",
+          "type": "string"
+        },
+        {
+          "name": "s3_access_key_secret",
+          "label": "S3 Access Key Secret",
+          "description": "Secret of the S3 Access Key associated with the S3 access key ID",
+          "default": "",
+          "type": "password"
+        },
+        {
           "name": "core_site_path",
           "label": "AUTO-DISCOVERY: Hadoop Core Site Path",
           "description": "Path to core-site.xml. This is used to auto-discover services: HDFS. (if settings are not explicitly set)",
@@ -867,6 +888,15 @@
           "type": "path",
           "pathType": "serviceSpecific",
           "mode": "0755"
+        },
+        {
+          "name": "datagen_home_dir",
+          "label": "Datagen Home Directory",
+          "description": "The local home directory",
+          "default": "/home/datagen",
+          "type": "path",
+          "pathType": "serviceSpecific",
+          "mode": "0750"
         },
         {
           "name": "data_model_received",

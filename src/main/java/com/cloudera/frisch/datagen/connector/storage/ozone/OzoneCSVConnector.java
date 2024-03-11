@@ -40,10 +40,6 @@ import java.nio.file.Files;
 import java.util.*;
 
 
-/**
- * This is an Ozone Sink base on 0.4 API
- * Note that it could produce some Timeout on heavy workload but it still inserts correctly
- */
 @Slf4j
 public class OzoneCSVConnector implements ConnectorInterface {
 
@@ -64,7 +60,7 @@ public class OzoneCSVConnector implements ConnectorInterface {
   private int counter;
   private OzoneBucket bucket;
 
-
+// TODO: Refactor to use one abstract class
   public OzoneCSVConnector(Model model,
                            Map<ApplicationConfigs, String> properties) {
     this.lineSeparator = System.getProperty("line.separator");
@@ -110,6 +106,7 @@ public class OzoneCSVConnector implements ConnectorInterface {
 
         if ((Boolean) model.getOptionsOrDefault(
             OptionsConverter.Options.DELETE_PREVIOUS)) {
+          // TODO: Do not delete everything under a volume but under a bucket
           deleteEverythingUnderAVolume(volumeName);
         }
         createVolumeIfItDoesNotExist(volumeName);
@@ -196,7 +193,6 @@ public class OzoneCSVConnector implements ConnectorInterface {
     if (oneFilePerIteration) {
       try {
         outputStream.close();
-        ;
       } catch (IOException e) {
         log.error(" Unable to close local file with error :", e);
       }
@@ -205,6 +201,7 @@ public class OzoneCSVConnector implements ConnectorInterface {
       try {
         byte[] dataToWrite = Files.readAllBytes(
             java.nio.file.Path.of(localFileTempDir + keyName));
+        // TODO: Check for changing of function
         OzoneOutputStream os =
             bucket.createKey(keyName, dataToWrite.length, ReplicationType.RATIS,
                 replicationFactor, new HashMap<>());
@@ -365,6 +362,9 @@ public class OzoneCSVConnector implements ConnectorInterface {
     try {
       File file = new File(path);
       file.getParentFile().mkdirs();
+      file.setReadable(true, true);
+      file.setWritable(true, true);
+      file.setExecutable(true, true);
       if (!file.createNewFile()) {
         log.warn("Could not create file");
       }

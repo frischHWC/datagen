@@ -410,14 +410,14 @@ public class Utils {
    * Log in the recap of what's been generated
    */
   public static void recap(long numberOfBatches, long rowPerBatch,
-                           List<ConnectorParser.Sink> sinks, Model model) {
+                           List<ConnectorParser.Connector> connectors, Model model) {
     log.info(
         " ************************* Recap of data generation ****************** ");
     log.info("Generated " + formatNumber(rowPerBatch * numberOfBatches) +
         " rows into : ");
 
-    sinks.forEach(sink -> {
-      switch (sink) {
+    connectors.forEach(connector -> {
+      switch (connector) {
       case HDFS_CSV:
         log.info("   - HDFS as CSV files of " + rowPerBatch + " rows : ");
         if ((Boolean) model.getOptionsOrDefault(
@@ -566,10 +566,6 @@ public class Utils {
           log.info(" located in HDFS at: " + model.getTableNames()
               .get(OptionsConverter.TableNames.HIVE_HDFS_FILE_PATH));
         }
-        break;
-      case OZONE:
-        log.info("   - Ozone in volume " + model.getTableNames()
-            .get(OptionsConverter.TableNames.OZONE_VOLUME));
         break;
       case OZONE_PARQUET:
         log.info("   - Ozone as Parquet files of " + rowPerBatch +
@@ -784,8 +780,8 @@ public class Utils {
             String.format("%010d", numberOfBatches - 1) + ".orc");
         break;
       default:
-        log.info("The sink " + sink.toString() +
-            " provided has not been recognized as an expected sink");
+        log.info("The connector " + connector.toString() +
+            " provided has not been recognized as an expected connector");
         break;
       }
 

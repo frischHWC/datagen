@@ -15,11 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.connector.db;
+package com.cloudera.frisch.datagen.connector.db.hive;
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
-import com.cloudera.frisch.datagen.connector.db.utils.HiveUtils;
 import com.cloudera.frisch.datagen.connector.storage.hdfs.*;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
@@ -37,9 +36,9 @@ import java.util.concurrent.CountDownLatch;
 
 
 /**
- * This a HiveSink, each instance manages its own session and a preparedStatement for insertion
+ * This a Hiveconnector, each instance manages its own session and a preparedStatement for insertion
  * It is recommended to use HDFS option that will create HDFS files before laoding them into Hive using a SQL statement.
- * An inner class @see{com.cloudera.frisch.randomdatagen.sink.HiveSinkParallel} below, allows multi threaded inserts,
+ * An inner class @see{com.cloudera.frisch.randomdatagen.connector.HiveconnectorParallel} below, allows multi threaded inserts,
  * It is recommended to not insert too many rows as Hive is very slow on insertion and use the batch function,
  * with a high number of rows per batch and few batches (to avoid recreating connection to Hive each time)
  * and with a maximum of 20 threads (configurable in application.properties)
@@ -51,7 +50,7 @@ public class HiveConnector implements ConnectorInterface {
   private final int threads_number;
   private final String hiveUri;
   private Connection hiveConnection;
-  private ConnectorInterface hdfsSink;
+  private ConnectorInterface hdfsconnector;
   private final String database;
   private final String tableName;
   private final String tableNameTemporary;
@@ -220,34 +219,34 @@ public class HiveConnector implements ConnectorInterface {
         prepareAndExecuteStatement(tableStatementCreation);
 
         if (hiveOnHDFS) {
-          // If using an HDFS sink, we want it to use the Hive HDFS File path and not the Hdfs file path
-          Map<ApplicationConfigs, String> propertiesForHiveSink =
+          // If using an HDFS connector, we want it to use the Hive HDFS File path and not the Hdfs file path
+          Map<ApplicationConfigs, String> propertiesForHiveconnector =
               new HashMap<>();
-          propertiesForHiveSink.putAll(properties);
-          propertiesForHiveSink.put(ApplicationConfigs.HDFS_FOR_HIVE,
+          propertiesForHiveconnector.putAll(properties);
+          propertiesForHiveconnector.put(ApplicationConfigs.HDFS_FOR_HIVE,
               "true");
           switch (this.hiveTableFormat) {
           case PARQUET:
-            this.hdfsSink = new HdfsParquetConnector(model,
-                propertiesForHiveSink);
+            this.hdfsconnector = new HdfsParquetConnector(model,
+                propertiesForHiveconnector);
             break;
           case AVRO:
-            this.hdfsSink =
-                new HdfsAvroConnector(model, propertiesForHiveSink);
+            this.hdfsconnector =
+                new HdfsAvroConnector(model, propertiesForHiveconnector);
             break;
           case JSON:
-            this.hdfsSink =
-                new HdfsJsonConnector(model, propertiesForHiveSink);
+            this.hdfsconnector =
+                new HdfsJsonConnector(model, propertiesForHiveconnector);
             break;
           case CSV:
-            this.hdfsSink =
-                new HdfsCsvConnector(model, propertiesForHiveSink);
+            this.hdfsconnector =
+                new HdfsCsvConnector(model, propertiesForHiveconnector);
             break;
           default:
-            this.hdfsSink =
-                new HdfsOrcConnector(model, propertiesForHiveSink);
+            this.hdfsconnector =
+                new HdfsOrcConnector(model, propertiesForHiveconnector);
           }
-          this.hdfsSink.init(model, writer);
+          this.hdfsconnector.init(model, writer);
 
           if (hiveTableType == Model.HiveTableType.MANAGED) {
             String tableStatementCreationTemp =
@@ -315,7 +314,7 @@ public class HiveConnector implements ConnectorInterface {
   @Override
   public void sendOneBatchOfRows(List<Row> rows) {
     if (hiveOnHDFS) {
-      hdfsSink.sendOneBatchOfRows(rows);
+      hdfsconnector.sendOneBatchOfRows(rows);
     } else {
       senOneBatchOfRowsDirectlyToHive(rows);
     }
@@ -374,11 +373,11 @@ public class HiveConnector implements ConnectorInterface {
     CountDownLatch latch = new CountDownLatch(threads_number);
 
     for (int i = 0; i < threads_number; i++) {
-      HiveSinkParallel oneHiveSinkThread = new HiveSinkParallel(
+      HiveconnectorParallel oneHiveconnectorThread = new HiveconnectorParallel(
           rows.subList(i * lengthToTake, i * lengthToTake + lengthToTake),
           latch);
-      oneHiveSinkThread.setName("Thread-" + i);
-      oneHiveSinkThread.start();
+      oneHiveconnectorThread.setName("Thread-" + i);
+      oneHiveconnectorThread.start();
     }
 
     try {
@@ -393,11 +392,11 @@ public class HiveConnector implements ConnectorInterface {
    * In order to accelerate Hive ingestion of data, this class has been created to allow parallelization of insertion
    * Hive is commit enabled by default (and cannot be changed), hence each request is taking few seconds to be fully committed and agreed by HIVE
    */
-  private class HiveSinkParallel extends Thread {
+  private class HiveconnectorParallel extends Thread {
     private List<Row> rows;
     private final CountDownLatch latch;
 
-    HiveSinkParallel(List<Row> rows, CountDownLatch latch) {
+    HiveconnectorParallel(List<Row> rows, CountDownLatch latch) {
       this.rows = rows;
       this.latch = latch;
     }

@@ -36,9 +36,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This is a JSON sink
+ * This is a JSON connector
  * Its goal is to write into ONE single json file data randomly generated
  */
+// TODO: Refactor to use utils class
 @Slf4j
 public class JsonConnector implements ConnectorInterface {
 

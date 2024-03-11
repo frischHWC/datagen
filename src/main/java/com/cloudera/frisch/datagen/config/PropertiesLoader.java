@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -36,11 +38,13 @@ import java.util.stream.Collectors;
 @Component
 public class PropertiesLoader {
 
-  private SpringConfig springConfig;
+  private final SpringConfig springConfig;
 
-  private Map<ApplicationConfigs, String> properties;
+  private final Map<ApplicationConfigs, String> properties;
 
-  private CmApiService cmApiService;
+  private final CmApiService cmApiService;
+
+  private final Pattern pattern = Pattern.compile("\\#\\{([A-Za-z0-9\\.]*)\\}");
 
   @Autowired
   public PropertiesLoader(SpringConfig springConfig,
@@ -108,11 +112,10 @@ public class PropertiesLoader {
     String property = "null";
     try {
       property = propertiesAsProperties.getProperty(key);
-      if (property.length() > 1 &&
-          property.substring(0, 2).equalsIgnoreCase("#{")) {
-        property = getPropertyResolvingPlaceholder(
-            property.substring(2, property.length() - 1),
-            propertiesAsProperties);
+      Matcher matcher = pattern.matcher(property);
+      while (matcher.find()) {
+        property = property.replace(matcher.group(0),
+            getPropertyResolvingPlaceholder(matcher.group(1), propertiesAsProperties));
       }
     } catch (Exception e) {
       log.warn("Could not get property : {} due to following error: ",
@@ -139,7 +142,7 @@ public class PropertiesLoader {
 
   /*
   - If properties for a service are not set (ex: hdfs.uri) => Look for config file's location property
-  - If this is empty or file does not exists => WARNING: You should provide info on API call to use this sink
+  - If this is empty or file does not exists => WARNING: You should provide info on API call to use this connector
   - Otherwise, load the file and set the required property (hdfs.uri for example)
    */
   private void autoDiscover() {
@@ -555,6 +558,8 @@ public class PropertiesLoader {
         }
 
       }
+
+      // TODO: Check how to get AWS or Azure info from CM
 
 
     }

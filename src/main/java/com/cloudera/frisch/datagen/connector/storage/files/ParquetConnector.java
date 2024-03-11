@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+// TODO: Refactor to use utils class
 @Slf4j
 public class ParquetConnector implements ConnectorInterface {
 

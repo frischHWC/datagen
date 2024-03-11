@@ -94,7 +94,7 @@ This script add required jars to classpath and launch jar.
 
 === Where data will be generated ?
 
-There are various possible services where data can be generated, these are called sinks and here is the full possible list:
+There are various possible services where data can be generated, these are called connectors and here is the full possible list:
 
 - HDFS-AVRO : generates an AVRO file sent to HDFS
 - HDFS-CSV : generates a CSV file sent to HDFS
@@ -416,7 +416,7 @@ corresponding to the name of field (multiple fields could be provided separated 
 
 ==== Options:
 
-An array of other options to configure basic settings for some sinks: +
+An array of other options to configure basic settings for some connectors: +
 
 - HBASE_COLUMN_FAMILIES_MAPPING +
 This mapping must be in the form : "CF:col1,col2;CF2:col5" +
@@ -485,7 +485,7 @@ And the model file parsed and set as an object.
 This command is queued to be launched and an UUID is returned by the controller. (This ID can be used to track progress of the command)
 
 Generation are made one after another one by the processCommands() scheduled function running every seconds to un-queue a command and run it.
-It contains the logic of setting up batches, creates threads and send rows to desired sinks.
+It contains the logic of setting up batches, creates threads and send rows to desired connectors.
 
 When a command is scheduled, it is simply added to a List of scheduled commands, which are then periodically checked and added to the queue
 list of processing if needed.
@@ -510,7 +510,7 @@ needed function in this class
 
 - Create an extended class of field under package model.type
 - Create a builder in previous class, implement generateRandomValue() function
-- If needed, override Fields function specific to some or all sinks available
+- If needed, override Fields function specific to some or all connectors available
 - In Field, instantiateField() function, add in the switch case statement, the new type of field
 - In Model, modify functions on table creation to be able to integrate the new type of field
 

@@ -52,10 +52,7 @@ import java.util.List;
 import java.util.Map;
 
 
-/**
- * This is an Ozone Sink base on 0.4 API
- * Note that it could produce some Timeout on heavy workload but it still inserts correctly
- */
+// TODO: Refactor to use one abstract class
 @Slf4j
 public class OzoneOrcConnector implements ConnectorInterface {
 

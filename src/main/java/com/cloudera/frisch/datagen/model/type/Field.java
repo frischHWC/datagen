@@ -387,7 +387,7 @@ public abstract class Field<T> {
     /*
     Below functions could be redefined on each Field
     They provide generic Insertions needed
-    Each time a new sink is added, a new function should be created here (or in each field)
+    Each time a new connector is added, a new function could be created here (or in each field)
      */
 
   public String toStringValue(T value) {

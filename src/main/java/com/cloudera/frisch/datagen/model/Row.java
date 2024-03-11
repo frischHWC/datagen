@@ -17,11 +17,10 @@
  */
 package com.cloudera.frisch.datagen.model;
 
+import com.cloudera.frisch.datagen.connector.queues.KafkaConnector;
 import com.cloudera.frisch.datagen.model.type.CityField;
 import com.cloudera.frisch.datagen.model.type.CsvField;
 import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.connector.queues.KafkaConnector;
-import com.cloudera.frisch.datagen.connector.storage.ozone.OzoneObject;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -157,22 +156,6 @@ public class Row<T extends Field> {
             .toSolrDoc(values.get(name.toString()), doc)
     );
     return doc;
-  }
-
-  public OzoneObject toOzoneObject() {
-    StringBuilder sb = new StringBuilder();
-    // Use of Model LinkedList of fields to keep order of fields
-    this.model.getFieldsToPrint().forEach((name, fieldtype) ->
-        sb.append(model.getFieldFromName(name.toString())
-            .toOzone(values.get(name.toString())))
-    );
-    // Bucket does not support upper case letter, so conversion to lower case is made
-    return new OzoneObject(
-        getPrimaryKeysValues(
-            OptionsConverter.PrimaryKeys.OZONE_BUCKET).toLowerCase(),
-        getPrimaryKeysValues(OptionsConverter.PrimaryKeys.OZONE_KEY),
-        sb.toString()
-    );
   }
 
   public Insert toKuduInsert(KuduTable table) {

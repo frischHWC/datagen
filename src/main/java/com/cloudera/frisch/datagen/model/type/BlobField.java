@@ -64,12 +64,12 @@ public class BlobField extends Field<byte[]> {
 
   @Override
   public String toCSVString(byte[] value) {
-    return DatatypeConverter.printHexBinary(value).toUpperCase() + ",";
+    return "\"" + DatatypeConverter.printHexBinary(value).toUpperCase() + "\",";
   }
 
 
   /*
-   Override if needed Field function to insert into special sinks
+   Override if needed Field function to insert into special connectors
    */
   @Override
   public String toStringValue(byte[] value) {

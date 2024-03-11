@@ -44,17 +44,17 @@ public class MetricsService {
   }
 
   public synchronized void updateMetrics(long numberOfBatches, long rowPerBatch,
-                                         List<ConnectorParser.Sink> sinks) {
+                                         List<ConnectorParser.Connector> connectors) {
 
     synchronized (allMetrics) {
-      sinks.forEach(sink -> {
+      connectors.forEach(connector -> {
         allMetrics.put(Metrics.ALL_ROWS_GENERATED,
             allMetrics.get(Metrics.ALL_ROWS_GENERATED) +
                 (numberOfBatches * rowPerBatch));
         allMetrics.put(Metrics.GENERATIONS_MADE,
             allMetrics.get(Metrics.GENERATIONS_MADE) + 1);
 
-        switch (sink) {
+        switch (connector) {
         case HDFS_CSV:
           allMetrics.put(Metrics.HDFS_CSV_FILES_GENERATED,
               allMetrics.get(Metrics.HDFS_CSV_FILES_GENERATED) +
@@ -206,7 +206,7 @@ public class MetricsService {
 
         default:
           log.warn(
-              "Could not identify the sink, added metrics only for global");
+              "Could not identify the connector, added metrics only for global");
           break;
         }
       });

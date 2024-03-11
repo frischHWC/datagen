@@ -15,66 +15,85 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.connector.storage.files;
+package com.cloudera.frisch.datagen.connector.storage.s3;
 
 
-import com.cloudera.frisch.datagen.connector.ConnectorInterface;
-import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.model.type.StringField;
-import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
+import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.CSVUtils;
+import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
+import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.model.type.StringField;
+import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 
 import java.io.*;
 import java.util.*;
 
+import static com.cloudera.frisch.datagen.config.ApplicationConfigs.DATA_HOME_DIRECTORY;
+
 /**
  * This is a CSV connector to write to one or multiple CSV files locally
  */
-// TODO: Refactor to use utils class
 @Slf4j
-public class CSVConnector implements ConnectorInterface {
+public class S3CSVConnector extends S3Utils implements ConnectorInterface  {
 
-  private FileOutputStream outputStream;
-  private int counter;
   private final Model model;
+  private FileOutputStream outputStream;
   private final String lineSeparator;
-  private final String directoryName;
-  private final String fileName;
   private final Boolean oneFilePerIteration;
+  private final String localFilePathForModelGeneration;
+
+  private int counter;
+  private String currentLocalFileName;
+  private String currentKeyName;
 
   /**
-   * Init local CSV file with header
+   * Init S3 CSV
    */
-  public CSVConnector(Model model, Map<ApplicationConfigs, String> properties) {
+  public S3CSVConnector(Model model,
+                        Map<ApplicationConfigs, String> properties) {
+    super(model, properties);
     this.model = model;
     this.counter = 0;
     this.lineSeparator = System.getProperty("line.separator");
-    this.directoryName = (String) model.getTableNames()
-        .get(OptionsConverter.TableNames.LOCAL_FILE_PATH);
-    this.fileName = (String) model.getTableNames()
-        .get(OptionsConverter.TableNames.LOCAL_FILE_NAME);
     this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(
         OptionsConverter.Options.ONE_FILE_PER_ITERATION);
-
+    this.localFilePathForModelGeneration = properties.get(DATA_HOME_DIRECTORY) + "/model-gen/s3/";
   }
 
   @Override
   public void init(Model model, boolean writer) {
     if (writer) {
-      Utils.createLocalDirectory(directoryName);
-
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        Utils.deleteAllLocalFiles(directoryName, fileName, "csv");
+        s3Client.listObjects(
+                ListObjectsRequest.builder().bucket(bucketName)
+                    .prefix(directoryName)
+                    .build())
+            .contents()
+            .forEach(k -> s3Client.deleteObject(
+                DeleteObjectRequest.builder().bucket(bucketName).key(k.key())
+                    .build()));
       }
 
+      // Will use a local directory before pushing data to S3
+      Utils.createLocalDirectory(localFileTempDir);
+      Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "csv");
+
+      createBucketIfNotExists();
+
       if (!oneFilePerIteration) {
-        createFileWithOverwrite(directoryName + fileName + ".csv");
-        appendCSVHeader(model);
+        this.currentLocalFileName = fileName + ".csv";
+        this.currentKeyName = directoryName + currentLocalFileName;
+        this.outputStream = FileUtils.createFileWithOverwrite(localFileTempDir +
+            currentLocalFileName);
+        CSVUtils.appendCSVHeader(model, outputStream, lineSeparator);
       }
     }
   }
@@ -84,6 +103,7 @@ public class CSVConnector implements ConnectorInterface {
     try {
       if (!oneFilePerIteration) {
         outputStream.close();
+        pushLocalFileToS3(localFileTempDir + currentLocalFileName, currentKeyName);
       }
     } catch (IOException e) {
       log.error(" Unable to close local file with error :", e);
@@ -94,10 +114,11 @@ public class CSVConnector implements ConnectorInterface {
   public void sendOneBatchOfRows(List<Row> rows) {
     try {
       if (oneFilePerIteration) {
-        createFileWithOverwrite(
-            directoryName + fileName + "-" + String.format("%010d", counter) +
-                ".csv");
-        appendCSVHeader(model);
+        this.currentLocalFileName = fileName + "-" + String.format("%010d", counter) + ".csv";
+        this.currentKeyName = directoryName + currentLocalFileName;
+        this.outputStream = FileUtils.createFileWithOverwrite(
+            localFileTempDir + currentLocalFileName);
+        CSVUtils.appendCSVHeader(model, outputStream, lineSeparator);
         counter++;
       }
 
@@ -114,6 +135,7 @@ public class CSVConnector implements ConnectorInterface {
 
       if (oneFilePerIteration) {
         outputStream.close();
+        pushLocalFileToS3(localFileTempDir + currentLocalFileName, currentKeyName);
       }
     } catch (IOException e) {
       log.error("Can not write data to the local file due to error: ", e);
@@ -127,15 +149,20 @@ public class CSVConnector implements ConnectorInterface {
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
 
-    tableNames.put("LOCAL_FILE_PATH", this.directoryName.substring(0, this.directoryName.lastIndexOf("/"))+"/");
-    tableNames.put("LOCAL_FILE_NAME", this.directoryName.substring(this.directoryName.lastIndexOf("/")+1));
+    tableNames.put("S3_LOCAL_FILE_PATH", this.directoryName);
+    tableNames.put("S3_KEY_NAME", this.keyNamePrefix);
+    tableNames.put("S3_BUCKET", this.bucketName);
 
     try {
-      File file = new File(this.directoryName);
+      String localFile = this.localFilePathForModelGeneration + this.fileName;
+      readFileFromS3(localFile, this.keyNamePrefix);
+      File file = new File(localFile);
       if (file.exists() && file.isFile()) {
         String csvHeader = new BufferedReader(new FileReader(file)).readLine();
         Arrays.stream(csvHeader.split(","))
-            .forEach(f -> fields.put(f, new StringField(f, null, Collections.emptyList(), new LinkedHashMap<>())));
+            .forEach(f -> fields.put(f,
+                new StringField(f, null, Collections.emptyList(),
+                    new LinkedHashMap<>())));
       }
     } catch (IOException e) {
       log.error("Tried to read file : {} with no success :", this.directoryName,
@@ -145,28 +172,5 @@ public class CSVConnector implements ConnectorInterface {
     return new Model(fields, primaryKeys, tableNames, options);
   }
 
-  void appendCSVHeader(Model model) {
-    try {
-      if ((Boolean) model.getOptionsOrDefault(
-          OptionsConverter.Options.CSV_HEADER)) {
-        outputStream.write(model.getCsvHeader().getBytes());
-        outputStream.write(lineSeparator.getBytes());
-      }
-    } catch (IOException e) {
-      log.error("Can not write header to the local file due to error: ", e);
-    }
-  }
-
-  void createFileWithOverwrite(String path) {
-    try {
-      File file = new File(path);
-      file.getParentFile().mkdirs();
-      file.createNewFile();
-      outputStream = new FileOutputStream(path, false);
-      log.debug("Successfully created local file : " + path);
-    } catch (IOException e) {
-      log.error("Tried to create file : " + path + " with no success :", e);
-    }
-  }
 
 }

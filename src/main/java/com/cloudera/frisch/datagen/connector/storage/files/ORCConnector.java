@@ -41,8 +41,9 @@ import java.util.*;
 
 
 /**
- * ORC File sink
+ * ORC File connector
  */
+// TODO: Refactor to use utils class
 @SuppressWarnings("unchecked")
 @Slf4j
 public class ORCConnector implements ConnectorInterface {

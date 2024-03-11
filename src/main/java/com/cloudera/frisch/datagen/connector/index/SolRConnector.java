@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 
 
 /**
- * This is a SolR sink using 8.4.0 API
+ * This is a SolR connector using 8.4.0 API
  * Each instance is linked to a unique SolR collection
  */
 @Slf4j

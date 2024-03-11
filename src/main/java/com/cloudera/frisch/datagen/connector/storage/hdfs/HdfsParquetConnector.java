@@ -45,8 +45,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This is an HDFS PARQUET sink using Hadoop 3.2 API
+ * This is an HDFS PARQUET connector using Hadoop 3.2 API
  */
+// TODO: Refactor to use one abstract class
 @Slf4j
 public class HdfsParquetConnector implements ConnectorInterface {
 
@@ -69,7 +70,7 @@ public class HdfsParquetConnector implements ConnectorInterface {
    */
   public HdfsParquetConnector(Model model,
                               Map<ApplicationConfigs, String> properties) {
-    // If using an HDFS sink, we want it to use the Hive HDFS File path and not the Hdfs file path
+    // If using an HDFS connector, we want it to use the Hive HDFS File path and not the Hdfs file path
     if (properties.get(ApplicationConfigs.HDFS_FOR_HIVE) != null
         && properties.get(ApplicationConfigs.HDFS_FOR_HIVE)
         .equalsIgnoreCase("true")) {
@@ -79,7 +80,7 @@ public class HdfsParquetConnector implements ConnectorInterface {
       this.directoryName = (String) model.getTableNames()
           .get(OptionsConverter.TableNames.HDFS_FILE_PATH);
     }
-    log.debug("HDFS sink will generates data into HDFS directory: " +
+    log.debug("HDFS connector will generates data into HDFS directory: " +
         this.directoryName);
     this.fileName = (String) model.getTableNames()
         .get(OptionsConverter.TableNames.HDFS_FILE_NAME);

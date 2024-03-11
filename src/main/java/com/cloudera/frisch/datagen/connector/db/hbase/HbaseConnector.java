@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.connector.db;
+package com.cloudera.frisch.datagen.connector.db.hbase;
 
 
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 
 
 /**
- * This is an HBase Sink using HBase API 2.3
+ * This is an HBase connector using HBase API 2.3
  * It requires in application.properties to define zookeeper quorum, port, znode and type of authentication (simple or kerberos)
  * Each instance is only able to manage one connection to one specific table defined by property hbase.table.name in application.properties
  */

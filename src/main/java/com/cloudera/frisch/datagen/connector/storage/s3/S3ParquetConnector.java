@@ -41,7 +41,7 @@ import static com.cloudera.frisch.datagen.config.ApplicationConfigs.DATA_HOME_DI
  * This is a CSV connector to write to one or multiple CSV files to S3
  */
 @Slf4j
-public class S3CSVConnector extends S3Utils implements ConnectorInterface  {
+public class S3ParquetConnector extends S3Utils implements ConnectorInterface  {
 
   private final Model model;
   private FileOutputStream outputStream;
@@ -56,8 +56,8 @@ public class S3CSVConnector extends S3Utils implements ConnectorInterface  {
   /**
    * Init S3 CSV
    */
-  public S3CSVConnector(Model model,
-                        Map<ApplicationConfigs, String> properties) {
+  public S3ParquetConnector(Model model,
+                            Map<ApplicationConfigs, String> properties) {
     super(model, properties);
     this.model = model;
     this.counter = 0;

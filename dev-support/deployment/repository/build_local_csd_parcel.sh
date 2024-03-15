@@ -20,7 +20,7 @@
 export DATAGEN_VERSION="0.4.15"
 export CDP_VERSION="7.1.9.4"
 
-export DISTRIBUTIONS_TO_BUILD="el7 el8 el9 sles15"
+export DISTRIBUTIONS_TO_BUILD="el7 el8 sles15"
 
 export BUILD_DATAGEN_JAR="true"
 export BUILD_CSD="true"

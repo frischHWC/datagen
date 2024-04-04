@@ -29,6 +29,9 @@
     "KUDU_TABLE_NAME": "datagen.MODEL_NAME",
     "LOCAL_FILE_PATH": "/tmp/datagen/MODEL_NAME/",
     "LOCAL_FILE_NAME": "datagen-MODEL_NAME",
+    "S3_LOCAL_FILE_PATH":  "/tmp/datagen/temp/MODEL_NAME/",
+    "S3_BUCKET": "datagen-test-fri",
+    "S3_KEY_NAME": "datagen/MODEL_NAME/MODEL_NAME-key",
     "AVRO_NAME": "datagenMODEL_NAME"
   },
   "Primary_Keys": {

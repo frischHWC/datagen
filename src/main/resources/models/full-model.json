@@ -236,7 +236,7 @@
     "LOCAL_FILE_NAME":  "datagen-full",
     "S3_LOCAL_FILE_PATH":  "/tmp/datagen/temp/full/",
     "S3_BUCKET": "datagen-test-fri",
-    "S3_KEY_NAME": "/datagen/full/full-key",
+    "S3_KEY_NAME": "datagen/full/full-key",
     "AVRO_NAME":  "datagenfull"
   },
   "Primary_Keys": {

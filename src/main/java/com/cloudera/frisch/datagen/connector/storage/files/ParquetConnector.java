@@ -20,12 +20,12 @@ package com.cloudera.frisch.datagen.connector.storage.files;
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
 import com.cloudera.frisch.datagen.connector.storage.utils.ParquetUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
-import com.cloudera.frisch.datagen.model.type.*;
-import com.cloudera.frisch.datagen.utils.Utils;
+import com.cloudera.frisch.datagen.model.type.Field;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
@@ -38,7 +38,10 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 // TODO: Refactor to use utils class
 @Slf4j
@@ -74,11 +77,11 @@ public class ParquetConnector implements ConnectorInterface {
     if (writer) {
       schema = model.getAvroSchema();
 
-      Utils.createLocalDirectory(directoryName);
+      FileUtils.createLocalDirectory(directoryName);
 
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        Utils.deleteAllLocalFiles(directoryName, fileName, "parquet");
+        FileUtils.deleteAllLocalFiles(directoryName, fileName, "parquet");
       }
 
       if (!oneFilePerIteration) {
@@ -160,7 +163,7 @@ public class ParquetConnector implements ConnectorInterface {
 
   private void createFileWithOverwrite(String path) {
     try {
-      Utils.deleteLocalFile(path);
+      FileUtils.deleteLocalFile(path);
       new File(path).getParentFile().mkdirs();
       this.writer = AvroParquetWriter
           .<GenericRecord>builder(new Path(path))

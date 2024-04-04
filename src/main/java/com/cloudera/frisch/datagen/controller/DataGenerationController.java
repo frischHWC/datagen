@@ -591,5 +591,97 @@ public class DataGenerationController {
         Collections.singletonList("S3-CSV"), null);
   }
 
+  @PostMapping(value = "/s3-json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public String generateIntoS3Json(
+      @RequestPart(required = false, name = "model_file")
+          MultipartFile modelFile,
+      @RequestParam(required = false, name = "model") String modelFilePath,
+      @RequestParam(required = false, name = "threads") Integer threads,
+      @RequestParam(required = false, name = "batches") Long numberOfBatches,
+      @RequestParam(required = false, name = "rows") Long rowsPerBatch,
+      @RequestParam(required = false, name = "delay_between_executions_seconds")
+          Long delayBetweenExecutions
+  ) {
+    log.debug(
+        "Received request for S3-JSON with model: {} , threads: {} , batches: {}, rows: {}",
+        modelFilePath, threads, numberOfBatches, rowsPerBatch);
+
+    Boolean scheduled = delayBetweenExecutions != null;
+
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads,
+        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
+        Collections.singletonList("S3-JSON"), null);
+  }
+
+  @PostMapping(value = "/s3-avro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public String generateIntoS3Avro(
+      @RequestPart(required = false, name = "model_file")
+          MultipartFile modelFile,
+      @RequestParam(required = false, name = "model") String modelFilePath,
+      @RequestParam(required = false, name = "threads") Integer threads,
+      @RequestParam(required = false, name = "batches") Long numberOfBatches,
+      @RequestParam(required = false, name = "rows") Long rowsPerBatch,
+      @RequestParam(required = false, name = "delay_between_executions_seconds")
+          Long delayBetweenExecutions
+  ) {
+    log.debug(
+        "Received request for S3-AVRO with model: {} , threads: {} , batches: {}, rows: {}",
+        modelFilePath, threads, numberOfBatches, rowsPerBatch);
+
+    Boolean scheduled = delayBetweenExecutions != null;
+
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads,
+        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
+        Collections.singletonList("S3-AVRO"), null);
+  }
+
+  @PostMapping(value = "/s3-parquet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public String generateIntoS3Parquet(
+      @RequestPart(required = false, name = "model_file")
+          MultipartFile modelFile,
+      @RequestParam(required = false, name = "model") String modelFilePath,
+      @RequestParam(required = false, name = "threads") Integer threads,
+      @RequestParam(required = false, name = "batches") Long numberOfBatches,
+      @RequestParam(required = false, name = "rows") Long rowsPerBatch,
+      @RequestParam(required = false, name = "delay_between_executions_seconds")
+          Long delayBetweenExecutions
+  ) {
+    log.debug(
+        "Received request for S3-PARQUET with model: {} , threads: {} , batches: {}, rows: {}",
+        modelFilePath, threads, numberOfBatches, rowsPerBatch);
+
+    Boolean scheduled = delayBetweenExecutions != null;
+
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads,
+        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
+        Collections.singletonList("S3-PARQUET"), null);
+  }
+
+  @PostMapping(value = "/s3-orc", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public String generateIntoS3Orc(
+      @RequestPart(required = false, name = "model_file")
+          MultipartFile modelFile,
+      @RequestParam(required = false, name = "model") String modelFilePath,
+      @RequestParam(required = false, name = "threads") Integer threads,
+      @RequestParam(required = false, name = "batches") Long numberOfBatches,
+      @RequestParam(required = false, name = "rows") Long rowsPerBatch,
+      @RequestParam(required = false, name = "delay_between_executions_seconds")
+          Long delayBetweenExecutions
+  ) {
+    log.debug(
+        "Received request for S3-ORC with model: {} , threads: {} , batches: {}, rows: {}",
+        modelFilePath, threads, numberOfBatches, rowsPerBatch);
+
+    Boolean scheduled = delayBetweenExecutions != null;
+
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads,
+        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
+        Collections.singletonList("S3-ORC"), null);
+  }
+
 
 }

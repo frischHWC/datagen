@@ -18,14 +18,15 @@
 package com.cloudera.frisch.datagen.connector.storage.hdfs;
 
 
+import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
 import com.cloudera.frisch.datagen.connector.storage.utils.AvroUtils;
-import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.utils.Utils;
-import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
+import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.utils.KerberosUtils;
+import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileReader;
@@ -53,7 +54,7 @@ import java.util.Map;
  */
 // TODO: Refactor to use one abstract class
 @Slf4j
-public class HdfsAvroConnector implements ConnectorInterface {
+public class HdfsAvroConnector extends HdfsUtils implements ConnectorInterface {
 
   private Schema schema;
   private DataFileWriter<GenericRecord> dataFileWriter;
@@ -104,7 +105,7 @@ public class HdfsAvroConnector implements ConnectorInterface {
 
     // Set all kerberos if needed (Note that connection will require a user and its appropriate keytab with right privileges to access folders and files on HDFSCSV)
     if (useKerberos) {
-      Utils.loginUserWithKerberos(
+      KerberosUtils.loginUserWithKerberos(
           properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_USER),
           properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_KEYTAB),
           config);
@@ -123,11 +124,11 @@ public class HdfsAvroConnector implements ConnectorInterface {
       schema = model.getAvroSchema();
       datumWriter = new GenericDatumWriter<>(schema);
 
-      Utils.createHdfsDirectory(fileSystem, directoryName);
+      createHdfsDirectory(fileSystem, directoryName);
 
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        Utils.deleteAllHdfsFiles(fileSystem, directoryName, fileName,
+        deleteAllHdfsFiles(fileSystem, directoryName, fileName,
             "avro");
       }
 
@@ -147,7 +148,7 @@ public class HdfsAvroConnector implements ConnectorInterface {
       fsDataOutputStream.close();
       fileSystem.close();
       if (useKerberos) {
-        Utils.logoutUserWithKerberos();
+        KerberosUtils.logoutUserWithKerberos();
       }
     } catch (IOException e) {
       log.error(" Unable to close HDFSAVRO file with error :", e);
@@ -227,7 +228,7 @@ public class HdfsAvroConnector implements ConnectorInterface {
 
   void createFileWithOverwrite(String path) {
     try {
-      Utils.deleteHdfsFile(fileSystem, path);
+      deleteHdfsFile(fileSystem, path);
       fsDataOutputStream = fileSystem.create(new Path(path), replicationFactor);
       dataFileWriter = new DataFileWriter<>(datumWriter);
       log.debug("Successfully created hdfs file : " + path);

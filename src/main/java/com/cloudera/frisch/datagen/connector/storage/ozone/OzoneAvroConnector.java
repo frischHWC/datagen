@@ -21,10 +21,12 @@ package com.cloudera.frisch.datagen.connector.storage.ozone;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
 import com.cloudera.frisch.datagen.connector.storage.utils.AvroUtils;
+import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.utils.KerberosUtils;
 import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
@@ -101,7 +103,7 @@ public class OzoneAvroConnector implements ConnectorInterface {
     Utils.setupHadoopEnv(config, properties);
 
     if (useKerberos) {
-      Utils.loginUserWithKerberos(
+      KerberosUtils.loginUserWithKerberos(
           properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_USER),
           properties.get(
               ApplicationConfigs.OZONE_AUTH_KERBEROS_KEYTAB), config);
@@ -131,8 +133,8 @@ public class OzoneAvroConnector implements ConnectorInterface {
         this.bucket = volume.getBucket(bucketName);
 
         // Will use a local directory before pushing data to Ozone
-        Utils.createLocalDirectory(localFileTempDir);
-        Utils.deleteAllLocalFiles(localFileTempDir,
+        FileUtils.createLocalDirectory(localFileTempDir);
+        FileUtils.deleteAllLocalFiles(localFileTempDir,
             keyNamePrefix, "avro");
 
         if (!oneFilePerIteration) {
@@ -183,12 +185,12 @@ public class OzoneAvroConnector implements ConnectorInterface {
         }
       }
       ozClient.close();
-      Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "avro");
+      FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "avro");
     } catch (IOException e) {
       log.warn("Could not close properly Ozone connection, due to error: ", e);
     }
     if (useKerberos) {
-      Utils.logoutUserWithKerberos();
+      KerberosUtils.logoutUserWithKerberos();
     }
   }
 
@@ -233,7 +235,7 @@ public class OzoneAvroConnector implements ConnectorInterface {
             "Could not write row to Ozone volume: {} bucket: {}, key: {} ; error: ",
             volumeName, bucketName, keyName, e);
       }
-      Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "avro");
+      FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "avro");
     } else {
       try {
         dataFileWriter.flush();

@@ -18,12 +18,12 @@
 package com.cloudera.frisch.datagen.connector.queues;
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
+import com.cloudera.frisch.datagen.connector.ConnectorInterface;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
-import com.cloudera.frisch.datagen.connector.ConnectorInterface;
 import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.utils.Utils;
+import com.cloudera.frisch.datagen.utils.KerberosUtils;
 import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
@@ -128,11 +128,11 @@ public class KafkaConnector implements ConnectorInterface {
       this.useKerberos = Boolean.TRUE;
       String jaasFilePath = (String) model.getOptionsOrDefault(
           OptionsConverter.Options.KAFKA_JAAS_FILE_PATH);
-      Utils.createJaasConfigFile(jaasFilePath, "KafkaClient",
+      KerberosUtils.createJaasConfigFile(jaasFilePath, "KafkaClient",
           properties.get(ApplicationConfigs.KAFKA_AUTH_KERBEROS_KEYTAB),
           properties.get(ApplicationConfigs.KAFKA_AUTH_KERBEROS_USER),
           true, true, false);
-      Utils.createJaasConfigFile(jaasFilePath, "RegistryClient",
+      KerberosUtils.createJaasConfigFile(jaasFilePath, "RegistryClient",
           properties.get(ApplicationConfigs.KAFKA_AUTH_KERBEROS_KEYTAB),
           properties.get(ApplicationConfigs.KAFKA_AUTH_KERBEROS_USER),
           true, true, true);
@@ -151,7 +151,7 @@ public class KafkaConnector implements ConnectorInterface {
               "principal=\"" + properties.get(
               ApplicationConfigs.KAFKA_AUTH_KERBEROS_USER) + "\";");
 
-      Utils.loginUserWithKerberos(
+      KerberosUtils.loginUserWithKerberos(
           properties.get(ApplicationConfigs.KAFKA_AUTH_KERBEROS_USER),
           properties.get(ApplicationConfigs.KAFKA_AUTH_KERBEROS_KEYTAB),
           new Configuration());
@@ -209,7 +209,7 @@ public class KafkaConnector implements ConnectorInterface {
         producerString.close();
       }
       if (useKerberos) {
-        Utils.logoutUserWithKerberos();
+        KerberosUtils.logoutUserWithKerberos();
       }
       this.kafkaAdminClient.close();
     } catch (Exception e) {

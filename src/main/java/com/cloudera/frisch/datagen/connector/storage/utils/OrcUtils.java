@@ -1,16 +1,45 @@
 package com.cloudera.frisch.datagen.connector.storage.utils;
 
 import com.cloudera.frisch.datagen.model.type.*;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.orc.OrcFile;
 import org.apache.orc.Reader;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.Writer;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 
+@Slf4j
 public class OrcUtils {
 
   public OrcUtils() {
     throw new IllegalStateException("Could not initialize this class");
+  }
+
+  /**
+   * Create a local ORC File with a direct ORC Writer *
+   * @param path to the local ORC file to create
+   * @param orcWriter
+   * @param schema
+   * @return
+   */
+  public static Writer createLocalFileWithOverwrite(String path, Writer orcWriter, TypeDescription schema) {
+    try {
+      FileUtils.deleteLocalFile(path);
+      orcWriter = OrcFile.createWriter(new Path(path),
+          OrcFile.writerOptions(new Configuration())
+              .setSchema(schema));
+
+    } catch (IOException e) {
+      log.error(
+          "Tried to create ORC local file : " + path + " with no success :",
+          e);
+    }
+    return orcWriter;
   }
 
   /**

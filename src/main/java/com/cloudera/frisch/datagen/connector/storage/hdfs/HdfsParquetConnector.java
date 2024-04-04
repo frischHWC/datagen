@@ -21,6 +21,7 @@ package com.cloudera.frisch.datagen.connector.storage.hdfs;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
 import com.cloudera.frisch.datagen.connector.storage.utils.ParquetUtils;
 import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.utils.KerberosUtils;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
@@ -49,7 +50,7 @@ import java.util.Map;
  */
 // TODO: Refactor to use one abstract class
 @Slf4j
-public class HdfsParquetConnector implements ConnectorInterface {
+public class HdfsParquetConnector extends HdfsUtils implements ConnectorInterface {
 
   private FileSystem fileSystem;
   private Schema schema;
@@ -102,7 +103,7 @@ public class HdfsParquetConnector implements ConnectorInterface {
 
     // Set all kerberos if needed (Note that connection will require a user and its appropriate keytab with right privileges to access folders and files on HDFSCSV)
     if (useKerberos) {
-      Utils.loginUserWithKerberos(
+      KerberosUtils.loginUserWithKerberos(
           properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_USER),
           properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_KEYTAB),
           config);
@@ -120,11 +121,11 @@ public class HdfsParquetConnector implements ConnectorInterface {
     if (writer) {
       schema = model.getAvroSchema();
 
-      Utils.createHdfsDirectory(fileSystem, directoryName);
+      createHdfsDirectory(fileSystem, directoryName);
 
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        Utils.deleteAllHdfsFiles(fileSystem, directoryName, fileName,
+        deleteAllHdfsFiles(fileSystem, directoryName, fileName,
             "parquet");
       }
 
@@ -142,7 +143,7 @@ public class HdfsParquetConnector implements ConnectorInterface {
     try {
       writer.close();
       if (useKerberos) {
-        Utils.logoutUserWithKerberos();
+        KerberosUtils.logoutUserWithKerberos();
       }
     } catch (IOException e) {
       log.error(" Unable to close HDFS PARQUET file with error :", e);
@@ -214,7 +215,7 @@ public class HdfsParquetConnector implements ConnectorInterface {
 
   private void createFileWithOverwrite(String path) {
     try {
-      Utils.deleteHdfsFile(fileSystem, path);
+      deleteHdfsFile(fileSystem, path);
       this.writer = AvroParquetWriter
           .<GenericRecord>builder(new Path(path))
           .withSchema(schema)

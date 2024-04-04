@@ -19,7 +19,9 @@ package com.cloudera.frisch.datagen.connector.storage.ozone;
 
 
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
 import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.utils.KerberosUtils;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
@@ -90,7 +92,7 @@ public class OzoneJsonConnector implements ConnectorInterface {
     Utils.setupHadoopEnv(config, properties);
 
     if (useKerberos) {
-      Utils.loginUserWithKerberos(
+      KerberosUtils.loginUserWithKerberos(
           properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_USER),
           properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_KEYTAB),
           config);
@@ -120,8 +122,8 @@ public class OzoneJsonConnector implements ConnectorInterface {
         this.bucket = volume.getBucket(bucketName);
 
         // Will use a local directory before pushing data to Ozone
-        Utils.createLocalDirectory(localFileTempDir);
-        Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix,
+        FileUtils.createLocalDirectory(localFileTempDir);
+        FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix,
             "json");
 
         if (!oneFilePerIteration) {
@@ -160,12 +162,12 @@ public class OzoneJsonConnector implements ConnectorInterface {
         }
       }
       ozClient.close();
-      Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "json");
+      FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "json");
     } catch (IOException e) {
       log.warn("Could not close properly Ozone connection, due to error: ", e);
     }
     if (useKerberos) {
-      Utils.logoutUserWithKerberos();
+      KerberosUtils.logoutUserWithKerberos();
     }
   }
 
@@ -210,7 +212,7 @@ public class OzoneJsonConnector implements ConnectorInterface {
             "Could not write row to Ozone volume: {} bucket: {}, key: {} ; error: ",
             volumeName, bucketName, keyName, e);
       }
-      Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "json");
+      FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "json");
     }
 
   }

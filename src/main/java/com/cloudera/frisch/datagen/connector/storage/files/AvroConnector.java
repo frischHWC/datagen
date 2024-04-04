@@ -20,11 +20,11 @@ package com.cloudera.frisch.datagen.connector.storage.files;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
 import com.cloudera.frisch.datagen.connector.storage.utils.AvroUtils;
+import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
-import com.cloudera.frisch.datagen.model.type.*;
-import com.cloudera.frisch.datagen.utils.Utils;
+import com.cloudera.frisch.datagen.model.type.Field;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileReader;
@@ -37,7 +37,10 @@ import org.apache.avro.io.DatumWriter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Avro connector to create Local Avro files
@@ -77,11 +80,11 @@ public class AvroConnector implements ConnectorInterface {
       this.model = model;
       schema = model.getAvroSchema();
       datumWriter = new GenericDatumWriter<>(schema);
-      Utils.createLocalDirectory(directoryName);
+      FileUtils.createLocalDirectory(directoryName);
 
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        Utils.deleteAllLocalFiles(directoryName, fileName, "avro");
+        FileUtils.deleteAllLocalFiles(directoryName, fileName, "avro");
       }
 
       if (!oneFilePerIteration) {

@@ -167,6 +167,48 @@ public class MetricsService {
                   (numberOfBatches * rowPerBatch));
           break;
 
+
+        case S3_CSV:
+          allMetrics.put(Metrics.S3_CSV_FILES_GENERATED,
+              allMetrics.get(Metrics.S3_CSV_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.S3_CSV_ROWS_GENERATED,
+              allMetrics.get(Metrics.S3_CSV_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case S3_AVRO:
+          allMetrics.put(Metrics.S3_AVRO_FILES_GENERATED,
+              allMetrics.get(Metrics.S3_AVRO_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.S3_AVRO_ROWS_GENERATED,
+              allMetrics.get(Metrics.S3_AVRO_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case S3_JSON:
+          allMetrics.put(Metrics.S3_JSON_FILES_GENERATED,
+              allMetrics.get(Metrics.S3_JSON_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.S3_JSON_ROWS_GENERATED,
+              allMetrics.get(Metrics.S3_JSON_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case S3_ORC:
+          allMetrics.put(Metrics.S3_ORC_FILES_GENERATED,
+              allMetrics.get(Metrics.S3_ORC_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.S3_ORC_ROWS_GENERATED,
+              allMetrics.get(Metrics.S3_ORC_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case S3_PARQUET:
+          allMetrics.put(Metrics.S3_PARQUET_FILES_GENERATED,
+              allMetrics.get(Metrics.S3_PARQUET_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.S3_PARQUET_ROWS_GENERATED,
+              allMetrics.get(Metrics.S3_PARQUET_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+
         case CSV:
           allMetrics.put(Metrics.CSV_FILES_GENERATED,
               allMetrics.get(Metrics.CSV_FILES_GENERATED) + numberOfBatches);

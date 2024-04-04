@@ -20,6 +20,7 @@ package com.cloudera.frisch.datagen.connector.db.hbase;
 
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
 import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.utils.KerberosUtils;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
@@ -76,7 +77,7 @@ public class HbaseConnector implements ConnectorInterface {
 
         // Setup Kerberos auth if needed
         if (useKerberos) {
-            Utils.loginUserWithKerberos(
+            KerberosUtils.loginUserWithKerberos(
                 properties.get(ApplicationConfigs.HBASE_AUTH_KERBEROS_USER),
                 properties.get(ApplicationConfigs.HBASE_AUTH_KERBEROS_KEYTAB),
                 config);
@@ -133,7 +134,7 @@ public class HbaseConnector implements ConnectorInterface {
             table.close();
             connection.close();
             if(useKerberos) {
-                Utils.logoutUserWithKerberos();
+                KerberosUtils.logoutUserWithKerberos();
             }
         } catch (IOException e) {
             log.error("Impossible to close connection to HBase due to error: ", e);

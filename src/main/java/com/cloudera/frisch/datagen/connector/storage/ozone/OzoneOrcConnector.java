@@ -20,11 +20,13 @@ package com.cloudera.frisch.datagen.connector.storage.ozone;
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
 import com.cloudera.frisch.datagen.connector.storage.utils.OrcUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.utils.KerberosUtils;
 import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
@@ -103,7 +105,7 @@ public class OzoneOrcConnector implements ConnectorInterface {
     Utils.setupHadoopEnv(config, properties);
 
     if (useKerberos) {
-      Utils.loginUserWithKerberos(
+      KerberosUtils.loginUserWithKerberos(
           properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_USER),
           properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_KEYTAB),
           config);
@@ -133,8 +135,8 @@ public class OzoneOrcConnector implements ConnectorInterface {
         this.bucket = volume.getBucket(bucketName);
 
         // Will use a local directory before pushing data to Ozone
-        Utils.createLocalDirectory(localFileTempDir);
-        Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "orc");
+        FileUtils.createLocalDirectory(localFileTempDir);
+        FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "orc");
 
         if (!oneFilePerIteration) {
           createLocalFileWithOverwrite(
@@ -172,12 +174,13 @@ public class OzoneOrcConnector implements ConnectorInterface {
         }
       }
       ozClient.close();
-      Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "orc");
     } catch (IOException e) {
       log.warn("Could not close properly Ozone connection, due to error: ", e);
+    } finally {
+      FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "orc");
     }
     if (useKerberos) {
-      Utils.logoutUserWithKerberos();
+      KerberosUtils.logoutUserWithKerberos();
     }
   }
 
@@ -234,7 +237,7 @@ public class OzoneOrcConnector implements ConnectorInterface {
             "Could not write row to Ozone volume: {} bucket: {}, key: {} ; error: ",
             volumeName, bucketName, keyName, e);
       }
-      Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "orc");
+      FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "orc");
     }
 
   }
@@ -402,7 +405,7 @@ public class OzoneOrcConnector implements ConnectorInterface {
 
   private void createLocalFileWithOverwrite(String path) {
     try {
-      Utils.deleteLocalFile(path);
+      FileUtils.deleteLocalFile(path);
       new File(path).getParentFile().mkdirs();
       writer = OrcFile.createWriter(new Path(path),
           OrcFile.writerOptions(new Configuration())
@@ -410,7 +413,7 @@ public class OzoneOrcConnector implements ConnectorInterface {
 
     } catch (IOException e) {
       log.error(
-          "Tried to create Parquet local file : " + path + " with no success :",
+          "Tried to create Orc local file : " + path + " with no success :",
           e);
     }
   }

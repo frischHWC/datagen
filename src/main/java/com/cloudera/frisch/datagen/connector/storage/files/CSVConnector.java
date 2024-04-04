@@ -18,14 +18,14 @@
 package com.cloudera.frisch.datagen.connector.storage.files;
 
 
-import com.cloudera.frisch.datagen.connector.ConnectorInterface;
-import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.model.type.StringField;
-import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
+import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
+import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.model.type.StringField;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
@@ -65,11 +65,11 @@ public class CSVConnector implements ConnectorInterface {
   @Override
   public void init(Model model, boolean writer) {
     if (writer) {
-      Utils.createLocalDirectory(directoryName);
+      FileUtils.createLocalDirectory(directoryName);
 
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        Utils.deleteAllLocalFiles(directoryName, fileName, "csv");
+        FileUtils.deleteAllLocalFiles(directoryName, fileName, "csv");
       }
 
       if (!oneFilePerIteration) {

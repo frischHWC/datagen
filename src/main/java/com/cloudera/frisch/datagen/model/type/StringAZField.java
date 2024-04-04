@@ -17,7 +17,6 @@
  */
 package com.cloudera.frisch.datagen.model.type;
 
-import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -30,6 +29,7 @@ import org.apache.orc.TypeDescription;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Random;
 
 @Slf4j
 public class StringAZField extends Field<String> {
@@ -47,8 +47,34 @@ public class StringAZField extends Field<String> {
 
   public String generateRandomValue() {
     return possibleValues.isEmpty() ?
-        Utils.getAlphaString(this.length, random) :
+        getAlphaString(this.length, random) :
         possibleValues.get(random.nextInt(possibleValues.size()));
+  }
+
+  /**
+   * Generates a random Alpha string [A-Z] of specified length
+   *
+   * @param n      equals length of the string to generate
+   * @param random Random object used to generate random string
+   * @return
+   */
+  String getAlphaString(int n, Random random) {
+    // chose a Character random from this String
+    String alphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        + "abcdefghijklmnopqrstuvxyz";
+    // create StringBuffer size of alphaNumericString
+    StringBuilder sb = new StringBuilder(n);
+    for (int i = 0; i < n; i++) {
+      // generate a random number between
+      // 0 to alphaNumericString variable length
+      int index
+          = (int) (alphaNumericString.length()
+          * random.nextDouble());
+      // add Character one by one in end of sb
+      sb.append(alphaNumericString
+          .charAt(index));
+    }
+    return sb.toString();
   }
 
     /*

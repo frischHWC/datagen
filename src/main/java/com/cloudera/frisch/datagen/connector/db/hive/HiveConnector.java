@@ -24,6 +24,7 @@ import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.utils.KerberosUtils;
 import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
@@ -130,7 +131,7 @@ public class HiveConnector implements ConnectorInterface {
 
     try {
       if (useKerberos) {
-        Utils.loginUserWithKerberos(
+        KerberosUtils.loginUserWithKerberos(
             properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS_USER),
             properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS_KEYTAB),
             new Configuration());
@@ -297,7 +298,7 @@ public class HiveConnector implements ConnectorInterface {
       hiveConnection.close();
 
       if (useKerberos) {
-        Utils.logoutUserWithKerberos();
+        KerberosUtils.logoutUserWithKerberos();
       }
 
     } catch (SQLException e) {

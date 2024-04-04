@@ -27,7 +27,7 @@ import com.cloudera.frisch.datagen.connector.storage.kudu.KuduConnector;
 import com.cloudera.frisch.datagen.connector.storage.files.*;
 import com.cloudera.frisch.datagen.connector.storage.hdfs.*;
 import com.cloudera.frisch.datagen.connector.storage.ozone.*;
-import com.cloudera.frisch.datagen.connector.storage.s3.S3CSVConnector;
+import com.cloudera.frisch.datagen.connector.storage.s3.*;
 import com.cloudera.frisch.datagen.model.Model;
 import lombok.extern.slf4j.Slf4j;
 
@@ -122,6 +122,18 @@ public class ConnectorsUtils {
         break;
       case S3_CSV:
         connectorToInit = new S3CSVConnector(model, properties);
+        break;
+      case S3_JSON:
+        connectorToInit = new S3JsonConnector(model, properties);
+        break;
+      case S3_AVRO:
+        connectorToInit = new S3AvroConnector(model, properties);
+        break;
+      case S3_ORC:
+        connectorToInit = new S3OrcConnector(model, properties);
+        break;
+      case S3_PARQUET:
+        connectorToInit = new S3ParquetConnector(model, properties);
         break;
       default:
         log.warn("The connector " + connector +

@@ -21,6 +21,7 @@ package com.cloudera.frisch.datagen.service;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.config.PropertiesLoader;
 import com.cloudera.frisch.datagen.config.ConnectorParser;
+import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.parsers.JsonParser;
@@ -62,11 +63,13 @@ public class CommandRunnerService {
     this.scheduledCommands = new HashMap<>();
     this.commands = new HashMap<>();
 
+    FileUtils.createLocalDirectory(propertiesLoader.getPropertiesCopy().get(ApplicationConfigs.DATA_HOME_DIRECTORY));
+
     readScheduledCommands();
     // After reading scheduled values, file should be re-written
     writeScheduledCommands();
 
-    Utils.createLocalDirectory(propertiesLoader.getPropertiesCopy()
+    FileUtils.createLocalDirectory(propertiesLoader.getPropertiesCopy()
         .get(ApplicationConfigs.DATA_MODEL_RECEIVED_PATH));
   }
 
@@ -121,7 +124,7 @@ public class CommandRunnerService {
 
       String scheduledCommandsFilepathTemp = scheduledCommandsFilePath + "_tmp";
 
-      Utils.deleteLocalFile(scheduledCommandsFilepathTemp);
+      FileUtils.deleteLocalFile(scheduledCommandsFilepathTemp);
       File scheduledCommandTempFile = new File(scheduledCommandsFilepathTemp);
       scheduledCommandTempFile.getParentFile().mkdirs();
       scheduledCommandTempFile.createNewFile();
@@ -140,7 +143,7 @@ public class CommandRunnerService {
 
       log.info("Finished to write all scheduled commands to scheduler file");
 
-      Utils.deleteLocalFile(scheduledCommandsFilepathTemp);
+      FileUtils.deleteLocalFile(scheduledCommandsFilepathTemp);
 
     } catch (Exception e) {
       log.error("Could not write scheduled commands to local file, error is: ",
@@ -346,7 +349,7 @@ public class CommandRunnerService {
       String newModelFilePath =
           properties.get(ApplicationConfigs.DATA_MODEL_RECEIVED_PATH) +
               "/model-" + command.getCommandUuid().toString() + ".json";
-      Utils.moveLocalFile(modelFile, newModelFilePath);
+      FileUtils.moveLocalFile(modelFile, newModelFilePath);
       command.setModelFilePath(newModelFilePath);
     }
     commands.put(command.getCommandUuid(), command);

@@ -40,11 +40,14 @@ public abstract class S3Utils {
 
   protected final String bucketName;
   protected final String keyNamePrefix;
-  protected final String directoryName;
-  protected final String fileName;
+
+  protected final String localDirectoryName;
+  protected final String localFileNamePrefix;
   protected final String localFileTempDir;
+
   protected final String accesKeyId;
   protected final String accesKeySecret;
+
   protected final String region;
   protected final S3Client s3Client;
   protected final S3AsyncClient s3AsyncClient;
@@ -65,16 +68,17 @@ public abstract class S3Utils {
     this.region = properties.get(ApplicationConfigs.S3_REGION);
 
     if (keyNamePrefix.contains("/")) {
-      this.fileName =
+      this.localFileNamePrefix =
           keyNamePrefix.substring(keyNamePrefix.lastIndexOf("/") + 1);
-      this.directoryName =
+      this.localDirectoryName =
           keyNamePrefix.substring(0, keyNamePrefix.lastIndexOf("/") + 1);
     } else {
-      this.fileName = keyNamePrefix;
-      this.directoryName = "/";
+      this.localFileNamePrefix = keyNamePrefix;
+      this.localDirectoryName = "/";
     }
-    log.debug("Identified file name prefix as {} in directory {}", fileName,
-        directoryName);
+    log.debug("Identified file name prefix as {} in directory {}",
+        localFileNamePrefix,
+        localDirectoryName);
 
     AwsCredentialsProvider awsCredentialsProvider =
         StaticCredentialsProvider.create(
@@ -208,7 +212,7 @@ public abstract class S3Utils {
           s3Client.getObjectAsBytes(objectRequest);
       byte[] data = objectBytes.asByteArray();
 
-      FileOutputStream fileOutputStream = FileUtils.createFileWithOverwrite(localPath);
+      FileOutputStream fileOutputStream = FileUtils.createLocalFileAsOutputStream(localPath);
       fileOutputStream.write(data);
       fileOutputStream.close();
     } catch (Exception e) {

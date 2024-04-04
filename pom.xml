@@ -213,29 +213,6 @@
                     <mainClass>com.cloudera.frisch.datagen.Main</mainClass>
                 </configuration>
             </plugin>
-
-            <!-- Build an executable FAT JAR !!! -->
-            <!-- Do this only if you do not want to use platform libraries  -->
-            <!--  <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-shade-plugin</artifactId>
-                 <version>3.2.2</version>
-                 <executions>
-                     <execution>
-                         <phase>package</phase>
-                         <goals>
-                             <goal>shade</goal>
-                         </goals>
-                         <configuration>
-                             <transformers>
-                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                     <mainClass>com.cloudera.frisch.randomdatagen.Main</mainClass>
-                                 </transformer>
-                             </transformers>
-                         </configuration>
-                     </execution>
-                 </executions>
-             </plugin> -->
         </plugins>
 
         <resources>
@@ -243,6 +220,8 @@
                 <directory>src/main/resources</directory>
                 <excludes>
                     <exclude>*.jar</exclude>
+                    <exclude>application-test.properties</exclude>
+                    <exclude>scripts/overall_launch.sh</exclude>
                 </excludes>
             </resource>
         </resources>

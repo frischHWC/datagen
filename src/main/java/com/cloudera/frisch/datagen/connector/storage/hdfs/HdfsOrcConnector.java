@@ -21,6 +21,7 @@ package com.cloudera.frisch.datagen.connector.storage.hdfs;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
 import com.cloudera.frisch.datagen.connector.storage.utils.OrcUtils;
 import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.utils.KerberosUtils;
 import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.model.Model;
@@ -50,7 +51,7 @@ import java.util.Map;
 // TODO: Refactor to use one abstract class
 @SuppressWarnings("unchecked")
 @Slf4j
-public class HdfsOrcConnector implements ConnectorInterface {
+public class HdfsOrcConnector extends HdfsUtils implements ConnectorInterface {
 
   private FileSystem fileSystem;
   private TypeDescription schema;
@@ -106,7 +107,7 @@ public class HdfsOrcConnector implements ConnectorInterface {
 
     // Set all kerberos if needed (Note that connection will require a user and its appropriate keytab with right privileges to access folders and files on HDFSCSV)
     if (useKerberos) {
-      Utils.loginUserWithKerberos(
+      KerberosUtils.loginUserWithKerberos(
           properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_USER),
           properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_KEYTAB),
           config);
@@ -127,11 +128,11 @@ public class HdfsOrcConnector implements ConnectorInterface {
       batch = schema.createRowBatch();
       vectors = model.createOrcVectors(batch);
 
-      Utils.createHdfsDirectory(fileSystem, directoryName);
+      createHdfsDirectory(fileSystem, directoryName);
 
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        Utils.deleteAllHdfsFiles(fileSystem, directoryName, fileName,
+        deleteAllHdfsFiles(fileSystem, directoryName, fileName,
             "orc");
       }
 
@@ -150,7 +151,7 @@ public class HdfsOrcConnector implements ConnectorInterface {
         writer.close();
       }
       if (useKerberos) {
-        Utils.logoutUserWithKerberos();
+        KerberosUtils.logoutUserWithKerberos();
       }
     } catch (IOException e) {
       log.error(" Unable to close ORC HDFS file with error :", e);
@@ -230,7 +231,7 @@ public class HdfsOrcConnector implements ConnectorInterface {
 
   private void creatFileWithOverwrite(String path) {
     try {
-      Utils.deleteHdfsFile(fileSystem, path);
+      deleteHdfsFile(fileSystem, path);
       writer = OrcFile.createWriter(new Path(path),
           OrcFile.writerOptions(conf)
               .setSchema(schema));

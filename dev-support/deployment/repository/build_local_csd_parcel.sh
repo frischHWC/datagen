@@ -173,6 +173,7 @@ then
     cp -Rp ../../../target/datagen*.jar "${STANDALONE_DIR}/datagen-${DATAGEN_VERSION}.jar"
     cp -Rp ../../../src/main/resources/dictionaries/* "${STANDALONE_DIR}/dictionaries/"
     cp -Rp ../../../src/main/resources/models/* "${STANDALONE_DIR}/models/"
+    cp -Rp ../../../src/main/resources/scripts/launch.sh "${STANDALONE_DIR}/"
 
     # For BSD-like, tar includes some files which should not be present to be GNU-compliant
     export COPYFILE_DISABLE=true

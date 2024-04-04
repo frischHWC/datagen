@@ -151,7 +151,7 @@ public class DateField extends Field<LocalDateTime> {
 
   @Override
   public TypeDescription getTypeDescriptionOrc() {
-    return TypeDescription.createDate();
+    return TypeDescription.createString();
   }
 
 }

@@ -17,14 +17,14 @@
  */
 package com.cloudera.frisch.datagen.connector.storage.files;
 
-import com.cloudera.frisch.datagen.connector.ConnectorInterface;
-import com.cloudera.frisch.datagen.connector.storage.utils.OrcUtils;
-import com.cloudera.frisch.datagen.model.type.*;
-import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
+import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
+import com.cloudera.frisch.datagen.connector.storage.utils.OrcUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
+import com.cloudera.frisch.datagen.model.type.Field;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -37,7 +37,10 @@ import org.apache.orc.Writer;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -80,11 +83,11 @@ public class ORCConnector implements ConnectorInterface {
       batch = schema.createRowBatch();
       vectors = model.createOrcVectors(batch);
 
-      Utils.createLocalDirectory(directoryName);
+      FileUtils.createLocalDirectory(directoryName);
 
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        Utils.deleteAllLocalFiles(directoryName, fileName, "orc");
+        FileUtils.deleteAllLocalFiles(directoryName, fileName, "orc");
       }
 
       if (!oneFilePerIteration) {
@@ -179,7 +182,7 @@ public class ORCConnector implements ConnectorInterface {
 
   private void creatFileWithOverwrite(String path) {
     try {
-      Utils.deleteLocalFile(path);
+      FileUtils.deleteLocalFile(path);
       new File(path).getParentFile().mkdirs();
       writer = OrcFile.createWriter(new Path(path),
           OrcFile.writerOptions(new Configuration())

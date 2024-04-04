@@ -48,7 +48,7 @@ public class SwaggerConfiguration {
     return new ApiInfo(
         "APIs to launch Data Generation",
         "A Set of APIs to launch data generation into various services of CDP platform",
-        "0.4",
+        "0.5",
         null,
         new Contact("FRI", "https://github.com/frischHWC/random-datagen",
             "frisch@cloudera.com"),

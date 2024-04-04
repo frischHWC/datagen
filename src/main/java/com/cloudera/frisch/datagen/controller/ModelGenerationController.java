@@ -214,6 +214,75 @@ public class ModelGenerationController {
         null, null, null, volume, bucket, key);
   }
 
+  @PostMapping(value = "/s3-avro")
+  public String generateS3AvroModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for Avro S3 file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("s3-avro", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/s3-csv")
+  public String generateS3CsvModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for CSV S3 file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("s3-csv", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/s3-json")
+  public String generateS3JsonModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for JSON S3 file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("s3-json", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/s3-parquet")
+  public String generateS3ParquetModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for Parquet S3 file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("s3-parquet", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/s3-orc")
+  public String generateS3OrcModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for ORC S3 file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("s3-orc", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
 
   // TODO: implement these connectors
 

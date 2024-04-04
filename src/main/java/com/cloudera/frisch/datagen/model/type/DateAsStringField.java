@@ -148,7 +148,7 @@ public class DateAsStringField extends Field<String> {
 
   @Override
   public TypeDescription getTypeDescriptionOrc() {
-    return TypeDescription.createDate();
+    return TypeDescription.createString();
   }
 
 }

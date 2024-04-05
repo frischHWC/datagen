@@ -45,11 +45,9 @@ import java.util.Map;
 /**
  * Avro connector to create Local Avro files
  */
-// TODO: Refactor to use utils class
 @Slf4j
 public class AvroConnector implements ConnectorInterface {
 
-  private File file;
   private Schema schema;
   private DataFileWriter<GenericRecord> dataFileWriter;
   private DatumWriter<GenericRecord> datumWriter;
@@ -88,8 +86,7 @@ public class AvroConnector implements ConnectorInterface {
       }
 
       if (!oneFilePerIteration) {
-        createFileWithOverwrite(directoryName + fileName + ".avro");
-        appendAvscHeader();
+        this.dataFileWriter = AvroUtils.createFileWithOverwrite(directoryName + fileName + ".avro", schema, datumWriter);
       }
     }
   }
@@ -109,10 +106,9 @@ public class AvroConnector implements ConnectorInterface {
   public void sendOneBatchOfRows(List<Row> rows) {
 
     if (oneFilePerIteration) {
-      createFileWithOverwrite(
+      this.dataFileWriter = AvroUtils.createFileWithOverwrite(
           directoryName + fileName + "-" + String.format("%010d", counter) +
-              ".avro");
-      appendAvscHeader();
+              ".avro", schema, datumWriter);
       counter++;
     }
 
@@ -173,23 +169,4 @@ public class AvroConnector implements ConnectorInterface {
     return new Model(fields, primaryKeys, tableNames, options);
   }
 
-  void createFileWithOverwrite(String path) {
-    try {
-      file = new File(path);
-      file.getParentFile().mkdirs();
-      file.createNewFile();
-      dataFileWriter = new DataFileWriter<>(datumWriter);
-      log.debug("Successfully created local file : " + path);
-    } catch (IOException e) {
-      log.error("Tried to create file : " + path + " with no success :", e);
-    }
-  }
-
-  void appendAvscHeader() {
-    try {
-      dataFileWriter.create(schema, file);
-    } catch (IOException e) {
-      log.error("Can not write header to the local file due to error: ", e);
-    }
-  }
 }

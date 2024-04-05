@@ -21,6 +21,27 @@ public class AvroUtils {
   }
 
   /**
+   * Create a local Avro file and return it as a DataFileWriter *
+   * @param path to write local file
+   * @param schema of avro to create
+   * @param datumWriter of avro generic record
+   * @return
+   */
+  public static DataFileWriter<GenericRecord> createFileWithOverwrite(String path, Schema schema, DatumWriter<GenericRecord> datumWriter) {
+    log.info("Creating local file: {}", path);
+    DataFileWriter<GenericRecord> dataFileWriter = null;
+    try {
+      File file = FileUtils.createLocalFileAsFile(path);
+      dataFileWriter = new DataFileWriter<>(datumWriter);
+      dataFileWriter.create(schema, file);
+      log.info("Successfully created local file : " + path);
+    } catch (IOException e) {
+      log.error("Tried to create file : " + path + " with no success :", e);
+    }
+    return dataFileWriter;
+  }
+
+  /**
    * Render Basically fields by just reading the schema
    *
    * @param fields
@@ -68,20 +89,6 @@ public class AvroUtils {
       }
       fields.put(colName, f);
     });
-  }
-
-  public static DataFileWriter<GenericRecord> createFileWithOverwrite(String path, Schema schema, DatumWriter<GenericRecord> datumWriter) {
-    log.info("Creating local file: {}", path);
-    DataFileWriter<GenericRecord> dataFileWriter = null;
-    try {
-      File file = FileUtils.createLocalFileAsFile(path);
-      dataFileWriter = new DataFileWriter<>(datumWriter);
-      dataFileWriter.create(schema, file);
-      log.info("Successfully created local file : " + path);
-    } catch (IOException e) {
-      log.error("Tried to create file : " + path + " with no success :", e);
-    }
-    return dataFileWriter;
   }
 
   /* TODO: Goal here is to analyze each fields inside the parquet file by doing:

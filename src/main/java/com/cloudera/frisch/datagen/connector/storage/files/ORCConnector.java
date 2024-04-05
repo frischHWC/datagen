@@ -35,7 +35,6 @@ import org.apache.orc.Reader;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.Writer;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -46,7 +45,6 @@ import java.util.Map;
 /**
  * ORC File connector
  */
-// TODO: Refactor to use utils class
 @SuppressWarnings("unchecked")
 @Slf4j
 public class ORCConnector implements ConnectorInterface {
@@ -91,7 +89,7 @@ public class ORCConnector implements ConnectorInterface {
       }
 
       if (!oneFilePerIteration) {
-        creatFileWithOverwrite(directoryName + fileName + ".orc");
+        this.writer = OrcUtils.createLocalFileWithOverwrite(directoryName + fileName + ".orc", this.writer, schema);
       }
     }
   }
@@ -113,9 +111,9 @@ public class ORCConnector implements ConnectorInterface {
   @Override
   public void sendOneBatchOfRows(List<Row> rows) {
     if (oneFilePerIteration) {
-      creatFileWithOverwrite(
+      this.writer = OrcUtils.createLocalFileWithOverwrite(
           directoryName + fileName + "-" + String.format("%010d", counter) +
-              ".orc");
+              ".orc", this.writer, schema);
       counter++;
     }
 
@@ -180,16 +178,5 @@ public class ORCConnector implements ConnectorInterface {
     return new Model(fields, primaryKeys, tableNames, options);
   }
 
-  private void creatFileWithOverwrite(String path) {
-    try {
-      FileUtils.deleteLocalFile(path);
-      new File(path).getParentFile().mkdirs();
-      writer = OrcFile.createWriter(new Path(path),
-          OrcFile.writerOptions(new Configuration())
-              .setSchema(schema));
-    } catch (IOException e) {
-      log.warn("Could not create writer to ORC local file due to error:", e);
-    }
-  }
 
 }

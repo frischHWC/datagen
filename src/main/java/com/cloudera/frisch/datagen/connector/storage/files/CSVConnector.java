@@ -20,6 +20,7 @@ package com.cloudera.frisch.datagen.connector.storage.files;
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.CSVUtils;
 import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
@@ -34,7 +35,6 @@ import java.util.*;
 /**
  * This is a CSV connector to write to one or multiple CSV files locally
  */
-// TODO: Refactor to use utils class
 @Slf4j
 public class CSVConnector implements ConnectorInterface {
 
@@ -73,8 +73,8 @@ public class CSVConnector implements ConnectorInterface {
       }
 
       if (!oneFilePerIteration) {
-        createFileWithOverwrite(directoryName + fileName + ".csv");
-        appendCSVHeader(model);
+        this.outputStream = FileUtils.createLocalFileAsOutputStream(directoryName + fileName + ".csv");
+        CSVUtils.appendCSVHeader(model, outputStream, lineSeparator);
       }
     }
   }
@@ -94,10 +94,10 @@ public class CSVConnector implements ConnectorInterface {
   public void sendOneBatchOfRows(List<Row> rows) {
     try {
       if (oneFilePerIteration) {
-        createFileWithOverwrite(
+        this.outputStream = FileUtils.createLocalFileAsOutputStream(
             directoryName + fileName + "-" + String.format("%010d", counter) +
                 ".csv");
-        appendCSVHeader(model);
+        CSVUtils.appendCSVHeader(model, outputStream, lineSeparator);
         counter++;
       }
 
@@ -143,30 +143,6 @@ public class CSVConnector implements ConnectorInterface {
     }
 
     return new Model(fields, primaryKeys, tableNames, options);
-  }
-
-  void appendCSVHeader(Model model) {
-    try {
-      if ((Boolean) model.getOptionsOrDefault(
-          OptionsConverter.Options.CSV_HEADER)) {
-        outputStream.write(model.getCsvHeader().getBytes());
-        outputStream.write(lineSeparator.getBytes());
-      }
-    } catch (IOException e) {
-      log.error("Can not write header to the local file due to error: ", e);
-    }
-  }
-
-  void createFileWithOverwrite(String path) {
-    try {
-      File file = new File(path);
-      file.getParentFile().mkdirs();
-      file.createNewFile();
-      outputStream = new FileOutputStream(path, false);
-      log.debug("Successfully created local file : " + path);
-    } catch (IOException e) {
-      log.error("Tried to create file : " + path + " with no success :", e);
-    }
   }
 
 }

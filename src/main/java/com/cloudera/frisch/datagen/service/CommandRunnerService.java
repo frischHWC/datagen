@@ -292,7 +292,7 @@ public class CommandRunnerService {
     if (modelFileAsFile != null && !modelFileAsFile.isEmpty()) {
       log.info("Model passed is an uploaded file");
       modelFile = properties.get(ApplicationConfigs.DATA_MODEL_RECEIVED_PATH) +
-          "/model-" + new Random().nextInt() + ".json";
+          "/model-" + System.currentTimeMillis() + "-" + String.format("%06d",new Random().nextInt(100000)) + ".json";
       try {
         modelFileAsFile.transferTo(new File(modelFile));
       } catch (IOException e) {

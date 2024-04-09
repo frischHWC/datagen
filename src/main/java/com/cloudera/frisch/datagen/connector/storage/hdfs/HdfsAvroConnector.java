@@ -25,8 +25,6 @@ import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.utils.KerberosUtils;
-import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileReader;
@@ -37,12 +35,9 @@ import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumWriter;
 import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,70 +47,28 @@ import java.util.Map;
  * This is an HDFS Avro connector using Hadoop 3.2 API
  * Each instance manages one connection to a file system
  */
-// TODO: Refactor to use one abstract class
 @Slf4j
 public class HdfsAvroConnector extends HdfsUtils implements ConnectorInterface {
 
   private Schema schema;
   private DataFileWriter<GenericRecord> dataFileWriter;
   private DatumWriter<GenericRecord> datumWriter;
-  private FileSystem fileSystem;
   private FSDataOutputStream fsDataOutputStream;
+
   private int counter;
   private final Model model;
-  private final String directoryName;
-  private final String fileName;
   private final Boolean oneFilePerIteration;
-  private final short replicationFactor;
-  private String hdfsUri;
-  private Boolean useKerberos;
 
   /**
    * Initiate HDFS-AVRO connection with Kerberos or not
    */
   public HdfsAvroConnector(Model model,
                            Map<ApplicationConfigs, String> properties) {
-    // If using an HDFS connector, we want it to use the Hive HDFS File path and not the Hdfs file path
-    if (properties.get(ApplicationConfigs.HDFS_FOR_HIVE) != null
-        && properties.get(ApplicationConfigs.HDFS_FOR_HIVE)
-        .equalsIgnoreCase("true")) {
-      this.directoryName = (String) model.getTableNames()
-          .get(OptionsConverter.TableNames.HIVE_HDFS_FILE_PATH);
-    } else {
-      this.directoryName = (String) model.getTableNames()
-          .get(OptionsConverter.TableNames.HDFS_FILE_PATH);
-    }
-    log.debug("HDFS connector will generates data into HDFS directory: " +
-        this.directoryName);
+    super(model, properties);
     this.counter = 0;
     this.model = model;
-    this.fileName = (String) model.getTableNames()
-        .get(OptionsConverter.TableNames.HDFS_FILE_NAME);
     this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(
         OptionsConverter.Options.ONE_FILE_PER_ITERATION);
-    this.replicationFactor = (short) model.getOptionsOrDefault(
-        OptionsConverter.Options.HDFS_REPLICATION_FACTOR);
-    this.hdfsUri = properties.get(ApplicationConfigs.HDFS_URI);
-    this.useKerberos = Boolean.parseBoolean(
-        properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS));
-
-    org.apache.hadoop.conf.Configuration config =
-        new org.apache.hadoop.conf.Configuration();
-    Utils.setupHadoopEnv(config, properties);
-
-    // Set all kerberos if needed (Note that connection will require a user and its appropriate keytab with right privileges to access folders and files on HDFSCSV)
-    if (useKerberos) {
-      KerberosUtils.loginUserWithKerberos(
-          properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_USER),
-          properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_KEYTAB),
-          config);
-    }
-
-    try {
-      this.fileSystem = FileSystem.get(URI.create(hdfsUri), config);
-    } catch (IOException e) {
-      log.error("Could not access to HDFSAVRO !", e);
-    }
   }
 
   @Override
@@ -124,18 +77,18 @@ public class HdfsAvroConnector extends HdfsUtils implements ConnectorInterface {
       schema = model.getAvroSchema();
       datumWriter = new GenericDatumWriter<>(schema);
 
-      createHdfsDirectory(fileSystem, directoryName);
+      createHdfsDirectory(directoryName);
 
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        deleteAllHdfsFiles(fileSystem, directoryName, fileName,
+        deleteAllHdfsFiles(directoryName, fileName,
             "avro");
       }
 
       if (!(Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.ONE_FILE_PER_ITERATION)) {
-        createFileWithOverwrite(directoryName + fileName + ".avro");
-        appendAvscHeader(model);
+        this.fsDataOutputStream = createFileWithOverwrite(directoryName + fileName + ".avro");
+        this.dataFileWriter = AvroUtils.createFileWithOverwriteFromStream(fsDataOutputStream, schema, datumWriter);
       }
     }
 
@@ -146,10 +99,7 @@ public class HdfsAvroConnector extends HdfsUtils implements ConnectorInterface {
     try {
       dataFileWriter.close();
       fsDataOutputStream.close();
-      fileSystem.close();
-      if (useKerberos) {
-        KerberosUtils.logoutUserWithKerberos();
-      }
+      closeHDFS();
     } catch (IOException e) {
       log.error(" Unable to close HDFSAVRO file with error :", e);
     }
@@ -159,10 +109,10 @@ public class HdfsAvroConnector extends HdfsUtils implements ConnectorInterface {
   public void sendOneBatchOfRows(List<Row> rows) {
     if ((Boolean) model.getOptionsOrDefault(
         OptionsConverter.Options.ONE_FILE_PER_ITERATION)) {
-      createFileWithOverwrite(
+      this.fsDataOutputStream = createFileWithOverwrite(
           directoryName + fileName + "-" + String.format("%010d", counter) +
               ".avro");
-      appendAvscHeader(model);
+      this.dataFileWriter = AvroUtils.createFileWithOverwriteFromStream(fsDataOutputStream, schema, datumWriter);
       counter++;
     }
 
@@ -217,33 +167,13 @@ public class HdfsAvroConnector extends HdfsUtils implements ConnectorInterface {
         AvroUtils.analyzeFields(fields, fileReader);
       }
       fileReader.close();
-      fileSystem.close();
+      closeHDFS();
     } catch (IOException e) {
       log.warn("Could not read Avro local file: {} due to error",
           this.directoryName, e);
     }
 
     return new Model(fields, primaryKeys, tableNames, options);
-  }
-
-  void createFileWithOverwrite(String path) {
-    try {
-      deleteHdfsFile(fileSystem, path);
-      fsDataOutputStream = fileSystem.create(new Path(path), replicationFactor);
-      dataFileWriter = new DataFileWriter<>(datumWriter);
-      log.debug("Successfully created hdfs file : " + path);
-    } catch (IOException e) {
-      log.error("Tried to create hdfs file : " + path + " with no success :",
-          e);
-    }
-  }
-
-  void appendAvscHeader(Model model) {
-    try {
-      dataFileWriter.create(schema, fsDataOutputStream.getWrappedStream());
-    } catch (IOException e) {
-      log.error("Can not write header to the hdfs file due to error: ", e);
-    }
   }
 
 }

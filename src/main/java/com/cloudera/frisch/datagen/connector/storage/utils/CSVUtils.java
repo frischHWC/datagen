@@ -21,4 +21,5 @@ public class CSVUtils {
       log.error("Can not write header to the local file due to error: ", e);
     }
   }
+
 }

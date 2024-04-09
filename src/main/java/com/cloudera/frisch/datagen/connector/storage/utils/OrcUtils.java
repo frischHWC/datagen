@@ -43,6 +43,27 @@ public class OrcUtils {
   }
 
   /**
+   * Create a ORC File with a direct ORC Writer *
+   * @param path to the local ORC file to create
+   * @param orcWriter
+   * @param schema
+   * @return
+   */
+  public static Writer createWriter(String path, Writer orcWriter, TypeDescription schema, Configuration configuration) {
+    try {
+      orcWriter = OrcFile.createWriter(new Path(path),
+          OrcFile.writerOptions(configuration)
+              .setSchema(schema));
+
+    } catch (IOException e) {
+      log.error(
+          "Tried to create ORC local file : " + path + " with no success :",
+          e);
+    }
+    return orcWriter;
+  }
+
+  /**
    * Render Basically fields by just reading the schema
    *
    * @param fields

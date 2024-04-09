@@ -60,6 +60,40 @@ public class ParquetUtils {
   }
 
   /**
+   * Create a local Parquet file using a direct parquet writer*
+   * @param path
+   * @param schema
+   * @param writer
+   * @param model
+   * @return
+   */
+  public static ParquetWriter<GenericRecord> createParquetWriter(String path, Schema schema, ParquetWriter<GenericRecord> writer, Model model, Configuration configuration) {
+    try {
+      writer = AvroParquetWriter
+          .<GenericRecord>builder(new Path(path))
+          .withSchema(schema)
+          .withConf(configuration)
+          .withCompressionCodec(CompressionCodecName.SNAPPY)
+          .withPageSize((int) model.getOptionsOrDefault(
+              OptionsConverter.Options.PARQUET_PAGE_SIZE))
+          .withDictionaryEncoding((Boolean) model.getOptionsOrDefault(
+              OptionsConverter.Options.PARQUET_DICTIONARY_ENCODING))
+          .withDictionaryPageSize((int) model.getOptionsOrDefault(
+              OptionsConverter.Options.PARQUET_DICTIONARY_PAGE_SIZE))
+          .withRowGroupSize((int) model.getOptionsOrDefault(
+              OptionsConverter.Options.PARQUET_ROW_GROUP_SIZE))
+          .build();
+      log.debug("Successfully created Parquet writer to : " + path);
+
+    } catch (IOException e) {
+      log.error(
+          "Tried to create Parquet writer to : " + path + " with no success :",
+          e);
+    }
+    return writer;
+  }
+
+  /**
    * Render Basically fields by just reading the schema
    *
    * @param fields

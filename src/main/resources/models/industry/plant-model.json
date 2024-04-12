@@ -45,7 +45,7 @@
     "OZONE_KEY_NAME":  "plant",
     "OZONE_LOCAL_FILE_PATH":  "/home/datagen/temp/plant/",
     "SOLR_COLLECTION": "datagen-industry-plant",
-    "HIVE_DATABASE": "datagen_industry",
+    "HIVE_DATABASE": "datagen",
     "HIVE_TABLE_NAME":  "plant",
     "KUDU_TABLE_NAME":  "datagen.industry_plant",
     "LOCAL_FILE_PATH":  "/home/datagen/industry/plant/",

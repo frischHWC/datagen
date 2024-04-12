@@ -30,7 +30,7 @@
     "OZONE_KEY_NAME":  "sensor",
     "OZONE_LOCAL_FILE_PATH":  "/home/datagen/temp/sensor/",
     "SOLR_COLLECTION": "datagen-industry-sensor",
-    "HIVE_DATABASE": "datagen_industry",
+    "HIVE_DATABASE": "datagen",
     "HIVE_TABLE_NAME":  "sensor",
     "KUDU_TABLE_NAME":  "datagen-industry.sensor",
     "LOCAL_FILE_PATH":  "/home/datagen/industry/sensor/",

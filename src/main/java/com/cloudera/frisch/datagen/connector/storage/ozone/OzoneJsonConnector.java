@@ -25,7 +25,6 @@ import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.utils.KerberosUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -98,16 +97,12 @@ public class OzoneJsonConnector extends OzoneUtils implements ConnectorInterface
       if (!oneFilePerIteration) {
         outputStream.close();
         // Send local file to Ozone
-        String keyName = keyNamePrefix + ".json";
-        pushKeyToOzone(localFileTempDir + keyName, keyName);
+        pushKeyToOzone(localFileTempDir + keyNamePrefix + ".json", keyNamePrefix + ".json");
       }
       closeOzone();
       FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "json");
     } catch (IOException e) {
       log.warn("Could not close properly Ozone connection, due to error: ", e);
-    }
-    if (useKerberos) {
-      KerberosUtils.logoutUserWithKerberos();
     }
   }
 
@@ -121,6 +116,7 @@ public class OzoneJsonConnector extends OzoneUtils implements ConnectorInterface
       this.outputStream = FileUtils.createLocalFileAsOutputStream(localFileTempDir + keyName);
       counter++;
     }
+
     rows.stream().map(Row::toJSON).forEach(r -> {
       try {
         outputStream.write(r.getBytes());
@@ -130,6 +126,7 @@ public class OzoneJsonConnector extends OzoneUtils implements ConnectorInterface
             outputStream.getChannel());
       }
     });
+
     if (oneFilePerIteration) {
       try {
         outputStream.close();
@@ -139,7 +136,6 @@ public class OzoneJsonConnector extends OzoneUtils implements ConnectorInterface
 
       // Send local file to Ozone
       pushKeyToOzone(localFileTempDir + keyName, keyName);
-      FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "json");
     }
 
   }

@@ -27,7 +27,6 @@ import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.model.type.Field;
 import com.cloudera.frisch.datagen.model.type.StringField;
-import com.cloudera.frisch.datagen.utils.KerberosUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.ozone.client.io.OzoneInputStream;
 
@@ -97,16 +96,12 @@ public class OzoneCSVConnector extends OzoneUtils implements ConnectorInterface 
       if (!oneFilePerIteration) {
         outputStream.close();
         // Send local file to Ozone
-        String keyName = keyNamePrefix + ".csv";
-        pushKeyToOzone(localFileTempDir + keyName, keyName);
+        pushKeyToOzone(localFileTempDir + keyNamePrefix + ".csv", keyNamePrefix + ".csv");
       }
       closeOzone();
       FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "csv");
     } catch (IOException e) {
       log.warn("Could not close properly Ozone connection, due to error: ", e);
-    }
-    if (useKerberos) {
-      KerberosUtils.logoutUserWithKerberos();
     }
   }
 
@@ -121,6 +116,7 @@ public class OzoneCSVConnector extends OzoneUtils implements ConnectorInterface 
       CSVUtils.appendCSVHeader(model, outputStream, lineSeparator);
       counter++;
     }
+
     rows.stream().map(Row::toCSV).forEach(r -> {
       try {
         outputStream.write(r.getBytes());
@@ -144,7 +140,6 @@ public class OzoneCSVConnector extends OzoneUtils implements ConnectorInterface 
       }
 
       pushKeyToOzone(localFileTempDir + keyName, keyName);
-      FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "csv");
     }
 
   }

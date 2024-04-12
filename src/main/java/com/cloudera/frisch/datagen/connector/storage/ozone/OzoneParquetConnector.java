@@ -26,7 +26,6 @@ import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.utils.KerberosUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
@@ -105,16 +104,12 @@ public class OzoneParquetConnector extends OzoneUtils implements ConnectorInterf
       if (!oneFilePerIteration) {
         writer.close();
         // Send local file to Ozone
-        String keyName = keyNamePrefix + ".parquet";
-        pushKeyToOzone(localFileTempDir + keyName, keyName);
+        pushKeyToOzone(localFileTempDir + keyNamePrefix + ".parquet", keyNamePrefix + ".parquet");
       }
       closeOzone();
       FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "parquet");
     } catch (IOException e) {
       log.warn("Could not close properly Ozone connection, due to error: ", e);
-    }
-    if (useKerberos) {
-      KerberosUtils.logoutUserWithKerberos();
     }
   }
 
@@ -126,10 +121,11 @@ public class OzoneParquetConnector extends OzoneUtils implements ConnectorInterf
     // Write to local file
     if (oneFilePerIteration) {
       this.writer = ParquetUtils.createLocalFileWithOverwrite(
-          localFileTempDir + keyNamePrefix + ".parquet", schema, this.writer,
+          localFileTempDir + keyName, schema, this.writer,
           this.model);
       counter++;
     }
+
     rows.stream().map(row -> row.toGenericRecord(schema))
         .forEach(genericRecord -> {
           try {
@@ -138,6 +134,7 @@ public class OzoneParquetConnector extends OzoneUtils implements ConnectorInterf
             log.error("Can not write data to the local file due to error: ", e);
           }
         });
+
     if (oneFilePerIteration) {
       try {
         writer.close();
@@ -147,7 +144,6 @@ public class OzoneParquetConnector extends OzoneUtils implements ConnectorInterf
 
       // Send local file to Ozone
       pushKeyToOzone(localFileTempDir + keyName, keyName);
-      FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "parquet");
     }
 
   }

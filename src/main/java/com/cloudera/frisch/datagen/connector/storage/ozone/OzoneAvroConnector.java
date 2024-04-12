@@ -26,7 +26,6 @@ import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.utils.KerberosUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileStream;
@@ -121,16 +120,12 @@ public class OzoneAvroConnector extends OzoneUtils implements ConnectorInterface
       if (!oneFilePerIteration) {
         dataFileWriter.close();
         // Send local file to Ozone
-        String keyName = keyNamePrefix + ".avro";
-        pushKeyToOzone(localFileTempDir + keyName, keyName);
+        pushKeyToOzone(localFileTempDir + keyNamePrefix + ".avro", keyNamePrefix + ".avro");
       }
       closeOzone();
       FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "avro");
     } catch (IOException e) {
       log.warn("Could not close properly Ozone connection, due to error: ", e);
-    }
-    if (useKerberos) {
-      KerberosUtils.logoutUserWithKerberos();
     }
   }
 
@@ -141,7 +136,7 @@ public class OzoneAvroConnector extends OzoneUtils implements ConnectorInterface
         keyNamePrefix + "-" + String.format("%010d", counter) + ".avro";
     // Write to local file
     if (oneFilePerIteration) {
-      this.dataFileWriter = AvroUtils.createFileWithOverwrite(localFileTempDir + keyNamePrefix + ".avro", schema, datumWriter);
+      this.dataFileWriter = AvroUtils.createFileWithOverwrite(localFileTempDir + keyName, schema, datumWriter);
       counter++;
     }
     rows.stream().map(row -> row.toGenericRecord(schema))
@@ -161,7 +156,6 @@ public class OzoneAvroConnector extends OzoneUtils implements ConnectorInterface
 
       // Send local file to Ozone
       pushKeyToOzone(localFileTempDir + keyName, keyName);
-      FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "avro");
     } else {
       try {
         dataFileWriter.flush();

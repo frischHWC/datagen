@@ -26,7 +26,6 @@ import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.utils.KerberosUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -109,17 +108,13 @@ public class OzoneOrcConnector extends OzoneUtils implements ConnectorInterface 
       if (!oneFilePerIteration) {
         writer.close();
         // Send local file to Ozone
-        String keyName = keyNamePrefix + ".orc";
-        pushKeyToOzone(localFileTempDir + keyName, keyName);
+        pushKeyToOzone(localFileTempDir + keyNamePrefix + ".orc", keyNamePrefix + ".orc");
       }
       closeOzone();
     } catch (IOException e) {
       log.warn("Could not close properly Ozone connection, due to error: ", e);
     } finally {
       FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "orc");
-    }
-    if (useKerberos) {
-      KerberosUtils.logoutUserWithKerberos();
     }
   }
 
@@ -130,9 +125,10 @@ public class OzoneOrcConnector extends OzoneUtils implements ConnectorInterface 
         keyNamePrefix + "-" + String.format("%010d", counter) + ".orc";
     // Write to local file
     if (oneFilePerIteration) {
-      this.writer = OrcUtils.createLocalFileWithOverwrite(localFileTempDir + keyNamePrefix + ".orc", this.writer, schema);
+      this.writer = OrcUtils.createLocalFileWithOverwrite(localFileTempDir + keyName, this.writer, schema);
       counter++;
     }
+
     for (Row row : rows) {
       int rowNumber = batch.size++;
       row.fillinOrcVector(rowNumber, vectors);
@@ -163,7 +159,6 @@ public class OzoneOrcConnector extends OzoneUtils implements ConnectorInterface 
 
       // Send local file to Ozone
       pushKeyToOzone(localFileTempDir + keyName, keyName);
-      FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "orc");
     }
 
   }

@@ -81,8 +81,11 @@ public class OzoneUtils {
       ozClient.close();
     } catch (IOException e) {
       log.warn("Cannot close connection to ozone due to error: ", e);
+    } finally {
+      if (useKerberos) {
+        KerberosUtils.logoutUserWithKerberos();
+      }
     }
-
   }
 
   /**

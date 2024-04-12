@@ -15,6 +15,7 @@
         <logger name="com.cloudera.frisch" level="DEBUG" />
         <logger name="org.apache.orc" level="WARN" />
         <logger name="org.apache.hadoop.util.NativeCodeLoader" level="ERROR" />
+        <logger name="org.apache.hadoop.hdfs.shortcircuit.DomainSocketFactory" level="ERROR" />
 
         <!-- LOG everything at DEBUG level -->
         <root level="debug">
@@ -37,6 +38,7 @@
         <logger name="com.cloudera.frisch" level="DEBUG" />
         <logger name="org.apache.orc" level="WARN" />
         <logger name="org.apache.hadoop.util.NativeCodeLoader" level="ERROR" />
+        <logger name="org.apache.hadoop.hdfs.shortcircuit.DomainSocketFactory" level="ERROR" />
 
         <!-- LOG everything at DEBUG level -->
         <root level="info">
@@ -70,6 +72,8 @@
 
         <logger name="org.apache.orc" level="WARN" />
         <logger name="org.apache.hadoop.util.NativeCodeLoader" level="ERROR" />
+        <logger name="org.apache.hadoop.hdfs.shortcircuit.DomainSocketFactory" level="ERROR" />
+
 
         <!-- LOG everything at INFO level -->
         <root level="info">

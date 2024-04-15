@@ -32,6 +32,10 @@
     "S3_LOCAL_FILE_PATH":  "/tmp/datagen/temp/MODEL_NAME/",
     "S3_BUCKET": "datagen-test-fri",
     "S3_KEY_NAME": "datagen/MODEL_NAME/MODEL_NAME-key",
+    "ADLS_CONTAINER": "dgtest",
+    "ADLS_DIRECTORY": "datagen/MODEL_NAME",
+    "ADLS_FILE_NAME": "MODEL_NAME",
+    "ADLS_LOCAL_FILE_PATH": "/tmp/datagen/temp/MODEL_NAME/",
     "AVRO_NAME": "datagenMODEL_NAME"
   },
   "Primary_Keys": {
@@ -67,6 +71,9 @@
     "KUDU_BUFFER": 100001,
     "KUDU_FLUSH": "MANUAL_FLUSH",
     "OZONE_REPLICATION_FACTOR": 3,
-    "HDFS_REPLICATION_FACTOR": 3
+    "HDFS_REPLICATION_FACTOR": 3,
+    "ADLS_MAX_CONCURRENCY": 4,
+    "ADLS_MAX_UPLOAD_SIZE": 16777216,
+    "ADLS_BLOCK_SIZE": 8388608
   }
 }

@@ -15,35 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.connector.storage.s3;
+package com.cloudera.frisch.datagen.connector.storage.adls;
 
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.CSVUtils;
 import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.model.type.StringField;
 import lombok.extern.slf4j.Slf4j;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 import static com.cloudera.frisch.datagen.config.ApplicationConfigs.DATA_HOME_DIRECTORY;
 
 /**
- * This is a JSON connector to write to one or multiple JSON files to S3
+ * This is a CSV connector to write to one or multiple CSV files to S3
  */
 @Slf4j
-public class S3JsonConnector extends S3Utils implements ConnectorInterface  {
+public class AdlsCSVConnector extends AdlsUtils implements ConnectorInterface  {
 
   private final Model model;
   private FileOutputStream outputStream;
@@ -52,21 +47,20 @@ public class S3JsonConnector extends S3Utils implements ConnectorInterface  {
   private final String localFilePathForModelGeneration;
 
   private int counter;
-  private String currentLocalFileName;
-  private String currentKeyName;
+  private String currentFileName;
 
   /**
-   * Init S3 JSON
+   * Init S3 CSV
    */
-  public S3JsonConnector(Model model,
-                         Map<ApplicationConfigs, String> properties) {
+  public AdlsCSVConnector(Model model,
+                          Map<ApplicationConfigs, String> properties) {
     super(model, properties);
     this.model = model;
     this.counter = 0;
+    this.lineSeparator = System.getProperty("line.separator");
     this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(
         OptionsConverter.Options.ONE_FILE_PER_ITERATION);
-    this.localFilePathForModelGeneration = properties.get(DATA_HOME_DIRECTORY) + "/model-gen/s3/";
-    this.lineSeparator = System.getProperty("line.separator");
+    this.localFilePathForModelGeneration = properties.get(DATA_HOME_DIRECTORY) + "/model-gen/azure/";
   }
 
   @Override
@@ -74,27 +68,21 @@ public class S3JsonConnector extends S3Utils implements ConnectorInterface  {
     if (writer) {
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        s3Client.listObjects(
-                ListObjectsRequest.builder().bucket(bucketName)
-                    .prefix(localDirectoryName)
-                    .build())
-            .contents()
-            .forEach(k -> s3Client.deleteObject(
-                DeleteObjectRequest.builder().bucket(bucketName).key(k.key())
-                    .build()));
+        deleteAllfiles(fileNamePrefix, "csv");
       }
 
       // Will use a local directory before pushing data to S3
-      FileUtils.createLocalDirectory(localFileTempDir);
-      FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "json");
+      FileUtils.createLocalDirectory(localDirectory);
+      FileUtils.deleteAllLocalFiles(localDirectory, fileNamePrefix, "csv");
 
-      createBucketIfNotExists();
+      createDirectoryIfNotExists();
 
       if (!oneFilePerIteration) {
-        this.currentLocalFileName = localFileNamePrefix + ".json";
-        this.currentKeyName = localDirectoryName + currentLocalFileName;
-        this.outputStream = FileUtils.createLocalFileAsOutputStream(localFileTempDir +
-            currentLocalFileName);
+        this.currentFileName = fileNamePrefix + ".csv";
+        this.outputStream = FileUtils.createLocalFileAsOutputStream(
+            localDirectory +
+                currentFileName);
+        CSVUtils.appendCSVHeader(model, outputStream, lineSeparator);
       }
     } else {
       FileUtils.createLocalDirectory(localFilePathForModelGeneration);
@@ -106,13 +94,12 @@ public class S3JsonConnector extends S3Utils implements ConnectorInterface  {
     try {
       if (!oneFilePerIteration) {
         outputStream.close();
-        pushLocalFileToS3(localFileTempDir + currentLocalFileName, currentKeyName);
+        pushLocalFileToADLS(localDirectory + currentFileName, currentFileName);
       }
     } catch (IOException e) {
       log.error(" Unable to close local file with error :", e);
     } finally {
-      FileUtils.deleteAllLocalFiles(localFileTempDir, localFileNamePrefix, "json");
-      closeS3();
+      FileUtils.deleteAllLocalFiles(localDirectory, fileNamePrefix, "csv");
     }
   }
 
@@ -120,14 +107,14 @@ public class S3JsonConnector extends S3Utils implements ConnectorInterface  {
   public void sendOneBatchOfRows(List<Row> rows) {
     try {
       if (oneFilePerIteration) {
-        this.currentLocalFileName = localFileNamePrefix + "-" + String.format("%010d", counter) + ".json";
-        this.currentKeyName = localDirectoryName + currentLocalFileName;
+        this.currentFileName = fileNamePrefix + "-" + String.format("%010d", counter) + ".csv";
         this.outputStream = FileUtils.createLocalFileAsOutputStream(
-            localFileTempDir + currentLocalFileName);
+            localDirectory + currentFileName);
+        CSVUtils.appendCSVHeader(model, outputStream, lineSeparator);
         counter++;
       }
 
-      rows.stream().map(Row::toJSON).forEach(r -> {
+      rows.stream().map(Row::toCSV).forEach(r -> {
         try {
           outputStream.write(r.getBytes());
           outputStream.write(lineSeparator.getBytes());
@@ -140,8 +127,8 @@ public class S3JsonConnector extends S3Utils implements ConnectorInterface  {
 
       if (oneFilePerIteration) {
         outputStream.close();
-        pushLocalFileToS3(localFileTempDir + currentLocalFileName, currentKeyName);
-        FileUtils.deleteLocalFile(localFileTempDir + currentLocalFileName);
+        pushLocalFileToADLS(localDirectory + currentFileName, currentFileName);
+        FileUtils.deleteLocalFile(localDirectory + currentFileName);
       }
     } catch (IOException e) {
       log.error("Can not write data to the local file due to error: ", e);
@@ -155,20 +142,24 @@ public class S3JsonConnector extends S3Utils implements ConnectorInterface  {
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
 
-    tableNames.put("S3_LOCAL_FILE_PATH", this.localDirectoryName);
-    tableNames.put("S3_KEY_NAME", this.keyNamePrefix);
-    tableNames.put("S3_BUCKET", this.bucketName);
+    tableNames.put("AZURE_CONTAINER", this.containerName);
+    tableNames.put("AZURE_DIRECTORY", this.directoryName);
+    tableNames.put("AZURE_FILE_NAME", this.fileNamePrefix);
+    tableNames.put("AZURE_LOCAL_FILE_PATH", this.localDirectory);
 
     try {
-      String localFile = this.localFilePathForModelGeneration + this.localFileNamePrefix;
-      readFileFromS3(localFile, this.keyNamePrefix);
+      String localFile = this.localFilePathForModelGeneration + this.fileNamePrefix;
+      readFileFromADLS(localFile, this.fileNamePrefix);
       File file = new File(localFile);
       if (file.exists() && file.isFile()) {
-        // TODO : Implement logic to create a model with at least names, pk, options and column names/types
-
+        String csvHeader = new BufferedReader(new FileReader(file)).readLine();
+        Arrays.stream(csvHeader.split(","))
+            .forEach(f -> fields.put(f,
+                new StringField(f, null, Collections.emptyList(),
+                    new LinkedHashMap<>())));
       }
-    } catch (Exception e) {
-      log.error("Tried to read file : {} with no success :", this.localDirectoryName,
+    } catch (IOException e) {
+      log.error("Tried to read file : {} with no success :", this.localDirectory,
           e);
     }
 

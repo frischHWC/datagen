@@ -209,6 +209,48 @@ public class MetricsService {
                   (numberOfBatches * rowPerBatch));
           break;
 
+
+        case ADLS_CSV:
+          allMetrics.put(Metrics.ADLS_CSV_FILES_GENERATED,
+              allMetrics.get(Metrics.ADLS_CSV_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.ADLS_CSV_ROWS_GENERATED,
+              allMetrics.get(Metrics.ADLS_CSV_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case ADLS_AVRO:
+          allMetrics.put(Metrics.ADLS_AVRO_FILES_GENERATED,
+              allMetrics.get(Metrics.ADLS_AVRO_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.ADLS_AVRO_ROWS_GENERATED,
+              allMetrics.get(Metrics.ADLS_AVRO_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case ADLS_JSON:
+          allMetrics.put(Metrics.ADLS_JSON_FILES_GENERATED,
+              allMetrics.get(Metrics.ADLS_JSON_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.ADLS_JSON_ROWS_GENERATED,
+              allMetrics.get(Metrics.ADLS_JSON_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case ADLS_ORC:
+          allMetrics.put(Metrics.ADLS_ORC_FILES_GENERATED,
+              allMetrics.get(Metrics.ADLS_ORC_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.ADLS_ORC_ROWS_GENERATED,
+              allMetrics.get(Metrics.ADLS_ORC_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case ADLS_PARQUET:
+          allMetrics.put(Metrics.ADLS_PARQUET_FILES_GENERATED,
+              allMetrics.get(Metrics.ADLS_PARQUET_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.ADLS_PARQUET_ROWS_GENERATED,
+              allMetrics.get(Metrics.ADLS_PARQUET_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+
         case CSV:
           allMetrics.put(Metrics.CSV_FILES_GENERATED,
               allMetrics.get(Metrics.CSV_FILES_GENERATED) + numberOfBatches);
@@ -339,8 +381,20 @@ public class MetricsService {
     S3_ORC_FILES_GENERATED,
     S3_ORC_ROWS_GENERATED,
     S3_JSON_FILES_GENERATED,
-    S3_JSON_ROWS_GENERATED
+    S3_JSON_ROWS_GENERATED,
 
-  }
+    ADLS_CSV_FILES_GENERATED,
+    ADLS_CSV_ROWS_GENERATED,
+    ADLS_AVRO_FILES_GENERATED,
+    ADLS_AVRO_ROWS_GENERATED,
+    ADLS_PARQUET_FILES_GENERATED,
+    ADLS_PARQUET_ROWS_GENERATED,
+    ADLS_ORC_FILES_GENERATED,
+    ADLS_ORC_ROWS_GENERATED,
+    ADLS_JSON_FILES_GENERATED,
+    ADLS_JSON_ROWS_GENERATED
+
+
+    }
 
 }

@@ -800,6 +800,31 @@
           "type": "password"
         },
         {
+          "name": "adls_account_name",
+          "label": "ADLS Storage Account Name",
+          "description": "ADLS name of the storage account to use",
+          "default": "",
+          "type": "string"
+        },
+        {
+          "name": "adls_account_type",
+          "label": "ADLS Storage Account Type",
+          "description": "ADLS Storage account ype, can only be: dfs or blob",
+          "default": "dfs",
+          "type": "string_enum",
+          "validValues": [
+            "dfs",
+            "blob"
+          ]
+        },
+        {
+          "name": "adls_sas_token",
+          "label": "ADLS SAS Token",
+          "description": "ADLS SAS Token (Shared Access Token) use to authenticate to Azure",
+          "default": "",
+          "type": "password"
+        },
+        {
           "name": "core_site_path",
           "label": "AUTO-DISCOVERY: Hadoop Core Site Path",
           "description": "Path to core-site.xml. This is used to auto-discover services: HDFS. (if settings are not explicitly set)",

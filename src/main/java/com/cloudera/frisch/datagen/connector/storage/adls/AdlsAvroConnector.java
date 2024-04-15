@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.connector.storage.s3;
+package com.cloudera.frisch.datagen.connector.storage.adls;
 
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
@@ -35,8 +35,6 @@ import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumWriter;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,15 +49,14 @@ import static com.cloudera.frisch.datagen.config.ApplicationConfigs.DATA_HOME_DI
  * This is a Avro connector to write to one or multiple Avro files to S3
  */
 @Slf4j
-public class S3AvroConnector extends S3Utils implements ConnectorInterface  {
+public class AdlsAvroConnector extends AdlsUtils implements ConnectorInterface  {
 
   private final Model model;
   private final Boolean oneFilePerIteration;
   private final String localFilePathForModelGeneration;
 
   private int counter;
-  private String currentLocalFileName;
-  private String currentKeyName;
+  private String currentFileName;
 
   private final Schema schema;
   private DataFileWriter<GenericRecord> dataFileWriter;
@@ -68,14 +65,14 @@ public class S3AvroConnector extends S3Utils implements ConnectorInterface  {
   /**
    * Init S3 Avro
    */
-  public S3AvroConnector(Model model,
-                         Map<ApplicationConfigs, String> properties) {
+  public AdlsAvroConnector(Model model,
+                           Map<ApplicationConfigs, String> properties) {
     super(model, properties);
     this.model = model;
     this.counter = 0;
     this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(
         OptionsConverter.Options.ONE_FILE_PER_ITERATION);
-    this.localFilePathForModelGeneration = properties.get(DATA_HOME_DIRECTORY) + "/model-gen/s3/";
+    this.localFilePathForModelGeneration = properties.get(DATA_HOME_DIRECTORY) + "/model-gen/azure/";
 
     this.schema = model.getAvroSchema();
     this.datumWriter = new GenericDatumWriter<>(schema);
@@ -86,27 +83,19 @@ public class S3AvroConnector extends S3Utils implements ConnectorInterface  {
     if (writer) {
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        s3Client.listObjects(
-                ListObjectsRequest.builder().bucket(bucketName)
-                    .prefix(localDirectoryName)
-                    .build())
-            .contents()
-            .forEach(k -> s3Client.deleteObject(
-                DeleteObjectRequest.builder().bucket(bucketName).key(k.key())
-                    .build()));
+        deleteAllfiles(fileNamePrefix, "avro");
       }
 
-      // Will use a local directory before pushing data to S3
-      FileUtils.createLocalDirectory(localFileTempDir);
-      FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "avro");
+      // Will use a local directory before pushing data to ADLS
+      FileUtils.createLocalDirectory(localDirectory);
+      FileUtils.deleteAllLocalFiles(localDirectory, fileNamePrefix, "avro");
 
-      createBucketIfNotExists();
+      createDirectoryIfNotExists();
 
       if (!oneFilePerIteration) {
-        this.currentLocalFileName = localFileNamePrefix + ".avro";
-        this.currentKeyName = localDirectoryName + currentLocalFileName;
-        this.dataFileWriter = AvroUtils.createFileWithOverwrite(localFileTempDir +
-            currentLocalFileName, schema, datumWriter);
+        this.currentFileName = fileNamePrefix + ".avro";
+        this.dataFileWriter = AvroUtils.createFileWithOverwrite(localDirectory +
+            fileNamePrefix + ".avro", schema, datumWriter);
       }
     }
   }
@@ -117,13 +106,13 @@ public class S3AvroConnector extends S3Utils implements ConnectorInterface  {
       if (!oneFilePerIteration) {
         dataFileWriter.flush();
         dataFileWriter.close();
-        pushLocalFileToS3(localFileTempDir + currentLocalFileName, currentKeyName);
+        pushLocalFileToADLS(localDirectory + currentFileName,
+            currentFileName);
       }
     } catch (IOException e) {
       log.error(" Unable to close local file with error :", e);
     } finally {
-      FileUtils.deleteAllLocalFiles(localFileTempDir, localFileNamePrefix, "avro");
-      closeS3();
+      FileUtils.deleteAllLocalFiles(localDirectory, currentFileName, "avro");
     }
   }
 
@@ -131,10 +120,9 @@ public class S3AvroConnector extends S3Utils implements ConnectorInterface  {
   public void sendOneBatchOfRows(List<Row> rows) {
     try {
       if (oneFilePerIteration) {
-        this.currentLocalFileName = localFileNamePrefix + "-" + String.format("%010d", counter) + ".avro";
-        this.currentKeyName = localDirectoryName + currentLocalFileName;
-        this.dataFileWriter = AvroUtils.createFileWithOverwrite(localFileTempDir +
-            currentLocalFileName, schema, datumWriter);
+        this.currentFileName = fileNamePrefix + "-" + String.format("%010d", counter) + ".avro";
+        this.dataFileWriter = AvroUtils.createFileWithOverwrite(localDirectory +
+            currentFileName, schema, datumWriter);
         counter++;
       }
 
@@ -149,8 +137,9 @@ public class S3AvroConnector extends S3Utils implements ConnectorInterface  {
 
       if (oneFilePerIteration) {
         this.dataFileWriter.close();
-        pushLocalFileToS3(localFileTempDir + currentLocalFileName, currentKeyName);
-        FileUtils.deleteLocalFile(localFileTempDir + currentLocalFileName);
+        pushLocalFileToADLS(localDirectory + currentFileName,
+            currentFileName);
+        FileUtils.deleteLocalFile(localDirectory + currentFileName);
       } else {
         this.dataFileWriter.flush();
       }
@@ -166,13 +155,14 @@ public class S3AvroConnector extends S3Utils implements ConnectorInterface  {
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
 
-    tableNames.put("S3_LOCAL_FILE_PATH", this.localDirectoryName);
-    tableNames.put("S3_KEY_NAME", this.keyNamePrefix);
-    tableNames.put("S3_BUCKET", this.bucketName);
+    tableNames.put("AZURE_CONTAINER", this.containerName);
+    tableNames.put("AZURE_DIRECTORY", this.directoryName);
+    tableNames.put("AZURE_FILE_NAME", this.fileNamePrefix);
+    tableNames.put("AZURE_LOCAL_FILE_PATH", this.localDirectory);
 
     try {
-      String localFile = this.localFilePathForModelGeneration + this.localFileNamePrefix;
-      readFileFromS3(localFile, this.keyNamePrefix);
+      String localFile = this.localFilePathForModelGeneration + this.fileNamePrefix;
+      readFileFromADLS(localFile, this.fileNamePrefix);
       File file = new File(localFile);
       if (file.exists() && file.isFile()) {
         DataFileStream<GenericRecord> dataFileStream =
@@ -181,7 +171,7 @@ public class S3AvroConnector extends S3Utils implements ConnectorInterface  {
         dataFileStream.close();
       }
     } catch (IOException e) {
-      log.error("Tried to read file : {} with no success :", this.localDirectoryName,
+      log.error("Tried to read file : {} with no success :", this.localDirectory,
           e);
     }
 

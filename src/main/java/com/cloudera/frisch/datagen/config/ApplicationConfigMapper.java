@@ -217,6 +217,12 @@ public class ApplicationConfigMapper {
       return ApplicationConfigs.S3_ACCESS_KEY_SECRET;
     case "s3.region":
       return ApplicationConfigs.S3_REGION;
+    case "adls.account.name":
+      return ApplicationConfigs.ADLS_ACCOUNT_NAME;
+    case "adls.account.type":
+      return ApplicationConfigs.ADLS_ACCOUNT_TYPE;
+    case "adls.sas.token":
+      return ApplicationConfigs.ADLS_SAS_TOKEN;
 
     default:
       log.warn("Could not guess property: {} , check it is well written",

@@ -110,6 +110,7 @@ public class S3CSVConnector extends S3Utils implements ConnectorInterface  {
       log.error(" Unable to close local file with error :", e);
     } finally {
       FileUtils.deleteAllLocalFiles(localFileTempDir, localFileNamePrefix, "csv");
+      closeS3();
     }
   }
 

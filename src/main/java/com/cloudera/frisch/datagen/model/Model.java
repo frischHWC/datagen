@@ -400,6 +400,15 @@ public class Model<T extends Field> {
       case KAFKA_REPLICATION_FACTOR:
         optionResult = (short) 1;
         break;
+      case ADLS_BLOCK_SIZE:
+        optionResult = "8388608";
+        break;
+      case ADLS_MAX_CONCURRENCY:
+        optionResult = "2";
+        break;
+      case ADLS_MAX_UPLOAD_SIZE:
+        optionResult = "4194304";
+        break;
       default:
         break;
       }

@@ -127,7 +127,11 @@ public enum ApplicationConfigs {
 
   S3_ACCESS_KEY_ID,
   S3_ACCESS_KEY_SECRET,
-  S3_REGION
+  S3_REGION,
+
+  ADLS_ACCOUNT_NAME,
+  ADLS_ACCOUNT_TYPE,
+  ADLS_SAS_TOKEN
 
 }
 

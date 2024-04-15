@@ -237,6 +237,10 @@
     "S3_LOCAL_FILE_PATH":  "/tmp/datagen/temp/full/",
     "S3_BUCKET": "datagen-test-fri",
     "S3_KEY_NAME": "datagen/full/full-key",
+    "ADLS_CONTAINER": "dgtest",
+    "ADLS_DIRECTORY": "datagen/full",
+    "ADLS_FILE_NAME": "full",
+    "ADLS_LOCAL_FILE_PATH": "/tmp/datagen/temp/full/",
     "AVRO_NAME":  "datagenfull"
   },
   "Primary_Keys": {
@@ -266,7 +270,7 @@
     "HIVE_TABLE_BUCKETS_COLS": "city",
     "HIVE_TABLE_BUCKETS_NUMBER": 32,
     "CSV_HEADER":  true,
-    "DELETE_PREVIOUS":  false,
+    "DELETE_PREVIOUS":  true,
     "PARQUET_PAGE_SIZE":  1048576,
     "PARQUET_ROW_GROUP_SIZE":  134217728,
     "PARQUET_DICTIONARY_PAGE_SIZE":  1048576,
@@ -277,7 +281,10 @@
     "KUDU_BUFFER":  100001,
     "KUDU_FLUSH":  "MANUAL_FLUSH",
     "OZONE_REPLICATION_FACTOR":  3,
-    "HDFS_REPLICATION_FACTOR":  3
+    "HDFS_REPLICATION_FACTOR":  3,
+    "ADLS_MAX_CONCURRENCY": 4,
+    "ADLS_MAX_UPLOAD_SIZE": 16777216,
+    "ADLS_BLOCK_SIZE": 8388608
   }
 }
 

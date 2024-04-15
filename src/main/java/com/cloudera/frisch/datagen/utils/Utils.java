@@ -551,6 +551,122 @@ public class Utils {
               ".json");
         }
         break;
+      case ADLS_PARQUET:
+        log.info("   - AZURE as Parquet files of " + formatNumber(rowPerBatch) +
+                " rows, in directory {} : ",
+            model.getTableNames()
+                .get(OptionsConverter.TableNames.ADLS_DIRECTORY));
+        if ((Boolean) model.getOptionsOrDefault(
+            OptionsConverter.Options.ONE_FILE_PER_ITERATION)) {
+          log.info("        From :" + model.getTableNames()
+              .get(OptionsConverter.TableNames.ADLS_FILE_NAME) +
+              "-0000000000.parquet");
+          log.info("        to : " +
+              model.getTableNames()
+                  .get(OptionsConverter.TableNames.ADLS_FILE_NAME) +
+              "-" +
+              String.format("%010d", numberOfBatches - 1) +
+              ".parquet");
+        } else {
+          log.info("       In One file: " +
+              model.getTableNames()
+                  .get(OptionsConverter.TableNames.ADLS_FILE_NAME) +
+              ".parquet");
+        }
+        break;
+      case ADLS_ORC:
+        log.info("   - AZURE as ORC files of " + formatNumber(rowPerBatch) +
+                " rows, in directory {} : ",
+            model.getTableNames()
+                .get(OptionsConverter.TableNames.ADLS_DIRECTORY));
+        if ((Boolean) model.getOptionsOrDefault(
+            OptionsConverter.Options.ONE_FILE_PER_ITERATION)) {
+          log.info("        From :" + model.getTableNames()
+              .get(OptionsConverter.TableNames.ADLS_FILE_NAME) +
+              "-0000000000.orc");
+          log.info("        to : " +
+              model.getTableNames()
+                  .get(OptionsConverter.TableNames.ADLS_FILE_NAME) +
+              "-" +
+              String.format("%010d", numberOfBatches - 1) +
+              ".orc");
+        } else {
+          log.info("       In One file: " +
+              model.getTableNames()
+                  .get(OptionsConverter.TableNames.ADLS_FILE_NAME) +
+              ".orc");
+        }
+        break;
+      case ADLS_AVRO:
+        log.info("   - AZURE as Avro files of " + formatNumber(rowPerBatch) +
+                " rows, in directory {} : ",
+            model.getTableNames()
+                .get(OptionsConverter.TableNames.ADLS_DIRECTORY));
+        if ((Boolean) model.getOptionsOrDefault(
+            OptionsConverter.Options.ONE_FILE_PER_ITERATION)) {
+          log.info("        From :" + model.getTableNames()
+              .get(OptionsConverter.TableNames.ADLS_FILE_NAME) +
+              "-0000000000.avro");
+          log.info("        to : " +
+              model.getTableNames()
+                  .get(OptionsConverter.TableNames.ADLS_FILE_NAME) +
+              "-" +
+              String.format("%010d", numberOfBatches - 1) +
+              ".avro");
+        } else {
+          log.info("       In One file: " +
+              model.getTableNames()
+                  .get(OptionsConverter.TableNames.ADLS_FILE_NAME) +
+              ".avro");
+        }
+        break;
+      case ADLS_CSV:
+        log.info("   - AZURE as CSV files of " + formatNumber(rowPerBatch) +
+                " rows, in directory {} : ",
+            model.getTableNames()
+                .get(OptionsConverter.TableNames.ADLS_DIRECTORY));
+        if ((Boolean) model.getOptionsOrDefault(
+            OptionsConverter.Options.ONE_FILE_PER_ITERATION)) {
+          log.info("        From :" + model.getTableNames()
+              .get(OptionsConverter.TableNames.ADLS_FILE_NAME) +
+              "-0000000000.csv");
+          log.info("        to : " +
+              model.getTableNames()
+                  .get(OptionsConverter.TableNames.ADLS_FILE_NAME) +
+              "-" +
+              String.format("%010d", numberOfBatches - 1) +
+              ".csv");
+        } else {
+          log.info("       In One file: " +
+              model.getTableNames()
+                  .get(OptionsConverter.TableNames.ADLS_FILE_NAME) +
+              ".csv");
+        }
+        break;
+      case ADLS_JSON:
+        log.info("   - AZURE as Json files of " + formatNumber(rowPerBatch) +
+                " rows, in directory {} : ",
+            model.getTableNames()
+                .get(OptionsConverter.TableNames.ADLS_DIRECTORY));
+        if ((Boolean) model.getOptionsOrDefault(
+            OptionsConverter.Options.ONE_FILE_PER_ITERATION)) {
+          log.info("        From :" + model.getTableNames()
+              .get(OptionsConverter.TableNames.ADLS_FILE_NAME) +
+              "-0000000000.json");
+          log.info("        to : " +
+              model.getTableNames()
+                  .get(OptionsConverter.TableNames.ADLS_FILE_NAME) +
+              "-" +
+              String.format("%010d", numberOfBatches - 1) +
+              ".json");
+        } else {
+          log.info("       In One file: " +
+              model.getTableNames()
+                  .get(OptionsConverter.TableNames.ADLS_FILE_NAME) +
+              ".json");
+        }
+        break;
+
       case SOLR:
         log.info("   - SolR in collection " + model.getTableNames()
             .get(OptionsConverter.TableNames.SOLR_COLLECTION));

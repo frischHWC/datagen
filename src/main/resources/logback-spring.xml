@@ -39,6 +39,7 @@
         <logger name="org.apache.orc" level="WARN" />
         <logger name="org.apache.hadoop.util.NativeCodeLoader" level="ERROR" />
         <logger name="org.apache.hadoop.hdfs.shortcircuit.DomainSocketFactory" level="ERROR" />
+        <logger name="com.azure.core.util.logging.ClientLogger" level="ERROR" />
 
         <!-- LOG everything at DEBUG level -->
         <root level="info">

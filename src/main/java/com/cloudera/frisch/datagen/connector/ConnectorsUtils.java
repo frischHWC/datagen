@@ -23,6 +23,7 @@ import com.cloudera.frisch.datagen.connector.db.hbase.HbaseConnector;
 import com.cloudera.frisch.datagen.connector.db.hive.HiveConnector;
 import com.cloudera.frisch.datagen.connector.index.SolRConnector;
 import com.cloudera.frisch.datagen.connector.queues.KafkaConnector;
+import com.cloudera.frisch.datagen.connector.storage.adls.*;
 import com.cloudera.frisch.datagen.connector.storage.kudu.KuduConnector;
 import com.cloudera.frisch.datagen.connector.storage.files.*;
 import com.cloudera.frisch.datagen.connector.storage.hdfs.*;
@@ -134,6 +135,21 @@ public class ConnectorsUtils {
         break;
       case S3_PARQUET:
         connectorToInit = new S3ParquetConnector(model, properties);
+        break;
+      case ADLS_CSV:
+        connectorToInit = new AdlsCSVConnector(model, properties);
+        break;
+      case ADLS_JSON:
+        connectorToInit = new AdlsJsonConnector(model, properties);
+        break;
+      case ADLS_AVRO:
+        connectorToInit = new AdlsAvroConnector(model, properties);
+        break;
+      case ADLS_ORC:
+        connectorToInit = new AdlsOrcConnector(model, properties);
+        break;
+      case ADLS_PARQUET:
+        connectorToInit = new AdlsParquetConnector(model, properties);
         break;
       default:
         log.warn("The connector " + connector +

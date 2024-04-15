@@ -102,6 +102,20 @@ public abstract class S3Utils {
 
   }
 
+  /**
+   * Close current AWS S3 connection *
+   */
+  protected void closeS3() {
+    try {
+      this.transferManager.close();
+      this.s3Client.close();
+      this.s3AsyncClient.close();
+    } catch (Exception e) {
+      log.error(" Unable to close S3 Filesystem file with error :", e);
+    }
+
+  }
+
   boolean pushLocalFileToS3(String localPath,
                             String keyName) {
     return pushLocalFileToS3(localPath, keyName, false);

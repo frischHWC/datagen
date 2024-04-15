@@ -79,6 +79,16 @@ public class ConnectorParser {
       return Connector.S3_ORC;
     case "S3-AVRO":
       return Connector.S3_AVRO;
+    case "ADLS-PARQUET":
+      return Connector.ADLS_PARQUET;
+    case "ADLS-CSV":
+      return Connector.ADLS_CSV;
+    case "ADLS-JSON":
+      return Connector.ADLS_JSON;
+    case "ADLS-ORC":
+      return Connector.ADLS_ORC;
+    case "ADLS-AVRO":
+      return Connector.ADLS_AVRO;
     default:
       return null;
     }
@@ -109,7 +119,12 @@ public class ConnectorParser {
     S3_CSV,
     S3_AVRO,
     S3_JSON,
-    S3_ORC;
+    S3_ORC,
+    ADLS_PARQUET,
+    ADLS_CSV,
+    ADLS_AVRO,
+    ADLS_JSON,
+    ADLS_ORC;
 
     public static Comparator<Connector> conenctorInitPrecedence = new Comparator<>() {
       @Override

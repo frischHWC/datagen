@@ -683,5 +683,119 @@ public class DataGenerationController {
         Collections.singletonList("S3-ORC"), null);
   }
 
+  @PostMapping(value = "/adls-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public String generateIntoAdlsCSV(
+      @RequestPart(required = false, name = "model_file")
+          MultipartFile modelFile,
+      @RequestParam(required = false, name = "model") String modelFilePath,
+      @RequestParam(required = false, name = "threads") Integer threads,
+      @RequestParam(required = false, name = "batches") Long numberOfBatches,
+      @RequestParam(required = false, name = "rows") Long rowsPerBatch,
+      @RequestParam(required = false, name = "delay_between_executions_seconds")
+          Long delayBetweenExecutions
+  ) {
+    log.debug(
+        "Received request for ADLS-CSV with model: {} , threads: {} , batches: {}, rows: {}",
+        modelFilePath, threads, numberOfBatches, rowsPerBatch);
+
+    Boolean scheduled = delayBetweenExecutions != null;
+
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads,
+        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
+        Collections.singletonList("ADLS-CSV"), null);
+  }
+
+  @PostMapping(value = "/adls-json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public String generateIntoAdlsJson(
+      @RequestPart(required = false, name = "model_file")
+          MultipartFile modelFile,
+      @RequestParam(required = false, name = "model") String modelFilePath,
+      @RequestParam(required = false, name = "threads") Integer threads,
+      @RequestParam(required = false, name = "batches") Long numberOfBatches,
+      @RequestParam(required = false, name = "rows") Long rowsPerBatch,
+      @RequestParam(required = false, name = "delay_between_executions_seconds")
+          Long delayBetweenExecutions
+  ) {
+    log.debug(
+        "Received request for ADLS-JSON with model: {} , threads: {} , batches: {}, rows: {}",
+        modelFilePath, threads, numberOfBatches, rowsPerBatch);
+
+    Boolean scheduled = delayBetweenExecutions != null;
+
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads,
+        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
+        Collections.singletonList("ADLS-JSON"), null);
+  }
+
+  @PostMapping(value = "/adls-avro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public String generateIntoAdlsAvro(
+      @RequestPart(required = false, name = "model_file")
+          MultipartFile modelFile,
+      @RequestParam(required = false, name = "model") String modelFilePath,
+      @RequestParam(required = false, name = "threads") Integer threads,
+      @RequestParam(required = false, name = "batches") Long numberOfBatches,
+      @RequestParam(required = false, name = "rows") Long rowsPerBatch,
+      @RequestParam(required = false, name = "delay_between_executions_seconds")
+          Long delayBetweenExecutions
+  ) {
+    log.debug(
+        "Received request for ADLS-AVRO with model: {} , threads: {} , batches: {}, rows: {}",
+        modelFilePath, threads, numberOfBatches, rowsPerBatch);
+
+    Boolean scheduled = delayBetweenExecutions != null;
+
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads,
+        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
+        Collections.singletonList("ADLS-AVRO"), null);
+  }
+
+  @PostMapping(value = "/adls-parquet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public String generateIntoAdlsParquet(
+      @RequestPart(required = false, name = "model_file")
+          MultipartFile modelFile,
+      @RequestParam(required = false, name = "model") String modelFilePath,
+      @RequestParam(required = false, name = "threads") Integer threads,
+      @RequestParam(required = false, name = "batches") Long numberOfBatches,
+      @RequestParam(required = false, name = "rows") Long rowsPerBatch,
+      @RequestParam(required = false, name = "delay_between_executions_seconds")
+          Long delayBetweenExecutions
+  ) {
+    log.debug(
+        "Received request for ADLS-PARQUET with model: {} , threads: {} , batches: {}, rows: {}",
+        modelFilePath, threads, numberOfBatches, rowsPerBatch);
+
+    Boolean scheduled = delayBetweenExecutions != null;
+
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads,
+        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
+        Collections.singletonList("ADLS-PARQUET"), null);
+  }
+
+  @PostMapping(value = "/adls-orc", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public String generateIntoAdlsOrc(
+      @RequestPart(required = false, name = "model_file")
+          MultipartFile modelFile,
+      @RequestParam(required = false, name = "model") String modelFilePath,
+      @RequestParam(required = false, name = "threads") Integer threads,
+      @RequestParam(required = false, name = "batches") Long numberOfBatches,
+      @RequestParam(required = false, name = "rows") Long rowsPerBatch,
+      @RequestParam(required = false, name = "delay_between_executions_seconds")
+          Long delayBetweenExecutions
+  ) {
+    log.debug(
+        "Received request for ADLS-ORC with model: {} , threads: {} , batches: {}, rows: {}",
+        modelFilePath, threads, numberOfBatches, rowsPerBatch);
+
+    Boolean scheduled = delayBetweenExecutions != null;
+
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads,
+        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
+        Collections.singletonList("ADLS-ORC"), null);
+  }
 
 }

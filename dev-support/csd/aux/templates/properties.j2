@@ -155,3 +155,9 @@ kudu.truststore.password=#{truststore.password}
 s3.access_key.id={{ globals['s3_access_key_id'] }}
 s3.access_key.secret={{ globals['s3_access_key_secret'] }}
 s3.region={{ globals['s3_region'] }}
+
+# Azure
+adls.account.name={{ globals['adls_account_name'] }}
+# Type can be either dfs or blob
+adls.account.type={{ globals['adls_account_type'] }}
+adls.sas.token={{ globals['adls_sas_token'] }}

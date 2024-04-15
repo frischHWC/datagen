@@ -71,6 +71,10 @@ public class OptionsConverter {
     S3_BUCKET,
     S3_KEY_NAME,
     S3_LOCAL_FILE_PATH,
+    ADLS_CONTAINER,
+    ADLS_DIRECTORY,
+    ADLS_FILE_NAME,
+    ADLS_LOCAL_FILE_PATH,
     AVRO_NAME
   }
 
@@ -116,6 +120,14 @@ public class OptionsConverter {
       return TableNames.S3_KEY_NAME;
     case "S3_LOCAL_FILE_PATH":
       return TableNames.S3_LOCAL_FILE_PATH;
+    case "ADLS_CONTAINER":
+      return TableNames.ADLS_CONTAINER;
+    case "ADLS_DIRECTORY":
+      return TableNames.ADLS_DIRECTORY;
+    case "ADLS_FILE_NAME":
+      return TableNames.ADLS_FILE_NAME;
+    case "ADLS_LOCAL_FILE_PATH":
+      return TableNames.ADLS_LOCAL_FILE_PATH;
     case "AVRO_NAME":
       return TableNames.AVRO_NAME;
     default:
@@ -156,7 +168,10 @@ public class OptionsConverter {
     KUDU_BUFFER,
     KUDU_FLUSH,
     OZONE_REPLICATION_FACTOR,
-    HDFS_REPLICATION_FACTOR
+    HDFS_REPLICATION_FACTOR,
+    ADLS_BLOCK_SIZE,
+    ADLS_MAX_UPLOAD_SIZE,
+    ADLS_MAX_CONCURRENCY
   }
 
   static Options convertOptionToOption(String option) {
@@ -223,6 +238,12 @@ public class OptionsConverter {
       return Options.OZONE_REPLICATION_FACTOR;
     case "HDFS_REPLICATION_FACTOR":
       return Options.HDFS_REPLICATION_FACTOR;
+    case "ADLS_BLOCK_SIZE":
+      return Options.ADLS_BLOCK_SIZE;
+    case "ADLS_MAX_UPLOAD_SIZE":
+      return Options.ADLS_MAX_UPLOAD_SIZE;
+    case "ADLS_MAX_CONCURRENCY":
+      return Options.ADLS_MAX_CONCURRENCY;
     default:
       log.warn("Option was not recognized: " + option +
           " , please verify your JSON");

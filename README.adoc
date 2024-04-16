@@ -2,7 +2,7 @@
 
 Goal of this project is to generate Data into various Big Data Services and File systems.
 
-Built originally for Cloudera Data Platform, it works with S3, ADLS, local file systems, and open-source services (such as kafka, hive etc...).
+Built originally for Cloudera Data Platform, it works with S3, ADLS, GCS, local file systems, and open-source services (such as kafka, hive etc...).
 
 == Public Documentation
 
@@ -133,6 +133,11 @@ There are various possible services where data can be generated, these are calle
 - ADLS-CSV: Generate a CSV file on ADLS
 - ADLS-AVRO: Generates an Avro file on ADLS
 - ADLS-JSON: Generates a JSON file on ADLS
+- GCS-PARQUET: Generates a parquet file on GCS
+- GCS-ORC: Generates an ORC file on GCS
+- GCS-CSV: Generate a CSV file on GCS
+- GCS-AVRO: Generates an Avro file on GCS
+- GCS-JSON: Generates a JSON file on GCS
 
 
 __N.B: It is possible to output same data into various connectors__
@@ -490,13 +495,18 @@ An array of following properties self-describing: +
 - LOCAL_FILE_PATH +
 - LOCAL_FILE_NAME +
 - AVRO_NAME +
-- S3_LOCAL_FILE_PATH +
 - S3_BUCKET +
+- S3_DIRECTORY +
 - S3_KEY_NAME +
+- S3_LOCAL_FILE_PATH +
 - ADLS_CONTAINER +
 - ADLS_DIRECTORY +
 - ADLS_FILE_NAME +
-- ADLS_LOCAL_FILE_PATH
+- ADLS_LOCAL_FILE_PATH +
+- GCS_BUCKET +
+- GCS_DIRECTORY +
+- GCS_OBJECT_NAME +
+- GCS_LOCAL_FILE_PATH +
 
 ==== Primary Keys:
 

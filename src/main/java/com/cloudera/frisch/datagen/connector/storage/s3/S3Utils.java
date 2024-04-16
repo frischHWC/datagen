@@ -30,6 +30,7 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.Map;
 
+import static com.cloudera.frisch.datagen.config.ApplicationConfigs.DATA_HOME_DIRECTORY;
 import static software.amazon.awssdk.transfer.s3.SizeConstant.MB;
 
 /**
@@ -39,11 +40,11 @@ import static software.amazon.awssdk.transfer.s3.SizeConstant.MB;
 public abstract class S3Utils {
 
   protected final String bucketName;
+  protected final String directoryName;
   protected final String keyNamePrefix;
 
   protected final String localDirectoryName;
-  protected final String localFileNamePrefix;
-  protected final String localFileTempDir;
+  protected final String localFilePathForModelGeneration;
 
   protected final String accesKeyId;
   protected final String accesKeySecret;
@@ -58,27 +59,26 @@ public abstract class S3Utils {
           Map<ApplicationConfigs, String> properties) {
     this.bucketName = (String) model.getTableNames()
         .get(OptionsConverter.TableNames.S3_BUCKET);
+    String directoryNotFormatted = (String) model.getTableNames()
+        .get(OptionsConverter.TableNames.S3_DIRECTORY);
+    if (directoryNotFormatted.startsWith("/")) {
+      directoryNotFormatted = directoryNotFormatted.substring(1);
+    }
+    if (directoryNotFormatted.endsWith("/")) {
+      directoryNotFormatted = directoryNotFormatted.substring(0,
+          directoryNotFormatted.length() - 1);
+    }
+    this.directoryName = directoryNotFormatted;
     this.keyNamePrefix = (String) model.getTableNames()
         .get(OptionsConverter.TableNames.S3_KEY_NAME);
-    this.localFileTempDir = (String) model.getTableNames()
+    this.localDirectoryName = (String) model.getTableNames()
         .get(OptionsConverter.TableNames.S3_LOCAL_FILE_PATH);
     this.accesKeyId = properties.get(ApplicationConfigs.S3_ACCESS_KEY_ID);
     this.accesKeySecret =
         properties.get(ApplicationConfigs.S3_ACCESS_KEY_SECRET);
     this.region = properties.get(ApplicationConfigs.S3_REGION);
 
-    if (keyNamePrefix.contains("/")) {
-      this.localFileNamePrefix =
-          keyNamePrefix.substring(keyNamePrefix.lastIndexOf("/") + 1);
-      this.localDirectoryName =
-          keyNamePrefix.substring(0, keyNamePrefix.lastIndexOf("/") + 1);
-    } else {
-      this.localFileNamePrefix = keyNamePrefix;
-      this.localDirectoryName = "/";
-    }
-    log.debug("Identified file name prefix as {} in directory {}",
-        localFileNamePrefix,
-        localDirectoryName);
+    this.localFilePathForModelGeneration = properties.get(DATA_HOME_DIRECTORY) + "/model-gen/s3/";
 
     AwsCredentialsProvider awsCredentialsProvider =
         StaticCredentialsProvider.create(
@@ -134,7 +134,8 @@ public abstract class S3Utils {
       String keyName,
       boolean computeChecksum) {
 
-    log.info("Starting to push local file: {} to S3 in bucket {} with key: {}", localPath, bucketName, keyName);
+    String fullKeyName = directoryName + "/" + keyName;
+    log.info("Starting to push local file: {} to S3 in bucket {} with key: {}", localPath, bucketName, fullKeyName);
     String checksum = "";
     String checksumFromS3 = "";
     boolean largeFile = false;
@@ -163,7 +164,7 @@ public abstract class S3Utils {
     if (largeFile) {
       try {
         UploadFileRequest uploadFileRequest = UploadFileRequest.builder()
-            .putObjectRequest(b -> b.bucket(bucketName).key(keyName))
+            .putObjectRequest(b -> b.bucket(bucketName).key(fullKeyName))
             .addTransferListener(LoggingTransferListener.create())
             .source(Paths.get(localPath))
             .build();
@@ -183,7 +184,7 @@ public abstract class S3Utils {
       try {
         PutObjectRequest putOb = PutObjectRequest.builder()
             .bucket(bucketName)
-            .key(keyName)
+            .key(fullKeyName)
             .build();
 
         checksumFromS3 =
@@ -193,7 +194,7 @@ public abstract class S3Utils {
             checksumFromS3);
       } catch (S3Exception e) {
         log.warn("Could not upload file to bucket {} as key {}",
-            bucketName, keyName);
+            bucketName, fullKeyName);
         success = false;
       }
     }
@@ -214,11 +215,12 @@ public abstract class S3Utils {
    * @param keyName on S3 to read
    */
   void readFileFromS3(String localPath, String keyName) {
-    log.info("Starting to read key: {} in S3 bucket: {} and write it to local directory: {}", keyName, bucketName, localPath);
+    String fullKeyName = directoryName + "/" + keyName;
+    log.info("Starting to read key: {} in S3 bucket: {} and write it to local directory: {}", fullKeyName, bucketName, localPath);
     try {
       GetObjectRequest objectRequest = GetObjectRequest
           .builder()
-          .key(keyName)
+          .key(fullKeyName)
           .bucket(bucketName)
           .build();
 
@@ -230,7 +232,7 @@ public abstract class S3Utils {
       fileOutputStream.write(data);
       fileOutputStream.close();
     } catch (Exception e) {
-      log.error("Cannot read file: {} in bucket: {} from S3 due to error: ", keyName, bucketName, e);
+      log.error("Cannot read file: {} in bucket: {} from S3 due to error: ", fullKeyName, bucketName, e);
     }
 
   }
@@ -263,6 +265,48 @@ public abstract class S3Utils {
       log.warn("Cannot create bucket: {} due to error: ", bucketName, e);
       success = false;
     }
+    return success;
+  }
+
+  /**
+   * Delete all files under a directory *
+   *
+   * @param fileNamePrefix to filter files to delete
+   * @param suffix         to filter files to delete
+   * @return if it is succesfull
+   */
+  boolean deleteAllfiles(String fileNamePrefix, String suffix) {
+    boolean success = true;
+    log.debug(
+        "Start to delete all files starting with: {} and ending with: {} inside directory: {}",
+        fileNamePrefix, suffix, directoryName);
+    try {
+      s3Client.listObjects(
+              ListObjectsRequest.builder().bucket(bucketName)
+                  .prefix(directoryName)
+                  .build())
+          .contents()
+          .stream().filter(s -> {
+            String keyNameWithoutDir = s.key();
+            if(keyNameWithoutDir.contains("/")) {
+              keyNameWithoutDir = keyNameWithoutDir.substring(keyNameWithoutDir.lastIndexOf("/")+1);
+            }
+            if(keyNameWithoutDir.startsWith(fileNamePrefix) && keyNameWithoutDir.endsWith(suffix)) {
+              return true;
+            } else {
+              return false;
+            }
+          })
+          .forEach(k -> s3Client.deleteObject(
+              DeleteObjectRequest.builder().bucket(bucketName).key(k.key())
+                  .build()));
+
+    } catch (Exception e) {
+      log.warn(
+          "Cannot delete files: {} under directory: {} in bucket: {} due to error: ",
+          fileNamePrefix, directoryName, bucketName, e);
+    }
+
     return success;
   }
 }

@@ -223,6 +223,12 @@ public class ApplicationConfigMapper {
       return ApplicationConfigs.ADLS_ACCOUNT_TYPE;
     case "adls.sas.token":
       return ApplicationConfigs.ADLS_SAS_TOKEN;
+    case "gcs.project.id":
+      return ApplicationConfigs.GCS_PROJECT_ID;
+    case "gcs.accountkey.path":
+      return ApplicationConfigs.GCS_ACCOUNT_KEY_PATH;
+    case "gcs.region":
+      return ApplicationConfigs.GCS_REGION;
 
     default:
       log.warn("Could not guess property: {} , check it is well written",

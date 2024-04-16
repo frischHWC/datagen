@@ -42,17 +42,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.cloudera.frisch.datagen.config.ApplicationConfigs.DATA_HOME_DIRECTORY;
-
 /**
- * This is a Parquet connector to write to one or multiple Parquet files to S3
+ * This is a Parquet connector to write to one or multiple Parquet files to ADLS
  */
 @Slf4j
 public class AdlsParquetConnector extends AdlsUtils implements ConnectorInterface  {
 
   private final Model model;
   private final Boolean oneFilePerIteration;
-  private final String localFilePathForModelGeneration;
 
   private int counter;
   private String currentFileName;
@@ -61,7 +58,7 @@ public class AdlsParquetConnector extends AdlsUtils implements ConnectorInterfac
   private ParquetWriter<GenericRecord> parquetWriter;
 
   /**
-   * Init S3 Parquet
+   * Init ADLS Parquet
    */
   public AdlsParquetConnector(Model model,
                               Map<ApplicationConfigs, String> properties) {
@@ -70,7 +67,6 @@ public class AdlsParquetConnector extends AdlsUtils implements ConnectorInterfac
     this.counter = 0;
     this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(
         OptionsConverter.Options.ONE_FILE_PER_ITERATION);
-    this.localFilePathForModelGeneration = properties.get(DATA_HOME_DIRECTORY) + "/model-gen/azure/";
 
   }
 

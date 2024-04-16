@@ -43,17 +43,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.cloudera.frisch.datagen.config.ApplicationConfigs.DATA_HOME_DIRECTORY;
-
 /**
- * This is a Avro connector to write to one or multiple Avro files to S3
+ * This is a Avro connector to write to one or multiple Avro files to ADLS
  */
 @Slf4j
 public class AdlsAvroConnector extends AdlsUtils implements ConnectorInterface  {
 
   private final Model model;
   private final Boolean oneFilePerIteration;
-  private final String localFilePathForModelGeneration;
 
   private int counter;
   private String currentFileName;
@@ -63,7 +60,7 @@ public class AdlsAvroConnector extends AdlsUtils implements ConnectorInterface  
   private final DatumWriter<GenericRecord> datumWriter;
 
   /**
-   * Init S3 Avro
+   * Init ADLS Avro
    */
   public AdlsAvroConnector(Model model,
                            Map<ApplicationConfigs, String> properties) {
@@ -72,7 +69,6 @@ public class AdlsAvroConnector extends AdlsUtils implements ConnectorInterface  
     this.counter = 0;
     this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(
         OptionsConverter.Options.ONE_FILE_PER_ITERATION);
-    this.localFilePathForModelGeneration = properties.get(DATA_HOME_DIRECTORY) + "/model-gen/azure/";
 
     this.schema = model.getAvroSchema();
     this.datumWriter = new GenericDatumWriter<>(schema);

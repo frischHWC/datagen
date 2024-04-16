@@ -15,31 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.connector.storage.adls;
+package com.cloudera.frisch.datagen.connector.storage.gcs;
 
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.CSVUtils;
 import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.model.type.StringField;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 /**
- * This is a JSON connector to write to one or multiple JSON files to ADLS
+ * This is a CSV connector to write to one or multiple CSV files to GCS
  */
 @Slf4j
-public class AdlsJsonConnector extends AdlsUtils implements ConnectorInterface  {
+public class GcsCSVConnector extends GcsUtils implements ConnectorInterface  {
 
   private final Model model;
   private FileOutputStream outputStream;
@@ -50,16 +47,16 @@ public class AdlsJsonConnector extends AdlsUtils implements ConnectorInterface  
   private String currentFileName;
 
   /**
-   * Init ADLS JSON
+   * Init GCS CSV
    */
-  public AdlsJsonConnector(Model model,
-                           Map<ApplicationConfigs, String> properties) {
+  public GcsCSVConnector(Model model,
+                         Map<ApplicationConfigs, String> properties) {
     super(model, properties);
     this.model = model;
     this.counter = 0;
+    this.lineSeparator = System.getProperty("line.separator");
     this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(
         OptionsConverter.Options.ONE_FILE_PER_ITERATION);
-    this.lineSeparator = System.getProperty("line.separator");
   }
 
   @Override
@@ -67,20 +64,20 @@ public class AdlsJsonConnector extends AdlsUtils implements ConnectorInterface  
     if (writer) {
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        deleteAllfiles(fileNamePrefix, "json");
+        deleteAllObjects(objectNamePrefix, "csv");
       }
 
-      // Will use a local directory before pushing data to S3
+      // Will use a local directory before pushing data to GCS
       FileUtils.createLocalDirectory(localDirectory);
-      FileUtils.deleteAllLocalFiles(localDirectory, fileNamePrefix, "json");
+      FileUtils.deleteAllLocalFiles(localDirectory, objectNamePrefix, "csv");
 
-      createDirectoryIfNotExists();
+      createBucketIfNotExists();
 
       if (!oneFilePerIteration) {
-        this.currentFileName = fileNamePrefix + ".json";
+        this.currentFileName = objectNamePrefix + ".csv";
         this.outputStream = FileUtils.createLocalFileAsOutputStream(
-            localDirectory +
-                currentFileName);
+            localDirectory + currentFileName);
+        CSVUtils.appendCSVHeader(model, outputStream, lineSeparator);
       }
     } else {
       FileUtils.createLocalDirectory(localFilePathForModelGeneration);
@@ -92,12 +89,13 @@ public class AdlsJsonConnector extends AdlsUtils implements ConnectorInterface  
     try {
       if (!oneFilePerIteration) {
         outputStream.close();
-        pushLocalFileToADLS(localDirectory + currentFileName, currentFileName);
+        pushLocalFileToGCS(localDirectory + currentFileName, currentFileName);
       }
+      closeGCS();
     } catch (IOException e) {
       log.error(" Unable to close local file with error :", e);
     } finally {
-      FileUtils.deleteAllLocalFiles(localDirectory, fileNamePrefix, "json");
+      FileUtils.deleteAllLocalFiles(localDirectory, objectNamePrefix, "csv");
     }
   }
 
@@ -105,13 +103,14 @@ public class AdlsJsonConnector extends AdlsUtils implements ConnectorInterface  
   public void sendOneBatchOfRows(List<Row> rows) {
     try {
       if (oneFilePerIteration) {
-        this.currentFileName = fileNamePrefix + "-" + String.format("%010d", counter) + ".json";
+        this.currentFileName = objectNamePrefix + "-" + String.format("%010d", counter) + ".csv";
         this.outputStream = FileUtils.createLocalFileAsOutputStream(
             localDirectory + currentFileName);
+        CSVUtils.appendCSVHeader(model, outputStream, lineSeparator);
         counter++;
       }
 
-      rows.stream().map(Row::toJSON).forEach(r -> {
+      rows.stream().map(Row::toCSV).forEach(r -> {
         try {
           outputStream.write(r.getBytes());
           outputStream.write(lineSeparator.getBytes());
@@ -124,7 +123,7 @@ public class AdlsJsonConnector extends AdlsUtils implements ConnectorInterface  
 
       if (oneFilePerIteration) {
         outputStream.close();
-        pushLocalFileToADLS(localDirectory + currentFileName, currentFileName);
+        pushLocalFileToGCS(localDirectory + currentFileName, currentFileName);
         FileUtils.deleteLocalFile(localDirectory + currentFileName);
       }
     } catch (IOException e) {
@@ -139,20 +138,23 @@ public class AdlsJsonConnector extends AdlsUtils implements ConnectorInterface  
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
 
-    tableNames.put("AZURE_CONTAINER", this.containerName);
-    tableNames.put("AZURE_DIRECTORY", this.directoryName);
-    tableNames.put("AZURE_FILE_NAME", this.fileNamePrefix);
-    tableNames.put("AZURE_LOCAL_FILE_PATH", this.localDirectory);
+    tableNames.put("GCS_BUCKET", this.bucketName);
+    tableNames.put("GCS_DIRECTORY", this.directoryName);
+    tableNames.put("GCS_OBJECT_NAME", this.objectNamePrefix);
+    tableNames.put("GCS_LOCAL_FILE_PATH", this.localDirectory);
 
     try {
-      String localFile = this.localFilePathForModelGeneration + this.fileNamePrefix;
-      readFileFromADLS(localFile, this.fileNamePrefix);
+      String localFile = this.localFilePathForModelGeneration + this.objectNamePrefix;
+      readFileFromGCS(localFile, this.objectNamePrefix);
       File file = new File(localFile);
       if (file.exists() && file.isFile()) {
-        // TODO : Implement logic to create a model with at least names, pk, options and column names/types
-
+        String csvHeader = new BufferedReader(new FileReader(file)).readLine();
+        Arrays.stream(csvHeader.split(","))
+            .forEach(f -> fields.put(f,
+                new StringField(f, null, Collections.emptyList(),
+                    new LinkedHashMap<>())));
       }
-    } catch (Exception e) {
+    } catch (IOException e) {
       log.error("Tried to read file : {} with no success :", this.localDirectory,
           e);
     }

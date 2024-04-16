@@ -24,9 +24,10 @@ import com.cloudera.frisch.datagen.connector.db.hive.HiveConnector;
 import com.cloudera.frisch.datagen.connector.index.SolRConnector;
 import com.cloudera.frisch.datagen.connector.queues.KafkaConnector;
 import com.cloudera.frisch.datagen.connector.storage.adls.*;
-import com.cloudera.frisch.datagen.connector.storage.kudu.KuduConnector;
 import com.cloudera.frisch.datagen.connector.storage.files.*;
+import com.cloudera.frisch.datagen.connector.storage.gcs.*;
 import com.cloudera.frisch.datagen.connector.storage.hdfs.*;
+import com.cloudera.frisch.datagen.connector.storage.kudu.KuduConnector;
 import com.cloudera.frisch.datagen.connector.storage.ozone.*;
 import com.cloudera.frisch.datagen.connector.storage.s3.*;
 import com.cloudera.frisch.datagen.model.Model;
@@ -150,6 +151,21 @@ public class ConnectorsUtils {
         break;
       case ADLS_PARQUET:
         connectorToInit = new AdlsParquetConnector(model, properties);
+        break;
+      case GCS_CSV:
+        connectorToInit = new GcsCSVConnector(model, properties);
+        break;
+      case GCS_JSON:
+        connectorToInit = new GcsJsonConnector(model, properties);
+        break;
+      case GCS_AVRO:
+        connectorToInit = new GcsAvroConnector(model, properties);
+        break;
+      case GCS_ORC:
+        connectorToInit = new GcsOrcConnector(model, properties);
+        break;
+      case GCS_PARQUET:
+        connectorToInit = new GcsParquetConnector(model, properties);
         break;
       default:
         log.warn("The connector " + connector +

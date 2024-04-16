@@ -35,8 +35,6 @@ import org.apache.orc.OrcFile;
 import org.apache.orc.Reader;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.Writer;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,8 +42,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.cloudera.frisch.datagen.config.ApplicationConfigs.DATA_HOME_DIRECTORY;
 
 /**
  * This is a ORC connector to write to one or multiple ORC files to S3
@@ -55,10 +51,7 @@ public class S3OrcConnector extends S3Utils implements ConnectorInterface  {
 
   private final Model model;
   private final Boolean oneFilePerIteration;
-  private final String localFilePathForModelGeneration;
-
   private int counter;
-  private String currentLocalFileName;
   private String currentKeyName;
 
   private final TypeDescription schema;
@@ -76,7 +69,6 @@ public class S3OrcConnector extends S3Utils implements ConnectorInterface  {
     this.counter = 0;
     this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(
         OptionsConverter.Options.ONE_FILE_PER_ITERATION);
-    this.localFilePathForModelGeneration = properties.get(DATA_HOME_DIRECTORY) + "/model-gen/s3/";
     this.schema = model.getOrcSchema();
     this.batch = schema.createRowBatch();
     this.vectors = model.createOrcVectors(batch);
@@ -87,27 +79,19 @@ public class S3OrcConnector extends S3Utils implements ConnectorInterface  {
     if (writer) {
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        s3Client.listObjects(
-                ListObjectsRequest.builder().bucket(bucketName)
-                    .prefix(localDirectoryName)
-                    .build())
-            .contents()
-            .forEach(k -> s3Client.deleteObject(
-                DeleteObjectRequest.builder().bucket(bucketName).key(k.key())
-                    .build()));
+        deleteAllfiles(keyNamePrefix, "orc");
       }
 
       // Will use a local directory before pushing data to S3
-      FileUtils.createLocalDirectory(localFileTempDir);
-      FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "orc");
+      FileUtils.createLocalDirectory(localDirectoryName);
+      FileUtils.deleteAllLocalFiles(localDirectoryName, keyNamePrefix, "orc");
 
       createBucketIfNotExists();
 
       if (!oneFilePerIteration) {
-        this.currentLocalFileName = localFileNamePrefix + ".orc";
-        this.currentKeyName = localDirectoryName + currentLocalFileName;
-        this.orcWriter = OrcUtils.createLocalFileWithOverwrite(localFileTempDir +
-            currentLocalFileName, this.orcWriter, this.schema);
+        this.currentKeyName = keyNamePrefix + ".orc";
+        this.orcWriter = OrcUtils.createLocalFileWithOverwrite(localDirectoryName +
+            currentKeyName, this.orcWriter, this.schema);
       }
     } else {
       FileUtils.createLocalDirectory(localFilePathForModelGeneration);
@@ -119,12 +103,12 @@ public class S3OrcConnector extends S3Utils implements ConnectorInterface  {
     try {
       if (!oneFilePerIteration) {
         this.orcWriter.close();
-        pushLocalFileToS3(localFileTempDir + currentLocalFileName, currentKeyName);
+        pushLocalFileToS3(localDirectoryName + currentKeyName, currentKeyName);
       }
     } catch (IOException e) {
       log.error(" Unable to close local file with error :", e);
     } finally {
-      FileUtils.deleteAllLocalFiles(localFileTempDir, localFileNamePrefix, "orc");
+      FileUtils.deleteAllLocalFiles(localDirectoryName, keyNamePrefix, "orc");
       closeS3();
     }
   }
@@ -133,10 +117,9 @@ public class S3OrcConnector extends S3Utils implements ConnectorInterface  {
   public void sendOneBatchOfRows(List<Row> rows) {
     try {
       if (oneFilePerIteration) {
-        this.currentLocalFileName = localFileNamePrefix + "-" + String.format("%010d", counter) + ".orc";
-        this.currentKeyName = localDirectoryName + currentLocalFileName;
-        this.orcWriter = OrcUtils.createLocalFileWithOverwrite(localFileTempDir +
-            currentLocalFileName, this.orcWriter, this.schema);
+        this.currentKeyName = keyNamePrefix + "-" + String.format("%010d", counter) + ".orc";
+        this.orcWriter = OrcUtils.createLocalFileWithOverwrite(localDirectoryName +
+            currentKeyName, this.orcWriter, this.schema);
         counter++;
       }
 
@@ -163,8 +146,8 @@ public class S3OrcConnector extends S3Utils implements ConnectorInterface  {
 
       if (oneFilePerIteration) {
         this.orcWriter.close();
-        pushLocalFileToS3(localFileTempDir + currentLocalFileName, currentKeyName);
-        FileUtils.deleteLocalFile(localFileTempDir + currentLocalFileName);
+        pushLocalFileToS3(localDirectoryName + currentKeyName, currentKeyName);
+        FileUtils.deleteLocalFile(localDirectoryName + currentKeyName);
       }
     } catch (IOException e) {
       log.error("Can not write data to the local file due to error: ", e);
@@ -183,7 +166,7 @@ public class S3OrcConnector extends S3Utils implements ConnectorInterface  {
     tableNames.put("S3_BUCKET", this.bucketName);
 
     try {
-      String localFile = this.localFilePathForModelGeneration + this.localFileNamePrefix;
+      String localFile = this.localFilePathForModelGeneration + this.keyNamePrefix;
       readFileFromS3(localFile, this.keyNamePrefix);
       File file = new File(localFile);
       if (file.exists() && file.isFile()) {

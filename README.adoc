@@ -4,6 +4,10 @@ Goal of this project is to generate Data into various Big Data Services and File
 
 Built originally for Cloudera Data Platform, it works with S3, ADLS, local file systems, and open-source services (such as kafka, hive etc...).
 
+== Public Documentation
+
+Public Documentation is available here link:https://frischhwc.github.io/datagen[https://frischhwc.github.io/datagen]
+
 == Dependencies
 
 Datagen is made with:

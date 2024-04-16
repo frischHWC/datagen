@@ -17,19 +17,23 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
+import static com.cloudera.frisch.datagen.config.ApplicationConfigs.DATA_HOME_DIRECTORY;
+
 /**
- * Everything that is only related to S3 is set here and S3 connectors extends this class
+ * Everything that is only related to ADLS is set here and ADLS connectors extends this class
  */
 @Slf4j
 public abstract class AdlsUtils {
 
   protected final String accountName;
   protected final String accountType;
+
   protected final String containerName;
   protected final String directoryName;
   protected final String fileNamePrefix;
 
   protected final String localDirectory;
+  protected final String localFilePathForModelGeneration;
 
   protected final String sasToken;
   protected final DataLakeServiceClient dataLakeServiceClient;
@@ -62,6 +66,8 @@ public abstract class AdlsUtils {
     this.directoryName = directoryNotFormatted;
     this.localDirectory = (String) model.getTableNames()
         .get(OptionsConverter.TableNames.ADLS_LOCAL_FILE_PATH);
+    this.localFilePathForModelGeneration = properties.get(DATA_HOME_DIRECTORY) + "/model-gen/azure/";
+
     this.sasToken = properties.get(ApplicationConfigs.ADLS_SAS_TOKEN);
     this.accountName =
         properties.get(ApplicationConfigs.ADLS_ACCOUNT_NAME);
@@ -124,6 +130,7 @@ public abstract class AdlsUtils {
   boolean pushLocalFileToADLS(
       String localPath,
       String fileName) {
+    String fullFileName = directoryName + "/" + fileName;
 
     log.info(
         "Starting to push local file: {} to ADLS in container {} inside directory: {} with name: {}",
@@ -133,14 +140,14 @@ public abstract class AdlsUtils {
     try {
       if (this.accountType.equalsIgnoreCase("dfs")) {
         DataLakeFileClient fileClient =
-            this.directoryClient.getFileClient(fileName);
+            this.directoryClient.getFileClient(fullFileName);
 
         fileClient.uploadFromFile(localPath);
       } else if (this.accountType.equalsIgnoreCase("blob")) {
         BlobUploadFromFileOptions options =
             new BlobUploadFromFileOptions(localPath);
         options.setParallelTransferOptions(parallelTransferOptions);
-        blobContainerClient.getBlobClient(directoryName + fileName)
+        blobContainerClient.getBlobClient(fullFileName)
             .uploadFromFileWithResponse(options, null, null);
       }
       success = true;

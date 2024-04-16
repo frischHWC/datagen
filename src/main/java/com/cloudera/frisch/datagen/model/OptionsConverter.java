@@ -69,12 +69,17 @@ public class OptionsConverter {
     LOCAL_FILE_PATH,
     LOCAL_FILE_NAME,
     S3_BUCKET,
+    S3_DIRECTORY,
     S3_KEY_NAME,
     S3_LOCAL_FILE_PATH,
     ADLS_CONTAINER,
     ADLS_DIRECTORY,
     ADLS_FILE_NAME,
     ADLS_LOCAL_FILE_PATH,
+    GCS_BUCKET,
+    GCS_DIRECTORY,
+    GCS_OBJECT_NAME,
+    GCS_LOCAL_FILE_PATH,
     AVRO_NAME
   }
 
@@ -116,6 +121,8 @@ public class OptionsConverter {
       return TableNames.LOCAL_FILE_NAME;
     case "S3_BUCKET":
       return TableNames.S3_BUCKET;
+    case "S3_DIRECTORY":
+      return TableNames.S3_DIRECTORY;
     case "S3_KEY_NAME":
       return TableNames.S3_KEY_NAME;
     case "S3_LOCAL_FILE_PATH":
@@ -128,6 +135,14 @@ public class OptionsConverter {
       return TableNames.ADLS_FILE_NAME;
     case "ADLS_LOCAL_FILE_PATH":
       return TableNames.ADLS_LOCAL_FILE_PATH;
+    case "GCS_BUCKET":
+      return TableNames.GCS_BUCKET;
+    case "GCS_DIRECTORY":
+      return TableNames.GCS_DIRECTORY;
+    case "GCS_OBJECT_NAME":
+      return TableNames.GCS_OBJECT_NAME;
+    case "GCS_LOCAL_FILE_PATH":
+      return TableNames.GCS_LOCAL_FILE_PATH;
     case "AVRO_NAME":
       return TableNames.AVRO_NAME;
     default:

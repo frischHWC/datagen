@@ -15,28 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.connector.storage.adls;
+package com.cloudera.frisch.datagen.connector.storage.gcs;
 
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
 import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
-import com.cloudera.frisch.datagen.connector.storage.utils.OrcUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.model.type.Field;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.orc.OrcFile;
-import org.apache.orc.Reader;
-import org.apache.orc.TypeDescription;
-import org.apache.orc.Writer;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -44,35 +36,29 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This is a ORC connector to write to one or multiple ORC files to ADLS
+ * This is a JSON connector to write to one or multiple JSON files to GCS
  */
 @Slf4j
-public class AdlsOrcConnector extends AdlsUtils implements ConnectorInterface  {
+public class GcsJsonConnector extends GcsUtils implements ConnectorInterface  {
 
   private final Model model;
+  private FileOutputStream outputStream;
+  private final String lineSeparator;
   private final Boolean oneFilePerIteration;
-
   private int counter;
   private String currentFileName;
 
-  private final TypeDescription schema;
-  private Writer orcWriter;
-  private final Map<String, ColumnVector> vectors;
-  private final VectorizedRowBatch batch;
-
   /**
-   * Init ADLS ORC
+   * Init S3 JSON
    */
-  public AdlsOrcConnector(Model model,
+  public GcsJsonConnector(Model model,
                           Map<ApplicationConfigs, String> properties) {
     super(model, properties);
     this.model = model;
     this.counter = 0;
     this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(
         OptionsConverter.Options.ONE_FILE_PER_ITERATION);
-    this.schema = model.getOrcSchema();
-    this.batch = schema.createRowBatch();
-    this.vectors = model.createOrcVectors(batch);
+    this.lineSeparator = System.getProperty("line.separator");
   }
 
   @Override
@@ -80,19 +66,20 @@ public class AdlsOrcConnector extends AdlsUtils implements ConnectorInterface  {
     if (writer) {
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        deleteAllfiles(fileNamePrefix, "orc");
+        deleteAllObjects(objectNamePrefix, "json");
       }
 
-      // Will use a local directory before pushing data to ADLS
+      // Will use a local directory before pushing data to S3
       FileUtils.createLocalDirectory(localDirectory);
-      FileUtils.deleteAllLocalFiles(localDirectory, fileNamePrefix, "orc");
+      FileUtils.deleteAllLocalFiles(localDirectory, objectNamePrefix, "json");
 
-      createDirectoryIfNotExists();
+      createBucketIfNotExists();
 
       if (!oneFilePerIteration) {
-        this.currentFileName = fileNamePrefix + ".orc";
-        this.orcWriter = OrcUtils.createLocalFileWithOverwrite(localDirectory +
-            currentFileName, this.orcWriter, this.schema);
+        this.currentFileName = objectNamePrefix + ".json";
+        this.outputStream = FileUtils.createLocalFileAsOutputStream(
+            localDirectory +
+                currentFileName);
       }
     } else {
       FileUtils.createLocalDirectory(localFilePathForModelGeneration);
@@ -103,13 +90,14 @@ public class AdlsOrcConnector extends AdlsUtils implements ConnectorInterface  {
   public void terminate() {
     try {
       if (!oneFilePerIteration) {
-        this.orcWriter.close();
-        pushLocalFileToADLS(localDirectory + currentFileName, currentFileName);
+        outputStream.close();
+        pushLocalFileToGCS(localDirectory + currentFileName, currentFileName);
       }
+      closeGCS();
     } catch (IOException e) {
       log.error(" Unable to close local file with error :", e);
     } finally {
-      FileUtils.deleteAllLocalFiles(localDirectory, fileNamePrefix, "orc");
+      FileUtils.deleteAllLocalFiles(localDirectory, objectNamePrefix, "json");
     }
   }
 
@@ -117,36 +105,26 @@ public class AdlsOrcConnector extends AdlsUtils implements ConnectorInterface  {
   public void sendOneBatchOfRows(List<Row> rows) {
     try {
       if (oneFilePerIteration) {
-        this.currentFileName = fileNamePrefix + "-" + String.format("%010d", counter) + ".orc";
-        this.orcWriter = OrcUtils.createLocalFileWithOverwrite(localDirectory +
-            currentFileName, this.orcWriter, this.schema);
+        this.currentFileName = objectNamePrefix + "-" + String.format("%010d", counter) + ".json";
+        this.outputStream = FileUtils.createLocalFileAsOutputStream(
+            localDirectory + currentFileName);
         counter++;
       }
 
-      for (Row row : rows) {
-        int rowNumber = batch.size++;
-        row.fillinOrcVector(rowNumber, vectors);
+      rows.stream().map(Row::toJSON).forEach(r -> {
         try {
-          if (batch.size == batch.getMaxSize()) {
-            orcWriter.addRowBatch(batch);
-            batch.reset();
-          }
+          outputStream.write(r.getBytes());
+          outputStream.write(lineSeparator.getBytes());
         } catch (IOException e) {
-          log.error("Can not write data to the local file due to error: ", e);
+          log.error("Could not write row: " + r + " to file: " +
+              outputStream.getChannel());
         }
-      }
-      try {
-        if (batch.size != 0) {
-          orcWriter.addRowBatch(batch);
-          batch.reset();
-        }
-      } catch (IOException e) {
-        log.error("Can not write data to the local file due to error: ", e);
-      }
+      });
+      outputStream.write(lineSeparator.getBytes());
 
       if (oneFilePerIteration) {
-        this.orcWriter.close();
-        pushLocalFileToADLS(localDirectory + currentFileName, currentFileName);
+        outputStream.close();
+        pushLocalFileToGCS(localDirectory + currentFileName, currentFileName);
         FileUtils.deleteLocalFile(localDirectory + currentFileName);
       }
     } catch (IOException e) {
@@ -161,26 +139,20 @@ public class AdlsOrcConnector extends AdlsUtils implements ConnectorInterface  {
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
 
-    tableNames.put("AZURE_CONTAINER", this.containerName);
-    tableNames.put("AZURE_DIRECTORY", this.directoryName);
-    tableNames.put("AZURE_FILE_NAME", this.fileNamePrefix);
-    tableNames.put("AZURE_LOCAL_FILE_PATH", this.localDirectory);
+    tableNames.put("GCS_BUCKET", this.bucketName);
+    tableNames.put("GCS_DIRECTORY", this.directoryName);
+    tableNames.put("GCS_OBJECT_NAME", this.objectNamePrefix);
+    tableNames.put("GCS_LOCAL_FILE_PATH", this.localDirectory);
 
     try {
-      String localFile = this.localFilePathForModelGeneration + this.fileNamePrefix;
-      readFileFromADLS(localFile, this.fileNamePrefix);
+      String localFile = this.localFilePathForModelGeneration + this.objectNamePrefix;
+      readFileFromGCS(localFile, this.objectNamePrefix);
       File file = new File(localFile);
       if (file.exists() && file.isFile()) {
-        Reader reader =
-            OrcFile.createReader(new Path(localFile),
-                OrcFile.readerOptions(new Configuration()));
+        // TODO : Implement logic to create a model with at least names, pk, options and column names/types
 
-        OrcUtils.setBasicFields(fields, reader);
-        if (deepAnalysis) {
-          OrcUtils.analyzeFields(fields, reader);
-        }
       }
-    } catch (IOException e) {
+    } catch (Exception e) {
       log.error("Tried to read file : {} with no success :", this.localDirectory,
           e);
     }

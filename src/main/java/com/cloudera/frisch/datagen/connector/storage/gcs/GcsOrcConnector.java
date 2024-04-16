@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.connector.storage.adls;
+package com.cloudera.frisch.datagen.connector.storage.gcs;
 
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
@@ -44,10 +44,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This is a ORC connector to write to one or multiple ORC files to ADLS
+ * This is a ORC connector to write to one or multiple ORC files to GCS
  */
 @Slf4j
-public class AdlsOrcConnector extends AdlsUtils implements ConnectorInterface  {
+public class GcsOrcConnector extends GcsUtils implements ConnectorInterface  {
 
   private final Model model;
   private final Boolean oneFilePerIteration;
@@ -61,10 +61,10 @@ public class AdlsOrcConnector extends AdlsUtils implements ConnectorInterface  {
   private final VectorizedRowBatch batch;
 
   /**
-   * Init ADLS ORC
+   * Init S3 ORC
    */
-  public AdlsOrcConnector(Model model,
-                          Map<ApplicationConfigs, String> properties) {
+  public GcsOrcConnector(Model model,
+                         Map<ApplicationConfigs, String> properties) {
     super(model, properties);
     this.model = model;
     this.counter = 0;
@@ -80,17 +80,17 @@ public class AdlsOrcConnector extends AdlsUtils implements ConnectorInterface  {
     if (writer) {
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        deleteAllfiles(fileNamePrefix, "orc");
+        deleteAllObjects(objectNamePrefix, "orc");
       }
 
-      // Will use a local directory before pushing data to ADLS
+      // Will use a local directory before pushing data to S3
       FileUtils.createLocalDirectory(localDirectory);
-      FileUtils.deleteAllLocalFiles(localDirectory, fileNamePrefix, "orc");
+      FileUtils.deleteAllLocalFiles(localDirectory, objectNamePrefix, "orc");
 
-      createDirectoryIfNotExists();
+      createBucketIfNotExists();
 
       if (!oneFilePerIteration) {
-        this.currentFileName = fileNamePrefix + ".orc";
+        this.currentFileName = objectNamePrefix + ".orc";
         this.orcWriter = OrcUtils.createLocalFileWithOverwrite(localDirectory +
             currentFileName, this.orcWriter, this.schema);
       }
@@ -104,12 +104,13 @@ public class AdlsOrcConnector extends AdlsUtils implements ConnectorInterface  {
     try {
       if (!oneFilePerIteration) {
         this.orcWriter.close();
-        pushLocalFileToADLS(localDirectory + currentFileName, currentFileName);
+        pushLocalFileToGCS(localDirectory + currentFileName, currentFileName);
       }
+      closeGCS();
     } catch (IOException e) {
       log.error(" Unable to close local file with error :", e);
     } finally {
-      FileUtils.deleteAllLocalFiles(localDirectory, fileNamePrefix, "orc");
+      FileUtils.deleteAllLocalFiles(localDirectory, objectNamePrefix, "orc");
     }
   }
 
@@ -117,7 +118,7 @@ public class AdlsOrcConnector extends AdlsUtils implements ConnectorInterface  {
   public void sendOneBatchOfRows(List<Row> rows) {
     try {
       if (oneFilePerIteration) {
-        this.currentFileName = fileNamePrefix + "-" + String.format("%010d", counter) + ".orc";
+        this.currentFileName = objectNamePrefix + "-" + String.format("%010d", counter) + ".orc";
         this.orcWriter = OrcUtils.createLocalFileWithOverwrite(localDirectory +
             currentFileName, this.orcWriter, this.schema);
         counter++;
@@ -146,7 +147,7 @@ public class AdlsOrcConnector extends AdlsUtils implements ConnectorInterface  {
 
       if (oneFilePerIteration) {
         this.orcWriter.close();
-        pushLocalFileToADLS(localDirectory + currentFileName, currentFileName);
+        pushLocalFileToGCS(localDirectory + currentFileName, currentFileName);
         FileUtils.deleteLocalFile(localDirectory + currentFileName);
       }
     } catch (IOException e) {
@@ -161,14 +162,14 @@ public class AdlsOrcConnector extends AdlsUtils implements ConnectorInterface  {
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
 
-    tableNames.put("AZURE_CONTAINER", this.containerName);
-    tableNames.put("AZURE_DIRECTORY", this.directoryName);
-    tableNames.put("AZURE_FILE_NAME", this.fileNamePrefix);
-    tableNames.put("AZURE_LOCAL_FILE_PATH", this.localDirectory);
+    tableNames.put("GCS_BUCKET", this.bucketName);
+    tableNames.put("GCS_DIRECTORY", this.directoryName);
+    tableNames.put("GCS_OBJECT_NAME", this.objectNamePrefix);
+    tableNames.put("GCS_LOCAL_FILE_PATH", this.localDirectory);
 
     try {
-      String localFile = this.localFilePathForModelGeneration + this.fileNamePrefix;
-      readFileFromADLS(localFile, this.fileNamePrefix);
+      String localFile = this.localFilePathForModelGeneration + this.objectNamePrefix;
+      readFileFromGCS(localFile, this.objectNamePrefix);
       File file = new File(localFile);
       if (file.exists() && file.isFile()) {
         Reader reader =

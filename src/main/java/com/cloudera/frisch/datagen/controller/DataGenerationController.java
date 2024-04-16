@@ -798,4 +798,120 @@ public class DataGenerationController {
         Collections.singletonList("ADLS-ORC"), null);
   }
 
+
+  @PostMapping(value = "/gcs-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public String generateIntoGcsCSV(
+      @RequestPart(required = false, name = "model_file")
+          MultipartFile modelFile,
+      @RequestParam(required = false, name = "model") String modelFilePath,
+      @RequestParam(required = false, name = "threads") Integer threads,
+      @RequestParam(required = false, name = "batches") Long numberOfBatches,
+      @RequestParam(required = false, name = "rows") Long rowsPerBatch,
+      @RequestParam(required = false, name = "delay_between_executions_seconds")
+          Long delayBetweenExecutions
+  ) {
+    log.debug(
+        "Received request for GCS-CSV with model: {} , threads: {} , batches: {}, rows: {}",
+        modelFilePath, threads, numberOfBatches, rowsPerBatch);
+
+    Boolean scheduled = delayBetweenExecutions != null;
+
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads,
+        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
+        Collections.singletonList("GCS-CSV"), null);
+  }
+
+  @PostMapping(value = "/gcs-json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public String generateIntoGcsJson(
+      @RequestPart(required = false, name = "model_file")
+          MultipartFile modelFile,
+      @RequestParam(required = false, name = "model") String modelFilePath,
+      @RequestParam(required = false, name = "threads") Integer threads,
+      @RequestParam(required = false, name = "batches") Long numberOfBatches,
+      @RequestParam(required = false, name = "rows") Long rowsPerBatch,
+      @RequestParam(required = false, name = "delay_between_executions_seconds")
+          Long delayBetweenExecutions
+  ) {
+    log.debug(
+        "Received request for GCS-JSON with model: {} , threads: {} , batches: {}, rows: {}",
+        modelFilePath, threads, numberOfBatches, rowsPerBatch);
+
+    Boolean scheduled = delayBetweenExecutions != null;
+
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads,
+        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
+        Collections.singletonList("GCS-JSON"), null);
+  }
+
+  @PostMapping(value = "/gcs-avro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public String generateIntoGcsAvro(
+      @RequestPart(required = false, name = "model_file")
+          MultipartFile modelFile,
+      @RequestParam(required = false, name = "model") String modelFilePath,
+      @RequestParam(required = false, name = "threads") Integer threads,
+      @RequestParam(required = false, name = "batches") Long numberOfBatches,
+      @RequestParam(required = false, name = "rows") Long rowsPerBatch,
+      @RequestParam(required = false, name = "delay_between_executions_seconds")
+          Long delayBetweenExecutions
+  ) {
+    log.debug(
+        "Received request for GCS-AVRO with model: {} , threads: {} , batches: {}, rows: {}",
+        modelFilePath, threads, numberOfBatches, rowsPerBatch);
+
+    Boolean scheduled = delayBetweenExecutions != null;
+
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads,
+        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
+        Collections.singletonList("GCS-AVRO"), null);
+  }
+
+  @PostMapping(value = "/gcs-parquet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public String generateIntoGcsParquet(
+      @RequestPart(required = false, name = "model_file")
+          MultipartFile modelFile,
+      @RequestParam(required = false, name = "model") String modelFilePath,
+      @RequestParam(required = false, name = "threads") Integer threads,
+      @RequestParam(required = false, name = "batches") Long numberOfBatches,
+      @RequestParam(required = false, name = "rows") Long rowsPerBatch,
+      @RequestParam(required = false, name = "delay_between_executions_seconds")
+          Long delayBetweenExecutions
+  ) {
+    log.debug(
+        "Received request for GCS-PARQUET with model: {} , threads: {} , batches: {}, rows: {}",
+        modelFilePath, threads, numberOfBatches, rowsPerBatch);
+
+    Boolean scheduled = delayBetweenExecutions != null;
+
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads,
+        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
+        Collections.singletonList("GCS-PARQUET"), null);
+  }
+
+  @PostMapping(value = "/gcs-orc", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public String generateIntoGcsOrc(
+      @RequestPart(required = false, name = "model_file")
+          MultipartFile modelFile,
+      @RequestParam(required = false, name = "model") String modelFilePath,
+      @RequestParam(required = false, name = "threads") Integer threads,
+      @RequestParam(required = false, name = "batches") Long numberOfBatches,
+      @RequestParam(required = false, name = "rows") Long rowsPerBatch,
+      @RequestParam(required = false, name = "delay_between_executions_seconds")
+          Long delayBetweenExecutions
+  ) {
+    log.debug(
+        "Received request for GCS-ORC with model: {} , threads: {} , batches: {}, rows: {}",
+        modelFilePath, threads, numberOfBatches, rowsPerBatch);
+
+    Boolean scheduled = delayBetweenExecutions != null;
+
+    return commandRunnerService.generateData(modelFile, modelFilePath, threads,
+        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
+        Collections.singletonList("GCS-ORC"), null);
+  }
+
 }

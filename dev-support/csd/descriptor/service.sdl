@@ -2,7 +2,7 @@
   "name": "DATAGEN",
   "label": "Datagen",
   "description": "The service to generate Data into various services of CDP platform",
-  "version": "0.4.15.2",
+  "version": "0.5.0",
   "parcel": {
     "requiredTags": [
       "datagen"
@@ -823,6 +823,20 @@
           "description": "ADLS SAS Token (Shared Access Token) use to authenticate to Azure",
           "default": "",
           "type": "password"
+        },
+        {
+          "name": "gcs_project_id",
+          "label": "Google Cloud Storage Project ID",
+          "description": "Project ID in Google Cloud where to generate data",
+          "default": "",
+          "type": "string"
+        },
+        {
+          "name": "gcs_account_key",
+          "label": "Google Cloud Storage Account key path on local machin",
+          "description": "(Optional): Google Cloud Storage Account key path. Use it only if no authentication has been set on where this server runs",
+          "default": "",
+          "type": "path"
         },
         {
           "name": "core_site_path",

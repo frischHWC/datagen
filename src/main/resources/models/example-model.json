@@ -14,28 +14,44 @@
   "Table_Names": {
     "HDFS_FILE_PATH": "/user/datagen/hdfs/MODEL_NAME/",
     "HDFS_FILE_NAME": "MODEL_NAME",
-    "HIVE_HDFS_FILE_PATH": "/user/datagen/hive/MODEL_NAME/",
+
     "HBASE_TABLE_NAME": "MODEL_NAME",
     "HBASE_NAMESPACE": "datagen",
+
     "KAFKA_TOPIC": "datagen_MODEL_NAME",
+
     "OZONE_VOLUME": "datagen",
     "OZONE_BUCKET": "MODEL_NAME",
     "OZONE_KEY_NAME": "MODEL_NAME",
     "OZONE_LOCAL_FILE_PATH": "/home/datagen/temp/MODEL_NAME/",
+
     "SOLR_COLLECTION": "datagen_MODEL_NAME",
+
     "HIVE_DATABASE": "datagen",
     "HIVE_TABLE_NAME": "MODEL_NAME",
+    "HIVE_HDFS_FILE_PATH": "/user/datagen/hive/MODEL_NAME/",
     "HIVE_TEMPORARY_TABLE_NAME": "MODEL_NAME_tmp",
+
     "KUDU_TABLE_NAME": "datagen.MODEL_NAME",
+
     "LOCAL_FILE_PATH": "/tmp/datagen/MODEL_NAME/",
     "LOCAL_FILE_NAME": "datagen-MODEL_NAME",
-    "S3_LOCAL_FILE_PATH":  "/tmp/datagen/temp/MODEL_NAME/",
+
     "S3_BUCKET": "datagen-test-fri",
-    "S3_KEY_NAME": "datagen/MODEL_NAME/MODEL_NAME-key",
+    "S3_DIRECTORY": "datagen/MODEL_NAME",
+    "S3_KEY_NAME": "MODEL_NAME",
+    "S3_LOCAL_FILE_PATH":  "/tmp/datagen/temp/MODEL_NAME/",
+
     "ADLS_CONTAINER": "dgtest",
     "ADLS_DIRECTORY": "datagen/MODEL_NAME",
     "ADLS_FILE_NAME": "MODEL_NAME",
     "ADLS_LOCAL_FILE_PATH": "/tmp/datagen/temp/MODEL_NAME/",
+
+    "GCS_BUCKET": "datagenfri",
+    "GCS_DIRECTORY": "datagen/MODEL_NAME",
+    "GCS_OBJECT_NAME": "MODEL_NAME",
+    "GCS_LOCAL_FILE_PATH": "/tmp/datagen/temp/MODEL_NAME/",
+
     "AVRO_NAME": "datagenMODEL_NAME"
   },
   "Primary_Keys": {

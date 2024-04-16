@@ -15,26 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.frisch.datagen.connector.storage.s3;
+package com.cloudera.frisch.datagen.connector.storage.gcs;
 
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
-import com.cloudera.frisch.datagen.connector.storage.utils.AvroUtils;
 import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
+import com.cloudera.frisch.datagen.connector.storage.utils.ParquetUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.model.type.Field;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
-import org.apache.avro.file.DataFileReader;
-import org.apache.avro.file.DataFileStream;
-import org.apache.avro.file.DataFileWriter;
-import org.apache.avro.generic.GenericDatumReader;
-import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.io.DatumWriter;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.parquet.hadoop.ParquetFileReader;
+import org.apache.parquet.hadoop.ParquetWriter;
+import org.apache.parquet.hadoop.util.HadoopInputFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,55 +43,56 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This is a Avro connector to write to one or multiple Avro files to S3
+ * This is a Parquet connector to write to one or multiple Parquet files to GCS
  */
 @Slf4j
-public class S3AvroConnector extends S3Utils implements ConnectorInterface  {
+public class GcsParquetConnector extends GcsUtils implements ConnectorInterface  {
 
   private final Model model;
   private final Boolean oneFilePerIteration;
 
   private int counter;
-  private String currentKeyName;
+  private String currentFileName;
 
-  private final Schema schema;
-  private DataFileWriter<GenericRecord> dataFileWriter;
-  private final DatumWriter<GenericRecord> datumWriter;
+  private Schema schema;
+  private ParquetWriter<GenericRecord> parquetWriter;
 
   /**
-   * Init S3 Avro
+   * Init S3 Parquet
    */
-  public S3AvroConnector(Model model,
-                         Map<ApplicationConfigs, String> properties) {
+  public GcsParquetConnector(Model model,
+                             Map<ApplicationConfigs, String> properties) {
     super(model, properties);
     this.model = model;
     this.counter = 0;
     this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(
         OptionsConverter.Options.ONE_FILE_PER_ITERATION);
 
-    this.schema = model.getAvroSchema();
-    this.datumWriter = new GenericDatumWriter<>(schema);
   }
 
   @Override
   public void init(Model model, boolean writer) {
     if (writer) {
+      this.schema = model.getAvroSchema();
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        deleteAllfiles(keyNamePrefix, "avro");
+        deleteAllObjects(objectNamePrefix, "parquet");
       }
 
       // Will use a local directory before pushing data to S3
-      FileUtils.createLocalDirectory(localDirectoryName);
-      FileUtils.deleteAllLocalFiles(localDirectoryName, keyNamePrefix, "avro");
+      FileUtils.createLocalDirectory(localDirectory);
+      FileUtils.deleteAllLocalFiles(localDirectory, objectNamePrefix, "parquet");
 
       createBucketIfNotExists();
 
       if (!oneFilePerIteration) {
-        this.currentKeyName = keyNamePrefix + ".avro";
-        this.dataFileWriter = AvroUtils.createFileWithOverwrite(localDirectoryName +
-            currentKeyName, schema, datumWriter);
+        this.currentFileName = currentFileName + ".parquet";
+        this.parquetWriter = ParquetUtils.createLocalFileWithOverwrite(
+            localDirectory +
+                currentFileName, schema, this.parquetWriter, model);
       }
+    } else {
+      FileUtils.createLocalDirectory(localFilePathForModelGeneration);
     }
   }
 
@@ -100,15 +100,14 @@ public class S3AvroConnector extends S3Utils implements ConnectorInterface  {
   public void terminate() {
     try {
       if (!oneFilePerIteration) {
-        dataFileWriter.flush();
-        dataFileWriter.close();
-        pushLocalFileToS3(localDirectoryName + currentKeyName, currentKeyName);
+        parquetWriter.close();
+        pushLocalFileToGCS(localDirectory + currentFileName, currentFileName);
       }
+      closeGCS();
     } catch (IOException e) {
       log.error(" Unable to close local file with error :", e);
     } finally {
-      FileUtils.deleteAllLocalFiles(localDirectoryName, keyNamePrefix, "avro");
-      closeS3();
+      FileUtils.deleteAllLocalFiles(localDirectory, objectNamePrefix, "parquet");
     }
   }
 
@@ -116,27 +115,26 @@ public class S3AvroConnector extends S3Utils implements ConnectorInterface  {
   public void sendOneBatchOfRows(List<Row> rows) {
     try {
       if (oneFilePerIteration) {
-        this.currentKeyName = keyNamePrefix + "-" + String.format("%010d", counter) + ".avro";
-        this.dataFileWriter = AvroUtils.createFileWithOverwrite(localDirectoryName +
-            currentKeyName, schema, datumWriter);
+        this.currentFileName = objectNamePrefix + "-" + String.format("%010d", counter) + ".parquet";
+        this.parquetWriter = ParquetUtils.createLocalFileWithOverwrite(
+            localDirectory +
+                currentFileName, schema, this.parquetWriter, model);
         counter++;
       }
 
       rows.stream().map(row -> row.toGenericRecord(schema))
           .forEach(genericRecord -> {
             try {
-              this.dataFileWriter.append(genericRecord);
+              parquetWriter.write(genericRecord);
             } catch (IOException e) {
               log.error("Can not write data to the local file due to error: ", e);
             }
           });
 
       if (oneFilePerIteration) {
-        this.dataFileWriter.close();
-        pushLocalFileToS3(localDirectoryName + currentKeyName, currentKeyName);
-        FileUtils.deleteLocalFile(localDirectoryName + currentKeyName);
-      } else {
-        this.dataFileWriter.flush();
+        parquetWriter.close();
+        pushLocalFileToGCS(localDirectory + currentFileName, currentFileName);
+        FileUtils.deleteLocalFile(localDirectory + currentFileName);
       }
     } catch (IOException e) {
       log.error("Can not write data to the local file due to error: ", e);
@@ -150,22 +148,27 @@ public class S3AvroConnector extends S3Utils implements ConnectorInterface  {
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
 
-    tableNames.put("S3_LOCAL_FILE_PATH", this.localDirectoryName);
-    tableNames.put("S3_KEY_NAME", this.keyNamePrefix);
-    tableNames.put("S3_BUCKET", this.bucketName);
+    tableNames.put("GCS_BUCKET", this.bucketName);
+    tableNames.put("GCS_DIRECTORY", this.directoryName);
+    tableNames.put("GCS_OBJECT_NAME", this.objectNamePrefix);
+    tableNames.put("GCS_LOCAL_FILE_PATH", this.localDirectory);
 
     try {
-      String localFile = this.localFilePathForModelGeneration + this.keyNamePrefix;
-      readFileFromS3(localFile, this.keyNamePrefix);
+      String localFile = this.localFilePathForModelGeneration + this.objectNamePrefix;
+      readFileFromGCS(localFile, this.objectNamePrefix);
       File file = new File(localFile);
       if (file.exists() && file.isFile()) {
-        DataFileStream<GenericRecord> dataFileStream =
-            new DataFileReader<>(file, new GenericDatumReader<>());
-        AvroUtils.setBasicFields(fields, dataFileStream.getSchema());
-        dataFileStream.close();
+        ParquetFileReader parquetReader =
+            ParquetFileReader.open(HadoopInputFile.fromPath(new Path(file.toURI()), new Configuration()));
+        ParquetUtils.setBasicFields(fields, parquetReader);
+        if (deepAnalysis) {
+          ParquetUtils.analyzeFields(fields, parquetReader);
+        }
+        parquetReader.close();
+        FileUtils.deleteLocalFile(localFile);
       }
     } catch (IOException e) {
-      log.error("Tried to read file : {} with no success :", this.localDirectoryName,
+      log.error("Tried to read file : {} with no success :", this.localDirectory,
           e);
     }
 

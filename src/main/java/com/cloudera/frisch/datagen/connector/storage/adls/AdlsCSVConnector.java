@@ -35,7 +35,7 @@ import java.util.*;
 import static com.cloudera.frisch.datagen.config.ApplicationConfigs.DATA_HOME_DIRECTORY;
 
 /**
- * This is a CSV connector to write to one or multiple CSV files to S3
+ * This is a CSV connector to write to one or multiple CSV files to ADLS
  */
 @Slf4j
 public class AdlsCSVConnector extends AdlsUtils implements ConnectorInterface  {

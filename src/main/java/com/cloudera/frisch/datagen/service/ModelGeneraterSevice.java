@@ -79,7 +79,14 @@ public class ModelGeneraterSevice {
     } else if(source.contains("s3")) {
       tableNames.put(OptionsConverter.TableNames.S3_BUCKET, bucket);
       tableNames.put(OptionsConverter.TableNames.S3_KEY_NAME, key);
-    } else {
+    } else if(source.contains("adls")) {
+      tableNames.put(OptionsConverter.TableNames.ADLS_CONTAINER, bucket);
+      tableNames.put(OptionsConverter.TableNames.ADLS_FILE_NAME, key);
+    } else if(source.contains("gcs")) {
+      tableNames.put(OptionsConverter.TableNames.GCS_BUCKET, bucket);
+      tableNames.put(OptionsConverter.TableNames.GCS_OBJECT_NAME, key);
+    }
+    else {
       tableNames.put(OptionsConverter.TableNames.LOCAL_FILE_PATH, filepath);
     }
 

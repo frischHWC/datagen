@@ -89,6 +89,16 @@ public class ConnectorParser {
       return Connector.ADLS_ORC;
     case "ADLS-AVRO":
       return Connector.ADLS_AVRO;
+    case "GCS-PARQUET":
+      return Connector.GCS_PARQUET;
+    case "GCS-CSV":
+      return Connector.GCS_CSV;
+    case "GCS-JSON":
+      return Connector.GCS_JSON;
+    case "GCS-ORC":
+      return Connector.GCS_ORC;
+    case "GCS-AVRO":
+      return Connector.GCS_AVRO;
     default:
       return null;
     }
@@ -124,7 +134,13 @@ public class ConnectorParser {
     ADLS_CSV,
     ADLS_AVRO,
     ADLS_JSON,
-    ADLS_ORC;
+    ADLS_ORC,
+    GCS_PARQUET,
+    GCS_CSV,
+    GCS_AVRO,
+    GCS_JSON,
+    GCS_ORC
+    ;
 
     public static Comparator<Connector> conenctorInitPrecedence = new Comparator<>() {
       @Override

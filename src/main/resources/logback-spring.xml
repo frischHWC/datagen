@@ -13,6 +13,9 @@
         </appender>
 
         <logger name="com.cloudera.frisch" level="DEBUG" />
+        <logger name="org.apache.orc" level="WARN" />
+        <logger name="org.apache.hadoop.util.NativeCodeLoader" level="ERROR" />
+        <logger name="org.apache.hadoop.hdfs.shortcircuit.DomainSocketFactory" level="ERROR" />
 
         <!-- LOG everything at DEBUG level -->
         <root level="debug">
@@ -33,9 +36,13 @@
         </appender>
 
         <logger name="com.cloudera.frisch" level="DEBUG" />
+        <logger name="org.apache.orc" level="WARN" />
+        <logger name="org.apache.hadoop.util.NativeCodeLoader" level="ERROR" />
+        <logger name="org.apache.hadoop.hdfs.shortcircuit.DomainSocketFactory" level="ERROR" />
+        <logger name="com.azure.core.util.logging.ClientLogger" level="ERROR" />
 
         <!-- LOG everything at DEBUG level -->
-        <root level="debug">
+        <root level="info">
             <appender-ref ref="Console" />
         </root>
 
@@ -54,7 +61,7 @@
 
             <rollingPolicy
                     class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <!-- rollover daily and when the file reaches 10 MegaBytes -->
+                <!-- rollover daily and when the file reaches 100 MegaBytes -->
                 <fileNamePattern>/var/log/datagen/archived/datagen-%d{yyyy-MM-dd}.%i.log
                 </fileNamePattern>
                 <timeBasedFileNamingAndTriggeringPolicy
@@ -63,6 +70,11 @@
                 </timeBasedFileNamingAndTriggeringPolicy>
             </rollingPolicy>
         </appender>
+
+        <logger name="org.apache.orc" level="WARN" />
+        <logger name="org.apache.hadoop.util.NativeCodeLoader" level="ERROR" />
+        <logger name="org.apache.hadoop.hdfs.shortcircuit.DomainSocketFactory" level="ERROR" />
+
 
         <!-- LOG everything at INFO level -->
         <root level="info">

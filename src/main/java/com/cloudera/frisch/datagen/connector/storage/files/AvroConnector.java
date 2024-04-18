@@ -20,11 +20,11 @@ package com.cloudera.frisch.datagen.connector.storage.files;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
 import com.cloudera.frisch.datagen.connector.storage.utils.AvroUtils;
+import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
-import com.cloudera.frisch.datagen.model.type.*;
-import com.cloudera.frisch.datagen.utils.Utils;
+import com.cloudera.frisch.datagen.model.type.Field;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileReader;
@@ -37,15 +37,17 @@ import org.apache.avro.io.DatumWriter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Avro Sink to create Local Avro files
+ * Avro connector to create Local Avro files
  */
 @Slf4j
 public class AvroConnector implements ConnectorInterface {
 
-  private File file;
   private Schema schema;
   private DataFileWriter<GenericRecord> dataFileWriter;
   private DatumWriter<GenericRecord> datumWriter;
@@ -76,16 +78,15 @@ public class AvroConnector implements ConnectorInterface {
       this.model = model;
       schema = model.getAvroSchema();
       datumWriter = new GenericDatumWriter<>(schema);
-      Utils.createLocalDirectory(directoryName);
+      FileUtils.createLocalDirectory(directoryName);
 
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        Utils.deleteAllLocalFiles(directoryName, fileName, "avro");
+        FileUtils.deleteAllLocalFiles(directoryName, fileName, "avro");
       }
 
       if (!oneFilePerIteration) {
-        createFileWithOverwrite(directoryName + fileName + ".avro");
-        appendAvscHeader();
+        this.dataFileWriter = AvroUtils.createFileWithOverwrite(directoryName + fileName + ".avro", schema, datumWriter);
       }
     }
   }
@@ -105,10 +106,9 @@ public class AvroConnector implements ConnectorInterface {
   public void sendOneBatchOfRows(List<Row> rows) {
 
     if (oneFilePerIteration) {
-      createFileWithOverwrite(
+      this.dataFileWriter = AvroUtils.createFileWithOverwrite(
           directoryName + fileName + "-" + String.format("%010d", counter) +
-              ".avro");
-      appendAvscHeader();
+              ".avro", schema, datumWriter);
       counter++;
     }
 
@@ -169,23 +169,4 @@ public class AvroConnector implements ConnectorInterface {
     return new Model(fields, primaryKeys, tableNames, options);
   }
 
-  void createFileWithOverwrite(String path) {
-    try {
-      file = new File(path);
-      file.getParentFile().mkdirs();
-      file.createNewFile();
-      dataFileWriter = new DataFileWriter<>(datumWriter);
-      log.debug("Successfully created local file : " + path);
-    } catch (IOException e) {
-      log.error("Tried to create file : " + path + " with no success :", e);
-    }
-  }
-
-  void appendAvscHeader() {
-    try {
-      dataFileWriter.create(schema, file);
-    } catch (IOException e) {
-      log.error("Can not write header to the local file due to error: ", e);
-    }
-  }
 }

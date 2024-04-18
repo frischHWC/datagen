@@ -27,54 +27,84 @@ public class ConnectorParser {
     throw new IllegalStateException("Could not initialize this class");
   }
 
-  public static Sink stringToSink(String sink) {
-    switch (sink.toUpperCase()) {
+  public static Connector stringToConnector(String connector) {
+    switch (connector.toUpperCase()) {
     case "HDFS-CSV":
-      return Sink.HDFS_CSV;
+      return Connector.HDFS_CSV;
     case "HDFS-JSON":
-      return Sink.HDFS_JSON;
+      return Connector.HDFS_JSON;
     case "HDFS-PARQUET":
-      return Sink.HDFS_PARQUET;
+      return Connector.HDFS_PARQUET;
     case "HDFS-ORC":
-      return Sink.HDFS_ORC;
+      return Connector.HDFS_ORC;
     case "HDFS-AVRO":
-      return Sink.HDFS_AVRO;
+      return Connector.HDFS_AVRO;
     case "HBASE":
-      return Sink.HBASE;
+      return Connector.HBASE;
     case "HIVE":
-      return Sink.HIVE;
+      return Connector.HIVE;
     case "KAFKA":
-      return Sink.KAFKA;
+      return Connector.KAFKA;
     case "OZONE-PARQUET":
-      return Sink.OZONE_PARQUET;
+      return Connector.OZONE_PARQUET;
     case "OZONE-CSV":
-      return Sink.OZONE_CSV;
+      return Connector.OZONE_CSV;
     case "OZONE-JSON":
-      return Sink.OZONE_JSON;
+      return Connector.OZONE_JSON;
     case "OZONE-ORC":
-      return Sink.OZONE_ORC;
+      return Connector.OZONE_ORC;
     case "OZONE-AVRO":
-      return Sink.OZONE_AVRO;
+      return Connector.OZONE_AVRO;
     case "SOLR":
-      return Sink.SOLR;
+      return Connector.SOLR;
     case "KUDU":
-      return Sink.KUDU;
+      return Connector.KUDU;
     case "CSV":
-      return Sink.CSV;
+      return Connector.CSV;
     case "JSON":
-      return Sink.JSON;
+      return Connector.JSON;
     case "AVRO":
-      return Sink.AVRO;
+      return Connector.AVRO;
     case "PARQUET":
-      return Sink.PARQUET;
+      return Connector.PARQUET;
     case "ORC":
-      return Sink.ORC;
+      return Connector.ORC;
+    case "S3-PARQUET":
+      return Connector.S3_PARQUET;
+    case "S3-CSV":
+      return Connector.S3_CSV;
+    case "S3-JSON":
+      return Connector.S3_JSON;
+    case "S3-ORC":
+      return Connector.S3_ORC;
+    case "S3-AVRO":
+      return Connector.S3_AVRO;
+    case "ADLS-PARQUET":
+      return Connector.ADLS_PARQUET;
+    case "ADLS-CSV":
+      return Connector.ADLS_CSV;
+    case "ADLS-JSON":
+      return Connector.ADLS_JSON;
+    case "ADLS-ORC":
+      return Connector.ADLS_ORC;
+    case "ADLS-AVRO":
+      return Connector.ADLS_AVRO;
+    case "GCS-PARQUET":
+      return Connector.GCS_PARQUET;
+    case "GCS-CSV":
+      return Connector.GCS_CSV;
+    case "GCS-JSON":
+      return Connector.GCS_JSON;
+    case "GCS-ORC":
+      return Connector.GCS_ORC;
+    case "GCS-AVRO":
+      return Connector.GCS_AVRO;
     default:
       return null;
     }
   }
 
-  public enum Sink {
+  public enum Connector {
     HDFS_CSV,
     HDFS_JSON,
     HDFS_PARQUET,
@@ -83,7 +113,6 @@ public class ConnectorParser {
     HBASE,
     HIVE,
     KAFKA,
-    OZONE,
     OZONE_PARQUET,
     OZONE_CSV,
     OZONE_AVRO,
@@ -95,33 +124,49 @@ public class ConnectorParser {
     JSON,
     AVRO,
     PARQUET,
-    ORC;
+    ORC,
+    S3_PARQUET,
+    S3_CSV,
+    S3_AVRO,
+    S3_JSON,
+    S3_ORC,
+    ADLS_PARQUET,
+    ADLS_CSV,
+    ADLS_AVRO,
+    ADLS_JSON,
+    ADLS_ORC,
+    GCS_PARQUET,
+    GCS_CSV,
+    GCS_AVRO,
+    GCS_JSON,
+    GCS_ORC
+    ;
 
-    public static Comparator<Sink> sinkInitPrecedence = new Comparator<>() {
+    public static Comparator<Connector> conenctorInitPrecedence = new Comparator<>() {
       @Override
-      public int compare(Sink s1, Sink s2) {
-        if (s1.equals(ConnectorParser.Sink.OZONE_AVRO) ||
-            s1.equals(ConnectorParser.Sink.OZONE_JSON) ||
-            s1.equals(ConnectorParser.Sink.OZONE_CSV) ||
-            s1.equals(ConnectorParser.Sink.OZONE_PARQUET) ||
-            s1.equals(ConnectorParser.Sink.OZONE_ORC)) {
-          if (s2.equals(ConnectorParser.Sink.OZONE_AVRO) ||
-              s2.equals(ConnectorParser.Sink.OZONE_JSON) ||
-              s2.equals(ConnectorParser.Sink.OZONE_CSV) ||
-              s2.equals(ConnectorParser.Sink.OZONE_PARQUET) ||
-              s2.equals(ConnectorParser.Sink.OZONE_ORC)) {
+      public int compare(Connector s1, Connector s2) {
+        if (s1.equals(Connector.OZONE_AVRO) ||
+            s1.equals(Connector.OZONE_JSON) ||
+            s1.equals(Connector.OZONE_CSV) ||
+            s1.equals(Connector.OZONE_PARQUET) ||
+            s1.equals(Connector.OZONE_ORC)) {
+          if (s2.equals(Connector.OZONE_AVRO) ||
+              s2.equals(Connector.OZONE_JSON) ||
+              s2.equals(Connector.OZONE_CSV) ||
+              s2.equals(Connector.OZONE_PARQUET) ||
+              s2.equals(Connector.OZONE_ORC)) {
             return 0;
           } else {
             return -1;
           }
-        } else if (s1.equals(ConnectorParser.Sink.HIVE) || s1.equals(Sink.KUDU)) {
-          if (s2.equals(ConnectorParser.Sink.OZONE_AVRO) ||
-              s2.equals(ConnectorParser.Sink.OZONE_JSON) ||
-              s2.equals(ConnectorParser.Sink.OZONE_CSV) ||
-              s2.equals(ConnectorParser.Sink.OZONE_PARQUET) ||
-              s2.equals(ConnectorParser.Sink.OZONE_ORC)) {
+        } else if (s1.equals(Connector.HIVE) || s1.equals(Connector.KUDU)) {
+          if (s2.equals(Connector.OZONE_AVRO) ||
+              s2.equals(Connector.OZONE_JSON) ||
+              s2.equals(Connector.OZONE_CSV) ||
+              s2.equals(Connector.OZONE_PARQUET) ||
+              s2.equals(Connector.OZONE_ORC)) {
             return 1;
-          } else if (s2.equals(ConnectorParser.Sink.HIVE) || s2.equals(Sink.KUDU)) {
+          } else if (s2.equals(Connector.HIVE) || s2.equals(Connector.KUDU)) {
             return 0;
           } else {
             return -1;

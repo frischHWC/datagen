@@ -1,6 +1,12 @@
 = Datagen - Data Generation
 
-Goal of this project is to generate Data into various services of CDP platform.
+Goal of this project is to generate meaningful Data into various Big Data Services and File systems.
+
+Built originally for Cloudera Data Platform, it works with S3, ADLS, GCS, local file systems, and open-source services (such as kafka, hive etc...).
+
+== Public Documentation
+
+Public Documentation is available here link:https://frischhwc.github.io/datagen[https://frischhwc.github.io/datagen]
 
 == Dependencies
 
@@ -13,7 +19,7 @@ It is built for:
 
 - CDP 7.1.7, 7.1.8, 7.1.9
 
-Datagen is made as a Spring Boot project with dependencies on various services of the CDP platform.
+Datagen is made as a Spring Boot project with dependencies on SDK to interact with various services.
 
 
 == How does it work ?
@@ -26,6 +32,7 @@ These APIS lets you:
 - Ask for Data Generation to specified services
 - Schedule Data Generation to specified services
 - Test Data Generation
+- Read Data and create a model to generate similar data
 - Get Metrics and health status of the web server
 
 
@@ -44,7 +51,7 @@ Datagen can be run in two ways:
 
 
 
-=== How to run it locally ?
+=== How to run it locally or on any remote machine ?
 
 First, go to link:pom.xml[pom.xml] and change cdp version to yours, change also if required, individual versions of each component. +
 Then Package the program:
@@ -94,7 +101,7 @@ This script add required jars to classpath and launch jar.
 
 === Where data will be generated ?
 
-There are various possible services where data can be generated, these are called sinks and here is the full possible list:
+There are various possible services where data can be generated, these are called connectors and here is the full possible list:
 
 - HDFS-AVRO : generates an AVRO file sent to HDFS
 - HDFS-CSV : generates a CSV file sent to HDFS
@@ -116,8 +123,24 @@ There are various possible services where data can be generated, these are calle
 - CSV: Generate a CSV file locally
 - AVRO: Generates an Avro file locally
 - JSON: Generates a JSON file locally
+- S3-PARQUET: Generates a parquet file to S3
+- S3-ORC: Generates an ORC file to S3
+- S3-CSV: Generate a CSV file to S3
+- S3-AVRO: Generates an Avro file to S3
+- S3-JSON: Generates a JSON file to S3
+- ADLS-PARQUET: Generates a parquet file on ADLS
+- ADLS-ORC: Generates an ORC file on ADLS
+- ADLS-CSV: Generate a CSV file on ADLS
+- ADLS-AVRO: Generates an Avro file on ADLS
+- ADLS-JSON: Generates a JSON file on ADLS
+- GCS-PARQUET: Generates a parquet file on GCS
+- GCS-ORC: Generates an ORC file on GCS
+- GCS-CSV: Generate a CSV file on GCS
+- GCS-AVRO: Generates an Avro file on GCS
+- GCS-JSON: Generates a JSON file on GCS
 
-__N.B: It is possible to output same data into various sinks__
+
+__N.B: It is possible to output same data into various connectors__
 
 === Data generated
 
@@ -134,6 +157,7 @@ All available types are:
 
 - STRING  is an alphaNumeric string (length represents length of string, by default 20 if not set) +
 - STRINGAZ  is an alpha non-numeric string (length represents length of string, by default 20 if not set) +
+- STRING_REGEX is a string whose value is defined by a regular expression +
 - INTEGER (with length representing maximum value, by default Integer.MAX_VALUE) +
 - INCREMENT INTEGER An integer increment for each row +
 - INCREMENT LONG A long incremented for each row +
@@ -144,6 +168,8 @@ All available types are:
 - BYTES (length represents length of byte array, by default 20) +
 - HASHMD5   is the hash of a random string (length represents size of byte array, by default 32) +
 - BLOB   is a byte array of default 1MB (length represents length of byte array) (Use it carefully) +
+- DATE  is a date represented by the default UTC in format '2011-12-03T10:15:30Z' or as a timestamp +
+- DATE_AS_STRING is date that is converted into a string and represented by the pattern user defined +
 - BIRTHDATE  is a date between 1910 & 2020 (but you can set your own limits) +
 - NAME  is a first name taken from a dictionary of over 20,000+ names (can be filtered by country) +
 - COUNTRY   is a country name taken from a dictionary +
@@ -172,6 +198,73 @@ Sum of weights is made internally and probability of appearance of a value will 
 ===== Minimum & Maximum
 
 It is possible for INTEGER and LONG type to define a minimum and a maximum.
+
+
+===== Regular Expression for String
+
+Using STRING_REGEX, it is possible to define a pattern that the string generated must respect.+
+This is done with parameter named __regex__.
+
+All characters are accepted and will be printed out, to insert a regex, it must be between [], and followed with a number between {} to determine the repetition of this expression.
+
+Inside the [], all values are accepted (including special characters), and must be separated by a ','. +
+Example:
+[B, dba, %, zz] will output either: __B__ or __dba__ or __%__ or __zz__.
+
+To make a range, 3 types of range are available: A-Z for upper, a-z for lower and 0-9 for numbers. +
+Example:
+[A-Z] will output an uppercase case letter between A & Z (included).
+[b-g] will output a lowercase case letter between b & g (included).
+[1-6] will output a number between 1 & 6 (included).
+
+Finally, few examples:
+
+D-[A-V]{1}[1-7]{1}_C outputs D-F6_C ; D-K1_C ; D-C1_C
+[A-G]{2}-[0-9]{3}-[A-Z]{2} outputs EF-305-PK ; FA-839-RT ; AG-589-YR
+
+
+Complete example:
+
+[source,json]
+    {
+        "name": "department_code",
+        "type": "STRING_REGEX",
+        "regex": "[A-G]{4}-[b-l]{1}-[3-7]{2}_[A,1,Z,%]{1}-text-not interpreted here"
+    }
+
+Outputs:
+CCBE-c-77_Z-text-not interpreted here
+GFEB-k-44_%-text-not interpreted here
+GACD-b-33_1-text-not interpreted here
+EEBD-l-34_A-text-not interpreted here
+
+__N.B: special characters [, ], {, } can be set but must be escaped to not be interpreted__
+
+
+===== Date Pattern
+
+Using DATE_AS_STRING type, it is possible to set a pattern using pattern parameter, so a date will be generated according to that pattern and output as a string.
+
+The pattern is the standard one from Java, and all specifications can be found here: link:https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html[https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html]
+
+__N.B: It is also possible to setup a min and max value to generate only between two dates. But, note that min and max must be in the pattern of the output.__
+
+Complete example:
+
+[source,json]
+    {
+    "name": "date_string",
+    "type": "DATE_AS_STRING",
+    "pattern": "yyyy_MM_dd-K a mm:ss.SSS ZZZ",
+    "min": "2024_02_14-7 am 31:53.000 +0000",
+    "max": "2024_03_14-7 pm 31:53.050 +0330"
+    },
+
+Outputs:
+
+2024_02_20-2 pm 19:48.000 +0000
+2024_02_25-1 pm 56:22.000 +0000
+2024_02_25-0 am 25:49.000 +0000
 
 ===== Conditionals
 
@@ -402,6 +495,18 @@ An array of following properties self-describing: +
 - LOCAL_FILE_PATH +
 - LOCAL_FILE_NAME +
 - AVRO_NAME +
+- S3_BUCKET +
+- S3_DIRECTORY +
+- S3_KEY_NAME +
+- S3_LOCAL_FILE_PATH +
+- ADLS_CONTAINER +
+- ADLS_DIRECTORY +
+- ADLS_FILE_NAME +
+- ADLS_LOCAL_FILE_PATH +
+- GCS_BUCKET +
+- GCS_DIRECTORY +
+- GCS_OBJECT_NAME +
+- GCS_LOCAL_FILE_PATH +
 
 ==== Primary Keys:
 
@@ -414,9 +519,10 @@ corresponding to the name of field (multiple fields could be provided separated 
 - KUDU_HASH_KEYS +
 - KUDU_RANGE_KEYS
 
+
 ==== Options:
 
-An array of other options to configure basic settings for some sinks: +
+An array of other options to configure basic settings for some connectors: +
 
 - HBASE_COLUMN_FAMILIES_MAPPING +
 This mapping must be in the form : "CF:col1,col2;CF2:col5" +
@@ -450,6 +556,9 @@ This is a just one string with a comma separated list of cols: "col1,col2" +
 - KUDU_FLUSH +
 - OZONE_REPLICATION_FACTOR +
 - HDFS_REPLICATION_FACTOR +
+- ADLS_MAX_CONCURRENCY +
+- ADLS_MAX_UPLOAD_SIZE +
+- ADLS_BLOCK_SIZE
 
 
 Note that all not required settings could be safely removed with no errors.
@@ -479,13 +588,13 @@ This is a Spring Boot server, that will listen to requests to generate data.
 
 API Call to the DataGenerationController will lead to a call to CommandRunnerService that will create an object Command.
 This object contains all properties required to run a data generation: Basic properties like number of batches, threads, rows etc...
-Properties regarding the sink: sink, database name, paths, truststore etc...
+Properties regarding the connector: connector, database name, paths, truststore etc...
 And the model file parsed and set as an object.
 
 This command is queued to be launched and an UUID is returned by the controller. (This ID can be used to track progress of the command)
 
 Generation are made one after another one by the processCommands() scheduled function running every seconds to un-queue a command and run it.
-It contains the logic of setting up batches, creates threads and send rows to desired sinks.
+It contains the logic of setting up batches, creates threads and send rows to desired connectors.
 
 When a command is scheduled, it is simply added to a List of scheduled commands, which are then periodically checked and added to the queue
 list of processing if needed.
@@ -493,13 +602,13 @@ list of processing if needed.
 Other controllers allows to check status of the server, get metrics, check status of commands, get all commands, remove schedule commands.
 There is also a controller to just run a test on a model, returning a row as a JSON directly.
 
-=== How to add a sink ?
+=== How to add a connector ?
 
-- Create a Sink under sink package that extends SinkInterface 
+- Create a Conncetor under connector package and sub-package that fits, then extends ConnectorInterface 
 - Implements required functions (to send one and multiple rows to the output system) and all other
 needed function in this class
-- Add the sink in the function "stringToSink" of SinkParser under config package
-- Add the sink initialization under the function "sinksInit" of SinkSender under sink package
+- Add the connector in the function "stringToConnector" of ConnectorParser under config package
+- Add the connector initialization under the function "connectorsInit" of ConnectorSender under connector package
 - Add a function to create required object for insertion under Field abstract class
 - If needed, add a specific function for some or all Fields extended class
 - Add a function to create required object combining all Fields functions under Row class
@@ -510,12 +619,7 @@ needed function in this class
 
 - Create an extended class of field under package model.type
 - Create a builder in previous class, implement generateRandomValue() function
-- If needed, override Fields function specific to some or all sinks available
+- If needed, override Fields function specific to some or all connectors available
 - In Field, instantiateField() function, add in the switch case statement, the new type of field
 - In Model, modify functions on table creation to be able to integrate the new type of field
-
-== TODOs
-
-TODO: Add some tests +
-TODO: Add review of model before launching (implements some checks in it)
 

@@ -53,40 +53,40 @@
       "max": 35
     }
   ],
-  "Table_Names": [
-    {"HDFS_FILE_PATH": "/user/datagen/hdfs/publicservice/weather/"},
-    {"HDFS_FILE_NAME": "weather"},
-    {"HIVE_HDFS_FILE_PATH": "/user/datagen/hive/publicservice/weather/"},
-    {"HBASE_TABLE_NAME": "weather"},
-    {"HBASE_NAMESPACE": "datagenpublicservice"},
-    {"KAFKA_TOPIC": "datagen_publicservice_weather"},
-    {"OZONE_VOLUME": "datagenpublicservice"},
-    {"OZONE_BUCKET":  "weather"},
-    {"OZONE_KEY_NAME":  "weather"},
-    {"OZONE_LOCAL_FILE_PATH":  "/home/datagen/temp/weather/"},
-    {"SOLR_COLLECTION": "datagen-publicservice-weather"},
-    {"HIVE_DATABASE": "datagen_publicservice"},
-    {"HIVE_TABLE_NAME":  "weather"},
-    {"KUDU_TABLE_NAME":  "datagen.publicservice_weather"},
-    {"LOCAL_FILE_PATH":  "/home/datagen/publicservice/weather/"},
-    {"LOCAL_FILE_NAME":  "weather"},
-    {"AVRO_NAME":  "datagenpublicserviceweather"}
-  ],
-  "Primary_Keys": [
-    {"KAFKA_MSG_KEY": "city"},
-    {"KUDU_PRIMARY_KEYS":  "city,measure_time"},
-    {"KUDU_HASH_KEYS":  "measure_time"},
-    {"KUDU_RANGE_KEYS":  "city"}
-  ],
-  "Options": [
-    {"SOLR_SHARDS":  3},
-    {"SOLR_REPLICAS":  1},
-    {"KAFKA_ACKS_CONFIG":  "all"},
-    {"KAFKA_MESSAGE_TYPE":  "JSON"},
-    {"KAFKA_RETRIES_CONFIG":  3},
-    {"KUDU_REPLICAS":  1},
-    {"KUDU_BUCKETS":  32},
-    {"KUDU_BUFFER":  100001},
-    {"KUDU_FLUSH":  "MANUAL_FLUSH"}
-  ]
+  "Table_Names": {
+    "HDFS_FILE_PATH": "/user/datagen/hdfs/publicservice/weather/",
+    "HDFS_FILE_NAME": "weather",
+    "HIVE_HDFS_FILE_PATH": "/user/datagen/hive/publicservice/weather/",
+    "HBASE_TABLE_NAME": "weather",
+    "HBASE_NAMESPACE": "datagenpublicservice",
+    "KAFKA_TOPIC": "datagen_publicservice_weather",
+    "OZONE_VOLUME": "datagenpublicservice",
+    "OZONE_BUCKET":  "weather",
+    "OZONE_KEY_NAME":  "weather",
+    "OZONE_LOCAL_FILE_PATH":  "/home/datagen/temp/weather/",
+    "SOLR_COLLECTION": "datagen-publicservice-weather",
+    "HIVE_DATABASE": "datagen_publicservice",
+    "KUDU_TABLE_NAME":  "datagen.publicservice_weather",
+    "HIVE_TABLE_NAME":  "weather",
+    "LOCAL_FILE_PATH":  "/home/datagen/publicservice/weather/",
+    "LOCAL_FILE_NAME":  "weather",
+    "AVRO_NAME":  "datagenpublicserviceweather"
+  },
+  "Primary_Keys": {
+    "KAFKA_MSG_KEY": "city",
+    "KUDU_PRIMARY_KEYS":  "city,measure_time",
+    "KUDU_HASH_KEYS":  "measure_time",
+    "KUDU_RANGE_KEYS":  "city"
+  },
+  "Options": {
+    "SOLR_SHARDS":  3,
+    "SOLR_REPLICAS":  1,
+    "KAFKA_ACKS_CONFIG":  "all",
+    "KAFKA_MESSAGE_TYPE":  "JSON",
+    "KAFKA_RETRIES_CONFIG":  3,
+    "KUDU_REPLICAS":  1,
+    "KUDU_BUCKETS":  32,
+    "KUDU_BUFFER":  100001,
+    "KUDU_FLUSH":  "MANUAL_FLUSH"
+  }
 }

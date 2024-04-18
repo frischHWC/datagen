@@ -17,11 +17,10 @@
  */
 package com.cloudera.frisch.datagen.model;
 
+import com.cloudera.frisch.datagen.connector.queues.KafkaConnector;
 import com.cloudera.frisch.datagen.model.type.CityField;
 import com.cloudera.frisch.datagen.model.type.CsvField;
 import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.connector.queues.KafkaConnector;
-import com.cloudera.frisch.datagen.connector.storage.ozone.OzoneObject;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -31,10 +30,7 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hive.jdbc.HivePreparedStatement;
 import org.apache.kudu.client.Insert;
 import org.apache.kudu.client.KuduTable;
@@ -43,6 +39,7 @@ import org.apache.solr.common.SolrInputDocument;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -159,22 +156,6 @@ public class Row<T extends Field> {
     return doc;
   }
 
-  public OzoneObject toOzoneObject() {
-    StringBuilder sb = new StringBuilder();
-    // Use of Model LinkedList of fields to keep order of fields
-    this.model.getFieldsToPrint().forEach((name, fieldtype) ->
-        sb.append(model.getFieldFromName(name.toString())
-            .toOzone(values.get(name.toString())))
-    );
-    // Bucket does not support upper case letter, so conversion to lower case is made
-    return new OzoneObject(
-        getPrimaryKeysValues(
-            OptionsConverter.PrimaryKeys.OZONE_BUCKET).toLowerCase(),
-        getPrimaryKeysValues(OptionsConverter.PrimaryKeys.OZONE_KEY),
-        sb.toString()
-    );
-  }
-
   public Insert toKuduInsert(KuduTable table) {
     Insert insert = table.newInsert();
     PartialRow partialRow = insert.getRow();
@@ -230,6 +211,8 @@ public class Row<T extends Field> {
         doubleColumnVector.vector[rowNumber] = (float) values.get(field);
         break;
       case "StringField":
+      case "StringRegexField":
+      case "DateAsStringField":
       case "CountryField":
       case "StringAZField":
       case "NameField":
@@ -263,6 +246,12 @@ public class Row<T extends Field> {
         LocalDate valueDate = (LocalDate) values.get(field);
         bytesColumnVectorDate.setVal(rowNumber,
             valueDate.toString().getBytes(StandardCharsets.UTF_8));
+        break;
+      case "DateField":
+        BytesColumnVector bytesColumnVectorDateTime = (BytesColumnVector) cv;
+        LocalDateTime valueDateTime = (LocalDateTime) values.get(field);
+        bytesColumnVectorDateTime.setVal(rowNumber,
+            valueDateTime.toString().getBytes(StandardCharsets.UTF_8));
         break;
       case "BooleanField":
         LongColumnVector longColumnVectorBoolean = (LongColumnVector) cv;

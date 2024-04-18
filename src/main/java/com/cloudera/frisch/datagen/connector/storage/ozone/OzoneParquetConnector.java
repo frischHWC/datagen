@@ -20,125 +20,74 @@ package com.cloudera.frisch.datagen.connector.storage.ozone;
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
 import com.cloudera.frisch.datagen.connector.storage.utils.ParquetUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdds.client.ReplicationFactor;
-import org.apache.hadoop.hdds.client.ReplicationType;
-import org.apache.hadoop.hdds.conf.OzoneConfiguration;
-import org.apache.hadoop.ozone.client.*;
-import org.apache.hadoop.ozone.client.io.OzoneOutputStream;
-import org.apache.hadoop.ozone.om.exceptions.OMException;
-import org.apache.parquet.avro.AvroParquetWriter;
+import org.apache.hadoop.ozone.client.OzoneKeyDetails;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetWriter;
-import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 
-/**
- * This is an Ozone Sink base on 0.4 API
- * Note that it could produce some Timeout on heavy workload but it still inserts correctly
- */
 @Slf4j
-public class OzoneParquetConnector implements ConnectorInterface {
+public class OzoneParquetConnector extends OzoneUtils implements ConnectorInterface {
 
-  private OzoneClient ozClient;
-  private ObjectStore objectStore;
-  private OzoneVolume volume;
-  private final String volumeName;
-  private final String bucketName;
-  private final String keyNamePrefix;
-  private final ReplicationFactor replicationFactor;
-  private final String localFileTempDir;
-  private Boolean useKerberos;
 
-  private final Schema schema;
+  private Schema schema;
   private ParquetWriter<GenericRecord> writer;
+
   private final Boolean oneFilePerIteration;
   private final Model model;
   private int counter;
-  private OzoneBucket bucket;
-
 
   public OzoneParquetConnector(Model model,
                                Map<ApplicationConfigs, String> properties) {
-    this.volumeName = (String) model.getTableNames()
-        .get(OptionsConverter.TableNames.OZONE_VOLUME);
-    this.bucketName = (String) model.getTableNames()
-        .get(OptionsConverter.TableNames.OZONE_BUCKET);
-    this.keyNamePrefix = (String) model.getTableNames()
-        .get(OptionsConverter.TableNames.OZONE_KEY_NAME);
-    this.replicationFactor = ReplicationFactor.valueOf(
-        (int) model.getOptionsOrDefault(
-            OptionsConverter.Options.OZONE_REPLICATION_FACTOR));
-    this.localFileTempDir = (String) model.getTableNames()
-        .get(OptionsConverter.TableNames.OZONE_LOCAL_FILE_PATH);
+    super(model, properties);
     this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(
         OptionsConverter.Options.ONE_FILE_PER_ITERATION);
     this.model = model;
     this.counter = 0;
-    this.schema = model.getAvroSchema();
-    this.useKerberos = Boolean.parseBoolean(
-        properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS));
-
-    OzoneConfiguration config = new OzoneConfiguration();
-    Utils.setupHadoopEnv(config, properties);
-
-    if (useKerberos) {
-      Utils.loginUserWithKerberos(
-          properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_USER),
-          properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_KEYTAB),
-          config);
-    }
-
-    try {
-      this.ozClient = OzoneClientFactory.getRpcClient(
-          properties.get(ApplicationConfigs.OZONE_SERVICE_ID), config);
-    } catch (IOException e) {
-      log.error("Could get Ozone Client, due to error: ", e);
-    }
-    this.objectStore = ozClient.getObjectStore();
   }
 
   @Override
   public void init(Model model, boolean writer) {
     if (writer) {
       try {
+        schema = model.getAvroSchema();
 
         if ((Boolean) model.getOptionsOrDefault(
             OptionsConverter.Options.DELETE_PREVIOUS)) {
-          deleteEverythingUnderAVolume(volumeName);
+          deleteEverythingUnderABucket();
         }
-        createVolumeIfItDoesNotExist(volumeName);
+        createVolumeIfItDoesNotExist();
         this.volume = objectStore.getVolume(volumeName);
-        createBucketIfNotExist(bucketName);
+        createBucketIfNotExist();
         this.bucket = volume.getBucket(bucketName);
 
         // Will use a local directory before pushing data to Ozone
-        Utils.createLocalDirectory(localFileTempDir);
-        Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix,
+        FileUtils.createLocalDirectory(localFileTempDir);
+        FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix,
             "parquet");
 
         if (!oneFilePerIteration) {
-          createLocalFileWithOverwrite(
-              localFileTempDir + keyNamePrefix + ".parquet");
+          this.writer = ParquetUtils.createLocalFileWithOverwrite(
+              localFileTempDir + keyNamePrefix + ".parquet", schema, this.writer,
+              this.model);
         }
 
       } catch (IOException e) {
@@ -155,28 +104,12 @@ public class OzoneParquetConnector implements ConnectorInterface {
       if (!oneFilePerIteration) {
         writer.close();
         // Send local file to Ozone
-        String keyName = keyNamePrefix + ".parquet";
-        try {
-          byte[] dataToWrite = Files.readAllBytes(
-              java.nio.file.Path.of(localFileTempDir + keyName));
-          OzoneOutputStream os = bucket.createKey(keyName, dataToWrite.length,
-              ReplicationType.RATIS, replicationFactor, new HashMap<>());
-          os.write(dataToWrite);
-          os.getOutputStream().flush();
-          os.close();
-        } catch (IOException e) {
-          log.error(
-              "Could not write row to Ozone volume: {} bucket: {}, key: {} ; error: ",
-              volumeName, bucketName, keyName, e);
-        }
+        pushKeyToOzone(localFileTempDir + keyNamePrefix + ".parquet", keyNamePrefix + ".parquet");
       }
-      ozClient.close();
-      Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "parquet");
+      closeOzone();
+      FileUtils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "parquet");
     } catch (IOException e) {
       log.warn("Could not close properly Ozone connection, due to error: ", e);
-    }
-    if (useKerberos) {
-      Utils.logoutUserWithKerberos();
     }
   }
 
@@ -187,9 +120,12 @@ public class OzoneParquetConnector implements ConnectorInterface {
         keyNamePrefix + "-" + String.format("%010d", counter) + ".parquet";
     // Write to local file
     if (oneFilePerIteration) {
-      createLocalFileWithOverwrite(localFileTempDir + keyName);
+      this.writer = ParquetUtils.createLocalFileWithOverwrite(
+          localFileTempDir + keyName, schema, this.writer,
+          this.model);
       counter++;
     }
+
     rows.stream().map(row -> row.toGenericRecord(schema))
         .forEach(genericRecord -> {
           try {
@@ -198,6 +134,7 @@ public class OzoneParquetConnector implements ConnectorInterface {
             log.error("Can not write data to the local file due to error: ", e);
           }
         });
+
     if (oneFilePerIteration) {
       try {
         writer.close();
@@ -206,21 +143,7 @@ public class OzoneParquetConnector implements ConnectorInterface {
       }
 
       // Send local file to Ozone
-      try {
-        byte[] dataToWrite = Files.readAllBytes(
-            java.nio.file.Path.of(localFileTempDir + keyName));
-        OzoneOutputStream os =
-            bucket.createKey(keyName, dataToWrite.length, ReplicationType.RATIS,
-                replicationFactor, new HashMap<>());
-        os.write(dataToWrite);
-        os.getOutputStream().flush();
-        os.close();
-      } catch (IOException e) {
-        log.error(
-            "Could not write row to Ozone volume: {} bucket: {}, key: {} ; error: ",
-            volumeName, bucketName, keyName, e);
-      }
-      Utils.deleteAllLocalFiles(localFileTempDir, keyNamePrefix, "parquet");
+      pushKeyToOzone(localFileTempDir + keyName, keyName);
     }
 
   }
@@ -283,134 +206,6 @@ public class OzoneParquetConnector implements ConnectorInterface {
           keyNamePrefix, e);
     }
     return new Model(fields, primaryKeys, tableNames, options);
-  }
-
-  /**
-   * Create a bucket if it does not exist
-   * In case it exists, it just skips the error and log that bucket already exists
-   *
-   * @param bucketName
-   */
-  private void createBucketIfNotExist(String bucketName) {
-    try {
-      volume.createBucket(bucketName);
-      log.debug(
-          "Created successfully bucket : " + bucketName + " under volume : " +
-              volume);
-    } catch (OMException e) {
-      if (e.getResult() == OMException.ResultCodes.BUCKET_ALREADY_EXISTS) {
-        log.info(
-            "Bucket: " + bucketName + " under volume : " + volume.getName() +
-                " already exists ");
-      } else {
-        log.error("An error occurred while creating volume " +
-            this.volumeName + " : ", e);
-      }
-    } catch (IOException e) {
-      log.error("Could not create bucket to Ozone volume: " +
-              this.volumeName + " and bucket : " + bucketName + " due to error: ",
-          e);
-    }
-
-  }
-
-  /**
-   * Try to create a volume if it does not already exist
-   */
-  private void createVolumeIfItDoesNotExist(String volumeName) {
-    try {
-            /*
-            In class RPCClient of Ozone (which is the one used by default as a ClientProtocol implementation)
-            Function createVolume() uses UserGroupInformation.createRemoteUser().getGroupNames() to get groups
-            hence it gets all the groups of the logged user and adds them (which is not really good when you're working from a desktop or outside of the cluster machine)
-             */
-      objectStore.createVolume(volumeName);
-    } catch (OMException e) {
-      if (e.getResult() == OMException.ResultCodes.VOLUME_ALREADY_EXISTS) {
-        log.info("Volume: " + volumeName + " already exists ");
-      } else {
-        log.error(
-            "An error occurred while creating volume " + volumeName + " : ", e);
-      }
-    } catch (IOException e) {
-      log.error("An unexpected exception occurred while creating volume " +
-          volumeName + ": ", e);
-    }
-  }
-
-  /**
-   * Delete all keys in all buckets of a specified volume
-   * This is helpful as Ozone does not provide natively this type of function
-   *
-   * @param volumeName name of the volume to clean and delete
-   */
-  public void deleteEverythingUnderAVolume(String volumeName) {
-    try {
-      OzoneVolume volume = objectStore.getVolume(volumeName);
-
-      volume.listBuckets("bucket").forEachRemaining(bucket -> {
-        log.debug("Deleting everything in bucket: " + bucket.getName() +
-            " in volume: " + volumeName);
-        try {
-          bucket.listKeys(null).forEachRemaining(key -> {
-            try {
-              log.debug("Deleting key: " + key.getName() +
-                  " in bucket: " + bucket.getName() +
-                  " in volume: " + volumeName);
-              bucket.deleteKey(key.getName());
-            } catch (IOException e) {
-              log.error(
-                  "cannot delete key : " + key.getName() +
-                      " in bucket: " + bucket.getName() +
-                      " in volume: " + volumeName +
-                      " due to error: ", e);
-            }
-          });
-        } catch (IOException e) {
-          log.error("Could not list keys in bucket " + bucket.getName() +
-              " in volume: " + volumeName);
-        }
-        try {
-          volume.deleteBucket(bucket.getName());
-        } catch (IOException e) {
-          log.error(
-              "cannot delete bucket : " + bucket.getName() + " in volume: " +
-                  volumeName + " due to error: ", e);
-        }
-      });
-
-      objectStore.deleteVolume(volumeName);
-    } catch (IOException e) {
-      log.error("Could not delete volume: " + volumeName + " due to error: ",
-          e);
-    }
-  }
-
-  private void createLocalFileWithOverwrite(String path) {
-    try {
-      Utils.deleteLocalFile(path);
-      new File(path).getParentFile().mkdirs();
-      this.writer = AvroParquetWriter
-          .<GenericRecord>builder(new Path(path))
-          .withSchema(schema)
-          .withConf(new Configuration())
-          .withCompressionCodec(CompressionCodecName.SNAPPY)
-          .withPageSize((int) model.getOptionsOrDefault(
-              OptionsConverter.Options.PARQUET_PAGE_SIZE))
-          .withDictionaryEncoding((Boolean) model.getOptionsOrDefault(
-              OptionsConverter.Options.PARQUET_DICTIONARY_ENCODING))
-          .withDictionaryPageSize((int) model.getOptionsOrDefault(
-              OptionsConverter.Options.PARQUET_DICTIONARY_PAGE_SIZE))
-          .withRowGroupSize((int) model.getOptionsOrDefault(
-              OptionsConverter.Options.PARQUET_ROW_GROUP_SIZE))
-          .build();
-      log.debug("Successfully created local Parquet file : " + path);
-
-    } catch (IOException e) {
-      log.error(
-          "Tried to create Parquet local file : " + path + " with no success :",
-          e);
-    }
   }
 
 

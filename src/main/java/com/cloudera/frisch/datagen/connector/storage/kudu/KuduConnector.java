@@ -23,7 +23,7 @@ import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.utils.Utils;
+import com.cloudera.frisch.datagen.utils.KerberosUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This is a kudu sink based on Kudu 1.11.0 API
+ * This is a kudu connector based on Kudu 1.11.0 API
  */
 @SuppressWarnings("unchecked")
 @Slf4j
@@ -66,7 +66,7 @@ public class KuduConnector implements ConnectorInterface {
           properties.get(ApplicationConfigs.KUDU_TRUSTSTORE_PASSWORD));
 
       if (useKerberos) {
-        Utils.loginUserWithKerberos(
+        KerberosUtils.loginUserWithKerberos(
             properties.get(ApplicationConfigs.KUDU_AUTH_KERBEROS_USER),
             properties.get(
                 ApplicationConfigs.KUDU_AUTH_KERBEROS_KEYTAB),
@@ -154,7 +154,7 @@ public class KuduConnector implements ConnectorInterface {
       session.close();
       client.shutdown();
       if (useKerberos) {
-        Utils.logoutUserWithKerberos();
+        KerberosUtils.logoutUserWithKerberos();
       }
     } catch (Exception e) {
       log.error("Could not close connection to Kudu due to error: ", e);

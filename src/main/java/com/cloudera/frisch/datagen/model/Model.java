@@ -363,6 +363,8 @@ public class Model<T extends Field> {
         optionResult = "external";
         break;
       case HIVE_TABLE_FORMAT:
+        optionResult = "orc";
+        break;
       case HIVE_TABLE_BUCKETS_COLS:
       case HIVE_TABLE_PARTITIONS_COLS:
         optionResult = "";
@@ -397,6 +399,15 @@ public class Model<T extends Field> {
         break;
       case KAFKA_REPLICATION_FACTOR:
         optionResult = (short) 1;
+        break;
+      case ADLS_BLOCK_SIZE:
+        optionResult = "8388608";
+        break;
+      case ADLS_MAX_CONCURRENCY:
+        optionResult = "2";
+        break;
+      case ADLS_MAX_UPLOAD_SIZE:
+        optionResult = "4194304";
         break;
       default:
         break;
@@ -476,7 +487,7 @@ public class Model<T extends Field> {
   /**
    * This is a dangerous but needed operation to make Hive works well with partitions
    * Partition columns should be generated at the end, hence the linkedHashMap order should be changed
-   * This could mess up with other sinks if they initialize before this function is made
+   * This could mess up with other connectors if they initialize before this function is made
    * @param partCols
    */
   public void reorderColumnsWithPartCols(LinkedList<String> partCols) {
@@ -502,7 +513,7 @@ public class Model<T extends Field> {
   /**
    * This is a dangerous but needed operation to make Kudu works well with partitions
    * Partition columns should be generated at first hence the linkedHashMap order should be changed
-   * This could mess up with other sinks if they initialize before this function is made
+   * This could mess up with other connectors if they initialize before this function is made
    * @param keyCols
    */
   public void reorderColumnsWithKeyCols(LinkedList<String> keyCols) {
@@ -641,9 +652,11 @@ public class Model<T extends Field> {
   }
 
   public org.apache.avro.Schema getAvroSchema() {
+    String avroName = tableNames.get(OptionsConverter.TableNames.AVRO_NAME).isEmpty() ? 
+        "default_avro_record_name" : tableNames.get(OptionsConverter.TableNames.AVRO_NAME);
     SchemaBuilder.FieldAssembler<org.apache.avro.Schema> schemaBuilder =
         SchemaBuilder
-            .record(tableNames.get(OptionsConverter.TableNames.AVRO_NAME))
+            .record(avroName)
             .namespace("org.apache.avro.ipc")
             .fields();
 
@@ -700,7 +713,7 @@ public class Model<T extends Field> {
   }
 
   public HiveTableFormat getHiveTableFormat() {
-    switch (this.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_TYPE)
+    switch (this.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_FORMAT)
         .toString().toLowerCase(Locale.ROOT)) {
     case "parquet":
       return HiveTableFormat.PARQUET;
@@ -734,7 +747,7 @@ public class Model<T extends Field> {
   // Some Fields cannot have length or possible values
   // Some Fields cannot have min/max
   // Possible values must be of same type than field
-  // Depending on on what sink is launched, primary keys must be defined on existing columns
+  // Depending on on what connector is launched, primary keys must be defined on existing columns
   // Ozone bucket and volume should be string between 3-63 characters (No upper case)
   // Kafka topic should not have special characters or "-"
   // Column comparison in conditionals made should be on same column type

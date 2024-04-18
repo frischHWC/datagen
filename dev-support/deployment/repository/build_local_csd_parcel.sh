@@ -17,14 +17,15 @@
 # under the License.
 #
 #!/bin/bash
-export DATAGEN_VERSION="0.4.12"
-export CDP_VERSION="7.2.17"
+export DATAGEN_VERSION="0.4.15"
+export CDP_VERSION="7.1.9.4"
 
-export DISTRIBUTIONS_TO_BUILD="el7 el8 el9 sles12 sles15"
+export DISTRIBUTIONS_TO_BUILD="el7 el8 sles15"
 
 export BUILD_DATAGEN_JAR="true"
 export BUILD_CSD="true"
 export BUILD_PARCEL="true"
+export BUILD_STANDALONE="true"
 
 # DEBUG
 export DEBUG=false
@@ -46,10 +47,12 @@ function usage()
     echo "  --build-datagen-jar=$BUILD_DATAGEN_JAR : To build the Datagen jar file or not (Default) $BUILD_DATAGEN_JAR "
     echo "  --build-csd=$BUILD_CSD : To build the CSD or not (Default) $BUILD_CSD "
     echo "  --build-parcel=$BUILD_PARCEL : To build the parcels or not (Default) $BUILD_PARCEL "
+    echo "  --build-standalone=$BUILD_STANDALONE : To build the standalone files or not (Default) $BUILD_STANDALONE "
     echo ""
     echo "  --temp-dir=$TEMP_DIR : Temporary directory used for generation of files (Default) $TEMP_DIR "
     echo "  --csd-dir=$CSD_DIR : Directory where CSD will be generated  (Default) $CSD_DIR"
     echo "  --parcel-dir=$PARCEL_DIR : Directory where parcels will be generated  (Default) $PARCEL_DIR"
+    echo "  --standalone-dir=$STANDALONE_DIR : Directory where standalone files will be generated  (Default) $STANDALONE_DIR"
     echo ""
     echo "  --debug=$DEBUG : To set DEBUG log-level (Default) $DEBUG "
     echo "  --log-dir=$LOG_DIR : Log directory (Default) $LOG_DIR "
@@ -91,6 +94,9 @@ while [ "$1" != "" ]; do
         --parcel-dir)
             PARCEL_DIR=$VALUE
             ;;
+        --standalone-dir)
+            STANDALONE_DIR=$VALUE
+            ;;
         --debug)
             DEBUG=$VALUE
             ;;
@@ -116,13 +122,17 @@ if [ -z ${CSD_DIR} ]
 then
   export CSD_DIR="/tmp/datagen_csd-${DATAGEN_VERSION}-${CDP_VERSION}"
 fi
+if [ -z ${STANDALONE_DIR} ]
+then
+  export STANDALONE_DIR="/tmp/datagen_standalone-${DATAGEN_VERSION}-${CDP_VERSION}"
+fi
 
 # INTERNAL: Do not touch these
 export DEPLOY_DIR=$(pwd)
 export DATAGEN_FULL_VERSION="${DATAGEN_VERSION}.${CDP_VERSION}"
 export DATAGEN_FULL_NAME="DATAGEN-${DATAGEN_VERSION}.${CDP_VERSION}"
 
-echo " Start building CSD & Parcels for Datagen $DATAGEN_VERSION for CDP version $CDP_VERSION"
+echo " Start building Releases files for Datagen $DATAGEN_VERSION for CDP version $CDP_VERSION"
 export DISTRIBUTIONS_LIST=$( echo ${DISTRIBUTIONS_TO_BUILD} | uniq )
 export DISTRIBUTIONS=( ${DISTRIBUTIONS_LIST} )
 
@@ -149,6 +159,26 @@ then
   mvn clean package
 
   cd $DEPLOY_DIR
+fi
+
+################# Standalone Files #################
+if [ "${BUILD_STANDALONE}" = "true" ]
+then
+    mkdir -p ${STANDALONE_DIR}
+    mkdir -p  ${STANDALONE_DIR}/models/
+    mkdir -p  ${STANDALONE_DIR}/dictionaries/
+
+    cp -Rp ../../../src/main/resources/logback-spring.xml "${STANDALONE_DIR}/"
+    cp -Rp ../../../src/main/resources/application.properties "${STANDALONE_DIR}/"
+    cp -Rp ../../../target/datagen*.jar "${STANDALONE_DIR}/datagen-${DATAGEN_VERSION}.jar"
+    cp -Rp ../../../src/main/resources/dictionaries/* "${STANDALONE_DIR}/dictionaries/"
+    cp -Rp ../../../src/main/resources/models/* "${STANDALONE_DIR}/models/"
+    cp -Rp ../../../src/main/resources/scripts/launch.sh "${STANDALONE_DIR}/"
+
+    # For BSD-like, tar includes some files which should not be present to be GNU-compliant
+    export COPYFILE_DISABLE=true
+    tar -czv --no-xattrs --exclude '._*' -f "${STANDALONE_DIR}/datagen-standalone-files.tar.gz" "${STANDALONE_DIR}/"
+
 fi
 
 ################# CSD #################
@@ -249,5 +279,6 @@ fi
 
 echo "CSD is at ${CSD_DIR}"
 echo "Parcel is at ${PARCEL_DIR}"
+echo "Standalone files are at ${STANDALONE_DIR}"
 
-echo " Finish building CSD & Parcels for Datagen $DATAGEN_VERSION for CDP version $CDP_VERSION"
+echo " Finish building Releases files for Datagen $DATAGEN_VERSION for CDP version $CDP_VERSION"

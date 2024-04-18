@@ -50,7 +50,7 @@ public class Command implements Serializable {
   private Long rowsPerBatch;
   private Boolean scheduled;
   private Long delayBetweenExecutions;
-  private List<ConnectorParser.Sink> sinksListAsString;
+  private List<ConnectorParser.Connector> connectorsListAsString;
   private Map<ApplicationConfigs, String> properties;
   private Long durationSeconds;
   private Long lastFinishedTimestamp;
@@ -67,7 +67,7 @@ public class Command implements Serializable {
     oos.writeObject(rowsPerBatch);
     oos.writeObject(scheduled);
     oos.writeObject(delayBetweenExecutions);
-    oos.writeObject(sinksListAsString);
+    oos.writeObject(connectorsListAsString);
     oos.writeObject(properties);
     oos.writeObject(durationSeconds);
     oos.writeObject(lastFinishedTimestamp);
@@ -85,7 +85,7 @@ public class Command implements Serializable {
     this.rowsPerBatch = (Long) ois.readObject();
     this.scheduled = (Boolean) ois.readObject();
     this.delayBetweenExecutions = (Long) ois.readObject();
-    this.sinksListAsString = (List<ConnectorParser.Sink>) ois.readObject();
+    this.connectorsListAsString = (List<ConnectorParser.Connector>) ois.readObject();
     this.properties = (Map<ApplicationConfigs, String>) ois.readObject();
     this.durationSeconds = (Long) ois.readObject();
     this.lastFinishedTimestamp = (Long) ois.readObject();
@@ -94,10 +94,10 @@ public class Command implements Serializable {
 
   @Override
   public String toString() {
-    StringBuffer sinkList = new StringBuffer();
-    sinksListAsString.forEach(s -> {
-      sinkList.append(s);
-      sinkList.append(" ; ");
+    StringBuffer connectorList = new StringBuffer();
+    connectorsListAsString.forEach(s -> {
+      connectorList.append(s);
+      connectorList.append(" ; ");
     });
 
     StringBuffer propertiesAsString = new StringBuffer();
@@ -121,7 +121,7 @@ public class Command implements Serializable {
         " , \"scheduled\": \"" + scheduled + "\"" +
         " , \"delay_between_executions\": \"" + delayBetweenExecutions + "\"" +
         " , \"last_finished_timestamp\": \"" + lastFinishedTimestamp + "\"" +
-        " , \"sinks\": \"" + sinkList + "\"" +
+        " , \"connectors\": \"" + connectorList + "\"" +
         " , \"extra_properties\": \"" + propertiesAsString + "\"" +
         " }";
   }
@@ -133,7 +133,7 @@ public class Command implements Serializable {
                  Long rowsPerBatch,
                  Boolean scheduled,
                  Long delayBetweenExecutions,
-                 List<ConnectorParser.Sink> sinksListAsString,
+                 List<ConnectorParser.Connector> connectorsListAsString,
                  Map<ApplicationConfigs, String> properties) {
     this.commandUuid = UUID.randomUUID();
     this.status = CommandStatus.QUEUED;
@@ -146,7 +146,7 @@ public class Command implements Serializable {
     this.scheduled = scheduled;
     this.delayBetweenExecutions = delayBetweenExecutions;
     this.lastFinishedTimestamp = 0L;
-    this.sinksListAsString = sinksListAsString;
+    this.connectorsListAsString = connectorsListAsString;
     this.properties = properties;
     this.durationSeconds = 0L;
     this.progress = 0f;

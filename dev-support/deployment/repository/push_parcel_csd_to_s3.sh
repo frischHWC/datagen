@@ -21,14 +21,19 @@
 export AWS_ACCESS_KEY_ID=""
 export AWS_SECRET_ACCESS_KEY=""
 export AWS_S3_BUCKET="datagen-repo"
+export AWS_S3_REPO="s3.eu-west-3.amazonaws.com"
 
 # Versions
-export CDP_VERSION="7.1.9.0"
-export DATAGEN_VERSION="0.4.10"
+export CDP_VERSION="7.1.9.4"
+export DATAGEN_VERSION="0.4.15"
 
 # CSD & Parcels Directory
 export CSD_DIR="/tmp/datagen_csd"
 export PARCEL_DIR="/tmp/datagen_parcel"
+
+# Standalone Directory
+export STANDALONE_DIR="/tmp/datagen_standalone"
+export MAIN_STANDALONE_VERSION="false"
 
 # DEBUG
 export DEBUG=false
@@ -55,6 +60,8 @@ function usage()
     echo ""
     echo "  --csd-dir=$CSD_DIR : CSD Directory where it has been generated (Default) $CSD_DIR "
     echo "  --parcel-dir=$PARCEL_DIR : Directory where parcels have been generated  (Default) $PARCEL_DIR"
+    echo "  --standalone-dir=$STANDALONE_DIR : Directory where standalone files have been generated  (Default) $STANDALONE_DIR"
+    echo "  --main-standalone-version=$MAIN_STANDALONE_VERSION : If it is the main standalone version to publish to root of datagen version (Default) $MAIN_STANDALONE_VERSION"
     echo ""
     echo "  --debug=$DEBUG : To set DEBUG log-level (Default) $DEBUG "
     echo "  --log-dir=$LOG_DIR : Log directory (Default) $LOG_DIR "
@@ -90,6 +97,12 @@ while [ "$1" != "" ]; do
         --parcel-dir)
             PARCEL_DIR=$VALUE
             ;;
+        --standalone-dir)
+            STANDALONE_DIR=$VALUE
+            ;;
+        --main-standalone-version)
+            MAIN_STANDALONE_VERSION=$VALUE
+            ;;
         --debug)
             DEBUG=$VALUE
             ;;
@@ -118,7 +131,7 @@ then
     CSD_JAR_FILE_NAME=$(ls ${CSD_DIR} | grep jar)
     if [ ! -z ${CSD_JAR_FILE_NAME} ]
     then
-      echo "Upload to AWS ${AWS_S3_BUCKET}/csd/${DATAGEN_VERSION}/${CDP_VERSION}/ file: ${CSD_DIR}/${CSD_JAR_FILE_NAME}"
+      echo "Upload to AWS ${AWS_S3_BUCKET}/${DATAGEN_VERSION}/${CDP_VERSION}/ file: ${CSD_DIR}/${CSD_JAR_FILE_NAME}"
       aws s3 cp ${CSD_DIR}/${CSD_JAR_FILE_NAME} s3://${AWS_S3_BUCKET}/${DATAGEN_VERSION}/${CDP_VERSION}/csd/
     fi
     
@@ -126,9 +139,26 @@ then
     PARCEL_FILES=$(ls ${PARCEL_DIR})
     if [ ! -z "${PARCEL_FILES}" ]
     then
-      echo "Upload to AWS ${AWS_S3_BUCKET}/parcels/${DATAGEN_VERSION}/${CDP_VERSION}/ files: ${CSD_DIR}/${PARCEL_FILES}"
+      echo "Upload to AWS ${AWS_S3_BUCKET}/${DATAGEN_VERSION}/${CDP_VERSION}/ files: ${PARCEL_DIR}/${PARCEL_FILES}"
       aws s3 cp ${PARCEL_DIR}/ s3://${AWS_S3_BUCKET}/${DATAGEN_VERSION}/${CDP_VERSION}/parcels/ --recursive
     fi
+
+    # Upload Standalone files
+    STANDALONE_FILES=$(ls ${STANDALONE_DIR})
+    if [ ! -z "${STANDALONE_FILES}" ]
+    then
+      echo "Upload to AWS ${AWS_S3_BUCKET}/${DATAGEN_VERSION}/${CDP_VERSION}/ files: ${STANDALONE_DIR}/${STANDALONE_FILES}"
+      aws s3 cp ${STANDALONE_DIR}/ s3://${AWS_S3_BUCKET}/${DATAGEN_VERSION}/${CDP_VERSION}/standalone/ --recursive
+    fi
+
+    # Upload Standalone files as MAIN Standalone Files of DATAGEN RELEASE
+    STANDALONE_FILES=$(ls ${STANDALONE_DIR})
+    if [[ ! -z "${STANDALONE_FILES}" ]] && [[ "${MAIN_STANDALONE_VERSION}" == "true" ]]
+    then
+      echo "Upload to AWS ${AWS_S3_BUCKET}/${DATAGEN_VERSION}/${CDP_VERSION}/ files: ${STANDALONE_DIR}/${STANDALONE_FILES}"
+      aws s3 cp ${STANDALONE_DIR}/ s3://${AWS_S3_BUCKET}/${DATAGEN_VERSION}/standalone/ --recursive
+    fi
+
 fi
 
 
@@ -138,7 +168,7 @@ function create_index_file()
   title=$1
   subtitle=$2
   bucket_dir=$3
-  s3_repo="s3.eu-west-3.amazonaws.com"
+  s3_repo="${AWS_S3_REPO}"
 
   # Get previous directory
   bucket_dir_file=$(mktemp)
@@ -213,4 +243,10 @@ then
   create_index_file "Datagen Repository" "CSD & Parcels for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/${CDP_VERSION}/
   create_index_file "Datagen Repository" "CSD files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/${CDP_VERSION}/csd/
   create_index_file "Datagen Repository" "Parcels files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/${CDP_VERSION}/parcels/
+  create_index_file "Datagen Repository" "Standalone files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/${CDP_VERSION}/standalone/
+  create_index_file "Datagen Repository" "Standalone model files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/${CDP_VERSION}/standalone/models/
+  create_index_file "Datagen Repository" "Standalone dictionaries files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/${CDP_VERSION}/standalone/dictionaries/
+    create_index_file "Datagen Repository" "Standalone files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/standalone/
+    create_index_file "Datagen Repository" "Standalone model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/standalone/models/
+    create_index_file "Datagen Repository" "Standalone dictionaries files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/standalone/dictionaries/
 fi

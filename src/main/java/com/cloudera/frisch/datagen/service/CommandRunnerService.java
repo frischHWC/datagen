@@ -21,6 +21,7 @@ package com.cloudera.frisch.datagen.service;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.config.PropertiesLoader;
 import com.cloudera.frisch.datagen.config.ConnectorParser;
+import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.Row;
 import com.cloudera.frisch.datagen.parsers.JsonParser;
@@ -62,11 +63,13 @@ public class CommandRunnerService {
     this.scheduledCommands = new HashMap<>();
     this.commands = new HashMap<>();
 
+    FileUtils.createLocalDirectory(propertiesLoader.getPropertiesCopy().get(ApplicationConfigs.DATA_HOME_DIRECTORY));
+
     readScheduledCommands();
     // After reading scheduled values, file should be re-written
     writeScheduledCommands();
 
-    Utils.createLocalDirectory(propertiesLoader.getPropertiesCopy()
+    FileUtils.createLocalDirectory(propertiesLoader.getPropertiesCopy()
         .get(ApplicationConfigs.DATA_MODEL_RECEIVED_PATH));
   }
 
@@ -121,7 +124,7 @@ public class CommandRunnerService {
 
       String scheduledCommandsFilepathTemp = scheduledCommandsFilePath + "_tmp";
 
-      Utils.deleteLocalFile(scheduledCommandsFilepathTemp);
+      FileUtils.deleteLocalFile(scheduledCommandsFilepathTemp);
       File scheduledCommandTempFile = new File(scheduledCommandsFilepathTemp);
       scheduledCommandTempFile.getParentFile().mkdirs();
       scheduledCommandTempFile.createNewFile();
@@ -140,7 +143,7 @@ public class CommandRunnerService {
 
       log.info("Finished to write all scheduled commands to scheduler file");
 
-      Utils.deleteLocalFile(scheduledCommandsFilepathTemp);
+      FileUtils.deleteLocalFile(scheduledCommandsFilepathTemp);
 
     } catch (Exception e) {
       log.error("Could not write scheduled commands to local file, error is: ",
@@ -212,7 +215,7 @@ public class CommandRunnerService {
    * @param numberOfThreads
    * @param numberOfBatches
    * @param rowsPerBatch
-   * @param sinksListAsString
+   * @param connectorsListAsString
    * @param extraProperties
    */
   public String generateData(
@@ -223,7 +226,7 @@ public class CommandRunnerService {
       @Nullable Long rowsPerBatch,
       @Nullable Boolean scheduledReceived,
       @Nullable Long delayBetweenExecutionsReceived,
-      List<String> sinksListAsString,
+      List<String> connectorsListAsString,
       @Nullable Map<ApplicationConfigs, String> extraProperties) {
 
     // Get default values if some are not set
@@ -289,7 +292,7 @@ public class CommandRunnerService {
     if (modelFileAsFile != null && !modelFileAsFile.isEmpty()) {
       log.info("Model passed is an uploaded file");
       modelFile = properties.get(ApplicationConfigs.DATA_MODEL_RECEIVED_PATH) +
-          "/model-" + new Random().nextInt() + ".json";
+          "/model-" + System.currentTimeMillis() + "-" + String.format("%06d",new Random().nextInt(100000)) + ".json";
       try {
         modelFileAsFile.transferTo(new File(modelFile));
       } catch (IOException e) {
@@ -320,33 +323,33 @@ public class CommandRunnerService {
     }
     Model model = parser.renderModelFromFile();
 
-    // Creation of sinks
-    List<ConnectorParser.Sink> sinksList = new ArrayList<>();
+    // Creation of connectors
+    List<ConnectorParser.Connector> connectorsList = new ArrayList<>();
     try {
-      if (sinksListAsString == null || sinksListAsString.isEmpty()) {
-        log.info("No Sink has been defined, so defaulting to JSON sink");
-        sinksList.add(ConnectorParser.stringToSink("JSON"));
+      if (connectorsListAsString == null || connectorsListAsString.isEmpty()) {
+        log.info("No connector has been defined, so defaulting to JSON connector");
+        connectorsList.add(ConnectorParser.stringToConnector("JSON"));
       } else {
-        for (String s : sinksListAsString) {
-          sinksList.add(ConnectorParser.stringToSink(s));
+        for (String s : connectorsListAsString) {
+          connectorsList.add(ConnectorParser.stringToConnector(s));
         }
       }
     } catch (Exception e) {
       log.warn(
-          "Could not parse list of sinks passed, check if it's well formed");
-      return "{ \"commandUuid\": \"\" , \"error\": \"Wrong Sinks\" }";
+          "Could not parse list of connectors passed, check if it's well formed");
+      return "{ \"commandUuid\": \"\" , \"error\": \"Wrong connectors\" }";
     }
 
     // Creation of command and queued to be processed
     Command command =
         new Command(modelFile, model, threads, batches, rows, scheduled,
-            delayBetweenExecutions, sinksList, properties);
+            delayBetweenExecutions, connectorsList, properties);
     if (isModelUploaded) {
       // If model has been uploaded, it must be renamed to use its UUID for user and admin convenience
       String newModelFilePath =
           properties.get(ApplicationConfigs.DATA_MODEL_RECEIVED_PATH) +
               "/model-" + command.getCommandUuid().toString() + ".json";
-      Utils.moveLocalFile(modelFile, newModelFilePath);
+      FileUtils.moveLocalFile(modelFile, newModelFilePath);
       command.setModelFilePath(newModelFilePath);
     }
     commands.put(command.getCommandUuid(), command);
@@ -384,21 +387,22 @@ public class CommandRunnerService {
             command.getCommandUuid());
 
 
-        log.info("Initialization of all Sinks");
+        log.info("Initialization of all connectors");
         /**
-         *  WARNING 1 : Having Ozone initiated after other sinks will corrupt Hadoop config and Hive or HDFS will not work, so need to initialize it first
-         *  WARNING 2 : If Hive is in the list of sinks, it should be initialized first as it changes columns orders if there are partitions
-         *  WARNING 3 : If Kudu is in the list of sinks, it should be initialized first as it changes columns orders if there are partitions
-         *  Hence, we need to order sinks properly: Ozone first, Hive always before other (except for ozone) and then the rest
+         *  WARNING 1 : Having Ozone initiated after other connectors will corrupt Hadoop config and Hive or HDFS will not work, so need to initialize it first
+         *  WARNING 2 : If Hive is in the list of connectors, it should be initialized first as it changes columns orders if there are partitions
+         *  WARNING 3 : If Kudu is in the list of connectors, it should be initialized first as it changes columns orders if there are partitions
+         *  Hence, we need to order connectors properly: Ozone first, Hive always before other (except for ozone) and then the rest
          **/
-        List<ConnectorParser.Sink> sinkList = command.getSinksListAsString();
-        sinkList.sort(ConnectorParser.Sink.sinkInitPrecedence);
+        List<ConnectorParser.Connector> connectorList = command.getConnectorsListAsString();
+        connectorList.sort(ConnectorParser.Connector.conenctorInitPrecedence);
 
-        log.debug("Print sink in order: ");
-        sinkList.forEach(s -> log.debug("sink: {}", s.toString()));
+        log.debug("Print connector in order: ");
+        connectorList.forEach(s -> log.debug("connector: {}", s.toString()));
 
-        List<ConnectorInterface> sinks = ConnectorsUtils
-            .sinksInit(command.getModel(), command.getProperties(), sinkList,
+        List<ConnectorInterface> connectors = ConnectorsUtils
+            .connectorInit(command.getModel(), command.getProperties(),
+                connectorList,
                 true);
 
         // Launch Generation of data
@@ -411,9 +415,9 @@ public class CommandRunnerService {
               .generateRandomRows(command.getRowsPerBatch(),
                   command.getNumberOfThreads());
 
-          // Send Data to sinks in parallel if there are multiple sinks
-          sinks.parallelStream()
-              .forEach(sink -> sink.sendOneBatchOfRows(randomDataList));
+          // Send Data to connectors in parallel if there are multiple connectors
+          connectors.parallelStream()
+              .forEach(connector -> connector.sendOneBatchOfRows(randomDataList));
 
           // For tests only: print generated data
           if (log.isDebugEnabled()) {
@@ -429,16 +433,16 @@ public class CommandRunnerService {
               ((double) i / (double) command.getNumberOfBatches()) * 100.0);
         }
 
-        // Terminate all sinks
-        sinks.forEach(ConnectorInterface::terminate);
+        // Terminate all connectors
+        connectors.forEach(ConnectorInterface::terminate);
 
         // Add metrics
         metricsService.updateMetrics(command.getNumberOfBatches(),
-            command.getRowsPerBatch(), command.getSinksListAsString());
+            command.getRowsPerBatch(), command.getConnectorsListAsString());
 
         // Recap of what has been generated
         Utils.recap(command.getNumberOfBatches(), command.getRowsPerBatch(),
-            command.getSinksListAsString(), command.getModel());
+            command.getConnectorsListAsString(), command.getModel());
         command.setStatus(Command.CommandStatus.FINISHED);
         command.setLastFinishedTimestamp(System.currentTimeMillis());
 

@@ -18,16 +18,15 @@
 package com.cloudera.frisch.datagen.connector.storage.files;
 
 
-import com.cloudera.frisch.datagen.connector.ConnectorInterface;
-import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
+import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
+import com.cloudera.frisch.datagen.model.type.Field;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -36,8 +35,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This is a JSON sink
- * Its goal is to write into ONE single json file data randomly generated
+ * This is a JSON connector
+ * Its goal is to write into one or multipe files data randomly generated
  */
 @Slf4j
 public class JsonConnector implements ConnectorInterface {
@@ -68,16 +67,16 @@ public class JsonConnector implements ConnectorInterface {
   @Override
   public void init(Model model, boolean writer) {
     if (writer) {
-      model = model;
-      Utils.createLocalDirectory(directoryName);
+      this.model = model;
+      FileUtils.createLocalDirectory(directoryName);
 
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        Utils.deleteAllLocalFiles(directoryName, fileName, "json");
+        FileUtils.deleteAllLocalFiles(directoryName, fileName, "json");
       }
 
       if (!oneFilePerIteration) {
-        createFileWithOverwrite(directoryName + fileName + ".json");
+        this.outputStream = FileUtils.createLocalFileAsOutputStream(directoryName + fileName + ".json");
       }
     }
   }
@@ -97,7 +96,7 @@ public class JsonConnector implements ConnectorInterface {
   public void sendOneBatchOfRows(List<Row> rows) {
     try {
       if (oneFilePerIteration) {
-        createFileWithOverwrite(
+        this.outputStream = FileUtils.createLocalFileAsOutputStream(
             directoryName + fileName + "-" + String.format("%010d", counter) +
                 ".json");
         counter++;
@@ -130,18 +129,6 @@ public class JsonConnector implements ConnectorInterface {
     Map<String, String> options = new HashMap<>();
     // TODO : Implement logic to create a model with at least names, pk, options and column names/types
     return new Model(fields, primaryKeys, tableNames, options);
-  }
-
-  void createFileWithOverwrite(String path) {
-    try {
-      File file = new File(path);
-      file.getParentFile().mkdirs();
-      file.createNewFile();
-      outputStream = new FileOutputStream(path, false);
-      log.debug("Successfully created local file : " + path);
-    } catch (IOException e) {
-      log.error("Tried to create file : " + path + " with no success :", e);
-    }
   }
 
 

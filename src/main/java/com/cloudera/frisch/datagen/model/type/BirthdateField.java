@@ -36,9 +36,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class BirthdateField extends Field<LocalDate> {
 
+  DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
   public BirthdateField(String name, Integer length, List<String> possibleValues,
                  String min, String max) {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     this.name = name;
     this.length = length;
     this.possibleValues =
@@ -77,8 +78,13 @@ public class BirthdateField extends Field<LocalDate> {
   }
 
     /*
-     Override if needed Field function to insert into special sinks
+     Override if needed Field function to insert into special connectors
      */
+
+  @Override
+  public String toCSVString(LocalDate value) {
+    return "\"" + formatter.format(value) + "\",";
+  }
 
   @Override
   public String toStringValue(LocalDate value) {

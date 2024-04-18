@@ -145,7 +145,7 @@ public class CityField extends Field<CityField.City> {
 
   @Override
   public String toCSVString(City value) {
-    return value.getName() + ",";
+    return "\"" + value.getName() + "\",";
   }
 
   @Override
@@ -154,7 +154,7 @@ public class CityField extends Field<CityField.City> {
   }
 
   /*
-   Override if needed Field function to insert into special sinks
+   Override if needed Field function to insert into special connectors
    */
   @Override
   public String toStringValue(City value) {

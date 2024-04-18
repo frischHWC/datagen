@@ -44,17 +44,17 @@ public class MetricsService {
   }
 
   public synchronized void updateMetrics(long numberOfBatches, long rowPerBatch,
-                                         List<ConnectorParser.Sink> sinks) {
+                                         List<ConnectorParser.Connector> connectors) {
 
     synchronized (allMetrics) {
-      sinks.forEach(sink -> {
+      connectors.forEach(connector -> {
         allMetrics.put(Metrics.ALL_ROWS_GENERATED,
             allMetrics.get(Metrics.ALL_ROWS_GENERATED) +
                 (numberOfBatches * rowPerBatch));
         allMetrics.put(Metrics.GENERATIONS_MADE,
             allMetrics.get(Metrics.GENERATIONS_MADE) + 1);
 
-        switch (sink) {
+        switch (connector) {
         case HDFS_CSV:
           allMetrics.put(Metrics.HDFS_CSV_FILES_GENERATED,
               allMetrics.get(Metrics.HDFS_CSV_FILES_GENERATED) +
@@ -167,6 +167,131 @@ public class MetricsService {
                   (numberOfBatches * rowPerBatch));
           break;
 
+
+        case S3_CSV:
+          allMetrics.put(Metrics.S3_CSV_FILES_GENERATED,
+              allMetrics.get(Metrics.S3_CSV_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.S3_CSV_ROWS_GENERATED,
+              allMetrics.get(Metrics.S3_CSV_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case S3_AVRO:
+          allMetrics.put(Metrics.S3_AVRO_FILES_GENERATED,
+              allMetrics.get(Metrics.S3_AVRO_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.S3_AVRO_ROWS_GENERATED,
+              allMetrics.get(Metrics.S3_AVRO_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case S3_JSON:
+          allMetrics.put(Metrics.S3_JSON_FILES_GENERATED,
+              allMetrics.get(Metrics.S3_JSON_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.S3_JSON_ROWS_GENERATED,
+              allMetrics.get(Metrics.S3_JSON_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case S3_ORC:
+          allMetrics.put(Metrics.S3_ORC_FILES_GENERATED,
+              allMetrics.get(Metrics.S3_ORC_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.S3_ORC_ROWS_GENERATED,
+              allMetrics.get(Metrics.S3_ORC_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case S3_PARQUET:
+          allMetrics.put(Metrics.S3_PARQUET_FILES_GENERATED,
+              allMetrics.get(Metrics.S3_PARQUET_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.S3_PARQUET_ROWS_GENERATED,
+              allMetrics.get(Metrics.S3_PARQUET_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+
+
+        case ADLS_CSV:
+          allMetrics.put(Metrics.ADLS_CSV_FILES_GENERATED,
+              allMetrics.get(Metrics.ADLS_CSV_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.ADLS_CSV_ROWS_GENERATED,
+              allMetrics.get(Metrics.ADLS_CSV_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case ADLS_AVRO:
+          allMetrics.put(Metrics.ADLS_AVRO_FILES_GENERATED,
+              allMetrics.get(Metrics.ADLS_AVRO_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.ADLS_AVRO_ROWS_GENERATED,
+              allMetrics.get(Metrics.ADLS_AVRO_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case ADLS_JSON:
+          allMetrics.put(Metrics.ADLS_JSON_FILES_GENERATED,
+              allMetrics.get(Metrics.ADLS_JSON_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.ADLS_JSON_ROWS_GENERATED,
+              allMetrics.get(Metrics.ADLS_JSON_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case ADLS_ORC:
+          allMetrics.put(Metrics.ADLS_ORC_FILES_GENERATED,
+              allMetrics.get(Metrics.ADLS_ORC_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.ADLS_ORC_ROWS_GENERATED,
+              allMetrics.get(Metrics.ADLS_ORC_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case ADLS_PARQUET:
+          allMetrics.put(Metrics.ADLS_PARQUET_FILES_GENERATED,
+              allMetrics.get(Metrics.ADLS_PARQUET_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.ADLS_PARQUET_ROWS_GENERATED,
+              allMetrics.get(Metrics.ADLS_PARQUET_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+
+        case GCS_CSV:
+          allMetrics.put(Metrics.GCS_CSV_FILES_GENERATED,
+              allMetrics.get(Metrics.GCS_CSV_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.GCS_CSV_ROWS_GENERATED,
+              allMetrics.get(Metrics.GCS_CSV_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case GCS_AVRO:
+          allMetrics.put(Metrics.GCS_AVRO_FILES_GENERATED,
+              allMetrics.get(Metrics.GCS_AVRO_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.GCS_AVRO_ROWS_GENERATED,
+              allMetrics.get(Metrics.GCS_AVRO_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case GCS_JSON:
+          allMetrics.put(Metrics.GCS_JSON_FILES_GENERATED,
+              allMetrics.get(Metrics.GCS_JSON_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.GCS_JSON_ROWS_GENERATED,
+              allMetrics.get(Metrics.GCS_JSON_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case GCS_ORC:
+          allMetrics.put(Metrics.GCS_ORC_FILES_GENERATED,
+              allMetrics.get(Metrics.GCS_ORC_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.GCS_ORC_ROWS_GENERATED,
+              allMetrics.get(Metrics.GCS_ORC_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+        case GCS_PARQUET:
+          allMetrics.put(Metrics.GCS_PARQUET_FILES_GENERATED,
+              allMetrics.get(Metrics.GCS_PARQUET_FILES_GENERATED) +
+                  numberOfBatches);
+          allMetrics.put(Metrics.GCS_PARQUET_ROWS_GENERATED,
+              allMetrics.get(Metrics.GCS_PARQUET_ROWS_GENERATED) +
+                  (numberOfBatches * rowPerBatch));
+          break;
+
         case CSV:
           allMetrics.put(Metrics.CSV_FILES_GENERATED,
               allMetrics.get(Metrics.CSV_FILES_GENERATED) + numberOfBatches);
@@ -206,7 +331,7 @@ public class MetricsService {
 
         default:
           log.warn(
-              "Could not identify the sink, added metrics only for global");
+              "Could not identify the connector, added metrics only for global");
           break;
         }
       });
@@ -286,8 +411,42 @@ public class MetricsService {
     OZONE_ORC_FILES_GENERATED,
     OZONE_ORC_ROWS_GENERATED,
     OZONE_JSON_FILES_GENERATED,
-    OZONE_JSON_ROWS_GENERATED
+    OZONE_JSON_ROWS_GENERATED,
 
-  }
+    S3_CSV_FILES_GENERATED,
+    S3_CSV_ROWS_GENERATED,
+    S3_AVRO_FILES_GENERATED,
+    S3_AVRO_ROWS_GENERATED,
+    S3_PARQUET_FILES_GENERATED,
+    S3_PARQUET_ROWS_GENERATED,
+    S3_ORC_FILES_GENERATED,
+    S3_ORC_ROWS_GENERATED,
+    S3_JSON_FILES_GENERATED,
+    S3_JSON_ROWS_GENERATED,
+
+    ADLS_CSV_FILES_GENERATED,
+    ADLS_CSV_ROWS_GENERATED,
+    ADLS_AVRO_FILES_GENERATED,
+    ADLS_AVRO_ROWS_GENERATED,
+    ADLS_PARQUET_FILES_GENERATED,
+    ADLS_PARQUET_ROWS_GENERATED,
+    ADLS_ORC_FILES_GENERATED,
+    ADLS_ORC_ROWS_GENERATED,
+    ADLS_JSON_FILES_GENERATED,
+    ADLS_JSON_ROWS_GENERATED,
+
+    GCS_CSV_FILES_GENERATED,
+    GCS_CSV_ROWS_GENERATED,
+    GCS_AVRO_FILES_GENERATED,
+    GCS_AVRO_ROWS_GENERATED,
+    GCS_PARQUET_FILES_GENERATED,
+    GCS_PARQUET_ROWS_GENERATED,
+    GCS_ORC_FILES_GENERATED,
+    GCS_ORC_ROWS_GENERATED,
+    GCS_JSON_FILES_GENERATED,
+    GCS_JSON_ROWS_GENERATED
+
+
+    }
 
 }

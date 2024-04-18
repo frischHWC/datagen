@@ -214,6 +214,215 @@ public class ModelGenerationController {
         null, null, null, volume, bucket, key);
   }
 
+  @PostMapping(value = "/s3-avro")
+  public String generateS3AvroModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for Avro S3 file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("s3-avro", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/s3-csv")
+  public String generateS3CsvModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for CSV S3 file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("s3-csv", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/s3-json")
+  public String generateS3JsonModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for JSON S3 file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("s3-json", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/s3-parquet")
+  public String generateS3ParquetModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for Parquet S3 file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("s3-parquet", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/s3-orc")
+  public String generateS3OrcModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for ORC S3 file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("s3-orc", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/adls-avro")
+  public String generateAdlsAvroModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for Avro ADLS file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("adls-avro", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/adls-csv")
+  public String generateAdlsCsvModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for ADLS S3 file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("adls-csv", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/adls-json")
+  public String generateAdlsJsonModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for JSON ADLS file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("adls-json", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/adls-parquet")
+  public String generateAdlsParquetModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for Parquet ADLS file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("adls-parquet", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/adls-orc")
+  public String generateAdlsOrcModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for ORC ADLS file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("adls-orc", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/gcs-avro")
+  public String generateGcsAvroModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for Avro GCS file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("gcs-avro", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/gcs-csv")
+  public String generateGcsCsvModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for GCS S3 file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("gcs-csv", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/gcs-json")
+  public String generateGcsJsonModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for JSON GCS file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("gcs-json", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/gcs-parquet")
+  public String generateGcsParquetModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for Parquet GCS file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("gcs-parquet", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
+
+  @PostMapping(value = "/gcs-orc")
+  public String generateGcsOrcModel(
+      @RequestParam(required = true, name = "bucket") String bucket,
+      @RequestParam(required = true, name = "key") String key,
+      @RequestParam(required = false, name = "deep_analysis", defaultValue = "false")
+          Boolean deepAnalysis
+  ) {
+    log.debug(
+        "Received request to generate model for ORC GCS file: {} in bucket: {}",
+        key, bucket);
+    return modelGeneraterSevice.generateModel("gcs-orc", deepAnalysis,
+        null, null, null, null, bucket, key);
+  }
 
   // TODO: implement these connectors
 

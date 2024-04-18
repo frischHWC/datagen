@@ -45,17 +45,19 @@ public class ApplicationConfigMapper {
       return ApplicationConfigs.NUMBER_OF_BATCHES_DEFAULT;
     case "number.rows.default":
       return ApplicationConfigs.NUMBER_OF_ROWS_DEFAULT;
-    case "data.model.path":
+    case "datagen.home.directory":
+      return ApplicationConfigs.DATA_HOME_DIRECTORY;
+    case "datagen.model.path":
       return ApplicationConfigs.DATA_MODEL_PATH_DEFAULT;
-    case "data.model.received.path":
+    case "datagen.model.received.path":
       return ApplicationConfigs.DATA_MODEL_RECEIVED_PATH;
-    case "data.model.generated.path":
+    case "datagen.model.generated.path":
       return ApplicationConfigs.DATA_MODEL_GENERATED_PATH;
-    case "data.model.default":
+    case "datagen.model.default":
       return ApplicationConfigs.DATA_MODEL_DEFAULT;
-    case "custom.data.model":
+    case "datagen.custom.model":
       return ApplicationConfigs.CUSTOM_DATA_MODEL_DEFAULT;
-    case "scheduler.file.path":
+    case "datagen.scheduler.file.path":
       return ApplicationConfigs.SCHEDULER_FILE_PATH;
     case "kerberos.enabled":
       return ApplicationConfigs.KERBEROS_ENABLED;
@@ -209,6 +211,24 @@ public class ApplicationConfigMapper {
       return ApplicationConfigs.KUDU_TRUSTSTORE_LOCATION;
     case "kudu.truststore.password":
       return ApplicationConfigs.KUDU_TRUSTSTORE_PASSWORD;
+    case "s3.access_key.id":
+      return ApplicationConfigs.S3_ACCESS_KEY_ID;
+    case "s3.access_key.secret":
+      return ApplicationConfigs.S3_ACCESS_KEY_SECRET;
+    case "s3.region":
+      return ApplicationConfigs.S3_REGION;
+    case "adls.account.name":
+      return ApplicationConfigs.ADLS_ACCOUNT_NAME;
+    case "adls.account.type":
+      return ApplicationConfigs.ADLS_ACCOUNT_TYPE;
+    case "adls.sas.token":
+      return ApplicationConfigs.ADLS_SAS_TOKEN;
+    case "gcs.project.id":
+      return ApplicationConfigs.GCS_PROJECT_ID;
+    case "gcs.accountkey.path":
+      return ApplicationConfigs.GCS_ACCOUNT_KEY_PATH;
+    case "gcs.region":
+      return ApplicationConfigs.GCS_REGION;
 
     default:
       log.warn("Could not guess property: {} , check it is well written",

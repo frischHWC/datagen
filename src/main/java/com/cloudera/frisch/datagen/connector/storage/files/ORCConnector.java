@@ -17,14 +17,14 @@
  */
 package com.cloudera.frisch.datagen.connector.storage.files;
 
-import com.cloudera.frisch.datagen.connector.ConnectorInterface;
-import com.cloudera.frisch.datagen.connector.storage.utils.OrcUtils;
-import com.cloudera.frisch.datagen.model.type.*;
-import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
+import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
+import com.cloudera.frisch.datagen.connector.storage.utils.OrcUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
+import com.cloudera.frisch.datagen.model.type.Field;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -35,13 +35,15 @@ import org.apache.orc.Reader;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.Writer;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
- * ORC File sink
+ * ORC File connector
  */
 @SuppressWarnings("unchecked")
 @Slf4j
@@ -79,15 +81,15 @@ public class ORCConnector implements ConnectorInterface {
       batch = schema.createRowBatch();
       vectors = model.createOrcVectors(batch);
 
-      Utils.createLocalDirectory(directoryName);
+      FileUtils.createLocalDirectory(directoryName);
 
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        Utils.deleteAllLocalFiles(directoryName, fileName, "orc");
+        FileUtils.deleteAllLocalFiles(directoryName, fileName, "orc");
       }
 
       if (!oneFilePerIteration) {
-        creatFileWithOverwrite(directoryName + fileName + ".orc");
+        this.writer = OrcUtils.createLocalFileWithOverwrite(directoryName + fileName + ".orc", this.writer, schema);
       }
     }
   }
@@ -109,9 +111,9 @@ public class ORCConnector implements ConnectorInterface {
   @Override
   public void sendOneBatchOfRows(List<Row> rows) {
     if (oneFilePerIteration) {
-      creatFileWithOverwrite(
+      this.writer = OrcUtils.createLocalFileWithOverwrite(
           directoryName + fileName + "-" + String.format("%010d", counter) +
-              ".orc");
+              ".orc", this.writer, schema);
       counter++;
     }
 
@@ -176,16 +178,5 @@ public class ORCConnector implements ConnectorInterface {
     return new Model(fields, primaryKeys, tableNames, options);
   }
 
-  private void creatFileWithOverwrite(String path) {
-    try {
-      Utils.deleteLocalFile(path);
-      new File(path).getParentFile().mkdirs();
-      writer = OrcFile.createWriter(new Path(path),
-          OrcFile.writerOptions(new Configuration())
-              .setSchema(schema));
-    } catch (IOException e) {
-      log.warn("Could not create writer to ORC local file due to error:", e);
-    }
-  }
 
 }

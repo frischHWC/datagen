@@ -26,8 +26,6 @@ public class OptionsConverter {
   public enum PrimaryKeys {
     KAFKA_MSG_KEY,
     HBASE_PRIMARY_KEY,
-    OZONE_BUCKET,
-    OZONE_KEY,
     KUDU_HASH_KEYS,
     KUDU_RANGE_KEYS,
     KUDU_PRIMARY_KEYS
@@ -39,10 +37,6 @@ public class OptionsConverter {
       return PrimaryKeys.KAFKA_MSG_KEY;
     case "HBASE_PRIMARY_KEY":
       return PrimaryKeys.HBASE_PRIMARY_KEY;
-    case "OZONE_BUCKET":
-      return PrimaryKeys.OZONE_BUCKET;
-    case "OZONE_KEY":
-      return PrimaryKeys.OZONE_KEY;
     case "KUDU_PRIMARY_KEYS":
       return PrimaryKeys.KUDU_PRIMARY_KEYS;
     case "KUDU_HASH_KEYS":
@@ -74,6 +68,18 @@ public class OptionsConverter {
     KUDU_TABLE_NAME,
     LOCAL_FILE_PATH,
     LOCAL_FILE_NAME,
+    S3_BUCKET,
+    S3_DIRECTORY,
+    S3_KEY_NAME,
+    S3_LOCAL_FILE_PATH,
+    ADLS_CONTAINER,
+    ADLS_DIRECTORY,
+    ADLS_FILE_NAME,
+    ADLS_LOCAL_FILE_PATH,
+    GCS_BUCKET,
+    GCS_DIRECTORY,
+    GCS_OBJECT_NAME,
+    GCS_LOCAL_FILE_PATH,
     AVRO_NAME
   }
 
@@ -113,6 +119,30 @@ public class OptionsConverter {
       return TableNames.LOCAL_FILE_PATH;
     case "LOCAL_FILE_NAME":
       return TableNames.LOCAL_FILE_NAME;
+    case "S3_BUCKET":
+      return TableNames.S3_BUCKET;
+    case "S3_DIRECTORY":
+      return TableNames.S3_DIRECTORY;
+    case "S3_KEY_NAME":
+      return TableNames.S3_KEY_NAME;
+    case "S3_LOCAL_FILE_PATH":
+      return TableNames.S3_LOCAL_FILE_PATH;
+    case "ADLS_CONTAINER":
+      return TableNames.ADLS_CONTAINER;
+    case "ADLS_DIRECTORY":
+      return TableNames.ADLS_DIRECTORY;
+    case "ADLS_FILE_NAME":
+      return TableNames.ADLS_FILE_NAME;
+    case "ADLS_LOCAL_FILE_PATH":
+      return TableNames.ADLS_LOCAL_FILE_PATH;
+    case "GCS_BUCKET":
+      return TableNames.GCS_BUCKET;
+    case "GCS_DIRECTORY":
+      return TableNames.GCS_DIRECTORY;
+    case "GCS_OBJECT_NAME":
+      return TableNames.GCS_OBJECT_NAME;
+    case "GCS_LOCAL_FILE_PATH":
+      return TableNames.GCS_LOCAL_FILE_PATH;
     case "AVRO_NAME":
       return TableNames.AVRO_NAME;
     default:
@@ -153,7 +183,10 @@ public class OptionsConverter {
     KUDU_BUFFER,
     KUDU_FLUSH,
     OZONE_REPLICATION_FACTOR,
-    HDFS_REPLICATION_FACTOR
+    HDFS_REPLICATION_FACTOR,
+    ADLS_BLOCK_SIZE,
+    ADLS_MAX_UPLOAD_SIZE,
+    ADLS_MAX_CONCURRENCY
   }
 
   static Options convertOptionToOption(String option) {
@@ -220,6 +253,12 @@ public class OptionsConverter {
       return Options.OZONE_REPLICATION_FACTOR;
     case "HDFS_REPLICATION_FACTOR":
       return Options.HDFS_REPLICATION_FACTOR;
+    case "ADLS_BLOCK_SIZE":
+      return Options.ADLS_BLOCK_SIZE;
+    case "ADLS_MAX_UPLOAD_SIZE":
+      return Options.ADLS_MAX_UPLOAD_SIZE;
+    case "ADLS_MAX_CONCURRENCY":
+      return Options.ADLS_MAX_CONCURRENCY;
     default:
       log.warn("Option was not recognized: " + option +
           " , please verify your JSON");

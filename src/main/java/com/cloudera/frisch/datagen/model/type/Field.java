@@ -160,6 +160,9 @@ public abstract class Field<T> {
                                        List<JsonNode> filters,
                                        String file,
                                        String separator,
+                                       String pattern,
+                                       Boolean useNow,
+                                       String regex,
                                        Boolean ghost,
                                        String mainField) {
     if (name == null || name.isEmpty()) {
@@ -288,6 +291,17 @@ public abstract class Field<T> {
     case "UUID":
       field = new UuidField(name);
       break;
+    case "DATE":
+      field = new DateField(name, possibleValues.stream().map(JsonNode::asText)
+          .collect(Collectors.toList()), min, max, useNow);
+      break;
+    case "DATE_AS_STRING":
+      field = new DateAsStringField(name, possibleValues.stream().map(JsonNode::asText)
+          .collect(Collectors.toList()), min, max, useNow, pattern);
+      break;
+    case "STRING_REGEX":
+      field = new StringRegexField(name, regex);
+      break;
     default:
       log.warn("Type : " + type +
           " has not been recognized and hence will be ignored");
@@ -329,6 +343,10 @@ public abstract class Field<T> {
       return "CITY";
     case "csvfield":
       return "CSV";
+    case "dateasstringfield":
+      return "DATE_AS_STRING";
+    case "datefield":
+      return "DATE";
     case "emailfield":
       return "EMAIL";
     case "floatfield":
@@ -355,6 +373,8 @@ public abstract class Field<T> {
       return "STRINGAZ";
     case "stringfield":
       return "STRING";
+    case "stringregexfield":
+      return "STRING_REGEX";
     case "timestampfield":
       return "TIMESTAMP";
     case "uuidfiel":
@@ -367,7 +387,7 @@ public abstract class Field<T> {
     /*
     Below functions could be redefined on each Field
     They provide generic Insertions needed
-    Each time a new sink is added, a new function should be created here (or in each field)
+    Each time a new connector is added, a new function could be created here (or in each field)
      */
 
   public String toStringValue(T value) {

@@ -17,18 +17,21 @@
  */
 package com.cloudera.frisch.datagen.connector.index;
 
-import com.cloudera.frisch.datagen.connector.ConnectorInterface;
-import com.cloudera.frisch.datagen.model.type.Field;
-import com.cloudera.frisch.datagen.utils.Utils;
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
+import com.cloudera.frisch.datagen.connector.ConnectorInterface;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
+import com.cloudera.frisch.datagen.model.type.Field;
+import com.cloudera.frisch.datagen.utils.KerberosUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.*;
+import org.apache.solr.client.solrj.impl.BaseHttpSolrClient;
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.impl.HttpClientUtil;
+import org.apache.solr.client.solrj.impl.Krb5HttpClientBuilder;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 
 import java.io.IOException;
@@ -38,7 +41,7 @@ import java.util.stream.Collectors;
 
 
 /**
- * This is a SolR sink using 8.4.0 API
+ * This is a SolR connector using 8.4.0 API
  * Each instance is linked to a unique SolR collection
  */
 @Slf4j
@@ -80,11 +83,11 @@ public class SolRConnector implements ConnectorInterface {
       try {
         String jaasFilePath = (String) model.getOptionsOrDefault(
             OptionsConverter.Options.SOLR_JAAS_FILE_PATH);
-        Utils.createJaasConfigFile(jaasFilePath, "SolrJClient",
+        KerberosUtils.createJaasConfigFile(jaasFilePath, "SolrJClient",
             properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_KEYTAB),
             properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_USER),
             true, true, false);
-        Utils.createJaasConfigFile(jaasFilePath, "Client",
+        KerberosUtils.createJaasConfigFile(jaasFilePath, "Client",
             properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_KEYTAB),
             properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_USER),
             true, true, true);
@@ -96,7 +99,7 @@ public class SolRConnector implements ConnectorInterface {
             new Krb5HttpClientBuilder();
         HttpClientUtil.setHttpClientBuilder(krb5HttpClientBuilder.getBuilder());
 
-        Utils.loginUserWithKerberos(
+        KerberosUtils.loginUserWithKerberos(
             properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_USER),
             properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_KEYTAB),
             new Configuration());
@@ -144,7 +147,7 @@ public class SolRConnector implements ConnectorInterface {
       log.error("Could not close connection to SolR due to error: ", e);
     }
     if (useKerberos) {
-      Utils.logoutUserWithKerberos();
+      KerberosUtils.logoutUserWithKerberos();
     }
   }
 

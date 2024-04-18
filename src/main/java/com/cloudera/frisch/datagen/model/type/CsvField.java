@@ -118,7 +118,7 @@ public class CsvField extends Field<Map<String, String>> {
 
   @Override
   public String toCSVString(Map<String, String> value) {
-    return value.get(this.mainField) + ",";
+    return "\"" + value.get(this.mainField) + "\",";
   }
 
   @Override
@@ -127,7 +127,7 @@ public class CsvField extends Field<Map<String, String>> {
   }
 
   /*
-   Override if needed Field function to insert into special sinks
+   Override if needed Field function to insert into special connectors
    */
   @Override
   public String toStringValue(Map<String, String> value) {

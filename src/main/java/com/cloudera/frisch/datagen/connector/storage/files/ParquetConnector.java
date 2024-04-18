@@ -20,26 +20,29 @@ package com.cloudera.frisch.datagen.connector.storage.files;
 
 import com.cloudera.frisch.datagen.config.ApplicationConfigs;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
+import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
 import com.cloudera.frisch.datagen.connector.storage.utils.ParquetUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.Row;
-import com.cloudera.frisch.datagen.model.type.*;
-import com.cloudera.frisch.datagen.utils.Utils;
+import com.cloudera.frisch.datagen.model.type.Field;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.parquet.avro.AvroParquetWriter;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetWriter;
-import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
+/**
+ * Parquet Connector to generate one or multiple local parquet files *
+ */
 @Slf4j
 public class ParquetConnector implements ConnectorInterface {
 
@@ -73,15 +76,17 @@ public class ParquetConnector implements ConnectorInterface {
     if (writer) {
       schema = model.getAvroSchema();
 
-      Utils.createLocalDirectory(directoryName);
+      FileUtils.createLocalDirectory(directoryName);
 
       if ((Boolean) model.getOptionsOrDefault(
           OptionsConverter.Options.DELETE_PREVIOUS)) {
-        Utils.deleteAllLocalFiles(directoryName, fileName, "parquet");
+        FileUtils.deleteAllLocalFiles(directoryName, fileName, "parquet");
       }
 
       if (!oneFilePerIteration) {
-        createFileWithOverwrite(directoryName + fileName + ".parquet");
+        this.writer = ParquetUtils.createLocalFileWithOverwrite(
+            directoryName + fileName + ".parquet", schema, this.writer,
+            this.model);
       }
     }
 
@@ -102,9 +107,9 @@ public class ParquetConnector implements ConnectorInterface {
   @Override
   public void sendOneBatchOfRows(List<Row> rows) {
     if (oneFilePerIteration) {
-      createFileWithOverwrite(
+      this.writer = ParquetUtils.createLocalFileWithOverwrite(
           directoryName + fileName + "-" + String.format("%010d", counter) +
-              ".parquet");
+              ".parquet", schema, this.writer, this.model);
       counter++;
     }
     rows.stream().map(row -> row.toGenericRecord(schema))
@@ -155,33 +160,6 @@ public class ParquetConnector implements ConnectorInterface {
     }
 
     return new Model(fields, primaryKeys, tableNames, options);
-  }
-
-  private void createFileWithOverwrite(String path) {
-    try {
-      Utils.deleteLocalFile(path);
-      new File(path).getParentFile().mkdirs();
-      this.writer = AvroParquetWriter
-          .<GenericRecord>builder(new Path(path))
-          .withSchema(schema)
-          .withConf(new Configuration())
-          .withCompressionCodec(CompressionCodecName.SNAPPY)
-          .withPageSize((int) model.getOptionsOrDefault(
-              OptionsConverter.Options.PARQUET_PAGE_SIZE))
-          .withDictionaryEncoding((Boolean) model.getOptionsOrDefault(
-              OptionsConverter.Options.PARQUET_DICTIONARY_ENCODING))
-          .withDictionaryPageSize((int) model.getOptionsOrDefault(
-              OptionsConverter.Options.PARQUET_DICTIONARY_PAGE_SIZE))
-          .withRowGroupSize((int) model.getOptionsOrDefault(
-              OptionsConverter.Options.PARQUET_ROW_GROUP_SIZE))
-          .build();
-      log.debug("Successfully created local Parquet file : " + path);
-
-    } catch (IOException e) {
-      log.error(
-          "Tried to create Parquet local file : " + path + " with no success :",
-          e);
-    }
   }
 
 }

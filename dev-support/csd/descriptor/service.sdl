@@ -2,7 +2,7 @@
   "name": "DATAGEN",
   "label": "Datagen",
   "description": "The service to generate Data into various services of CDP platform",
-  "version": "0.4.14",
+  "version": "0.5.0",
   "parcel": {
     "requiredTags": [
       "datagen"
@@ -779,6 +779,66 @@
           "type": "string"
         },
         {
+          "name": "s3_region",
+          "label": "S3 Region",
+          "description": "Name of the S3 Region where to generate data",
+          "default": "eu-west-3",
+          "type": "string"
+        },
+        {
+          "name": "s3_access_key_id",
+          "label": "S3 Access Key ID",
+          "description": "ID of the S3 Access Key use to generate data",
+          "default": "",
+          "type": "string"
+        },
+        {
+          "name": "s3_access_key_secret",
+          "label": "S3 Access Key Secret",
+          "description": "Secret of the S3 Access Key associated with the S3 access key ID",
+          "default": "",
+          "type": "password"
+        },
+        {
+          "name": "adls_account_name",
+          "label": "ADLS Storage Account Name",
+          "description": "ADLS name of the storage account to use",
+          "default": "",
+          "type": "string"
+        },
+        {
+          "name": "adls_account_type",
+          "label": "ADLS Storage Account Type",
+          "description": "ADLS Storage account ype, can only be: dfs or blob",
+          "default": "dfs",
+          "type": "string_enum",
+          "validValues": [
+            "dfs",
+            "blob"
+          ]
+        },
+        {
+          "name": "adls_sas_token",
+          "label": "ADLS SAS Token",
+          "description": "ADLS SAS Token (Shared Access Token) use to authenticate to Azure",
+          "default": "",
+          "type": "password"
+        },
+        {
+          "name": "gcs_project_id",
+          "label": "Google Cloud Storage Project ID",
+          "description": "Project ID in Google Cloud where to generate data",
+          "default": "",
+          "type": "string"
+        },
+        {
+          "name": "gcs_account_key",
+          "label": "Google Cloud Storage Account key path on local machin",
+          "description": "(Optional): Google Cloud Storage Account key path. Use it only if no authentication has been set on where this server runs",
+          "default": "",
+          "type": "path"
+        },
+        {
           "name": "core_site_path",
           "label": "AUTO-DISCOVERY: Hadoop Core Site Path",
           "description": "Path to core-site.xml. This is used to auto-discover services: HDFS. (if settings are not explicitly set)",
@@ -867,6 +927,15 @@
           "type": "path",
           "pathType": "serviceSpecific",
           "mode": "0755"
+        },
+        {
+          "name": "datagen_home_dir",
+          "label": "Datagen Home Directory",
+          "description": "The local home directory",
+          "default": "/home/datagen",
+          "type": "path",
+          "pathType": "serviceSpecific",
+          "mode": "0750"
         },
         {
           "name": "data_model_received",

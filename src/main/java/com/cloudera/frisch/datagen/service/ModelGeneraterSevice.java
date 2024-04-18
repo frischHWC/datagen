@@ -23,6 +23,7 @@ import com.cloudera.frisch.datagen.config.ConnectorParser;
 import com.cloudera.frisch.datagen.config.PropertiesLoader;
 import com.cloudera.frisch.datagen.connector.ConnectorInterface;
 import com.cloudera.frisch.datagen.connector.ConnectorsUtils;
+import com.cloudera.frisch.datagen.connector.storage.utils.FileUtils;
 import com.cloudera.frisch.datagen.model.Model;
 import com.cloudera.frisch.datagen.model.OptionsConverter;
 import lombok.extern.slf4j.Slf4j;
@@ -39,9 +40,17 @@ import java.util.Random;
 @Slf4j
 public class ModelGeneraterSevice {
 
+  private PropertiesLoader propertiesLoader;
 
   @Autowired
-  private PropertiesLoader propertiesLoader;
+  public ModelGeneraterSevice(PropertiesLoader propertiesLoader) {
+    this.propertiesLoader = propertiesLoader;
+
+    FileUtils.createLocalDirectory(propertiesLoader.getPropertiesCopy()
+        .get(ApplicationConfigs.DATA_MODEL_GENERATED_PATH));
+    FileUtils.createLocalDirectory(propertiesLoader.getPropertiesCopy()
+        .get(ApplicationConfigs.DATA_MODEL_PATH_DEFAULT));
+  }
 
   public String generateModel(
       String source,
@@ -58,23 +67,35 @@ public class ModelGeneraterSevice {
 
     Model modelEmpty = new Model();
     Map<OptionsConverter.TableNames, String> tableNames = modelEmpty.getTableNames();
-    tableNames.put(OptionsConverter.TableNames.HIVE_DATABASE, database);
-    tableNames.put(OptionsConverter.TableNames.HIVE_TABLE_NAME, table);
     if(source.contains("hdfs")) {
       tableNames.put(OptionsConverter.TableNames.HDFS_FILE_PATH, filepath);
-    } else {
+    } else if(source.contains("hive")) {
+      tableNames.put(OptionsConverter.TableNames.HIVE_DATABASE, database);
+      tableNames.put(OptionsConverter.TableNames.HIVE_TABLE_NAME, table);
+    } else if(source.contains("ozone")) {
+      tableNames.put(OptionsConverter.TableNames.OZONE_VOLUME, volume);
+      tableNames.put(OptionsConverter.TableNames.OZONE_BUCKET, bucket);
+      tableNames.put(OptionsConverter.TableNames.OZONE_KEY_NAME, key);
+    } else if(source.contains("s3")) {
+      tableNames.put(OptionsConverter.TableNames.S3_BUCKET, bucket);
+      tableNames.put(OptionsConverter.TableNames.S3_KEY_NAME, key);
+    } else if(source.contains("adls")) {
+      tableNames.put(OptionsConverter.TableNames.ADLS_CONTAINER, bucket);
+      tableNames.put(OptionsConverter.TableNames.ADLS_FILE_NAME, key);
+    } else if(source.contains("gcs")) {
+      tableNames.put(OptionsConverter.TableNames.GCS_BUCKET, bucket);
+      tableNames.put(OptionsConverter.TableNames.GCS_OBJECT_NAME, key);
+    }
+    else {
       tableNames.put(OptionsConverter.TableNames.LOCAL_FILE_PATH, filepath);
     }
-    tableNames.put(OptionsConverter.TableNames.OZONE_VOLUME, volume);
-    tableNames.put(OptionsConverter.TableNames.OZONE_BUCKET, bucket);
-    tableNames.put(OptionsConverter.TableNames.OZONE_KEY_NAME, key);
 
     String outputPath = properties.get(ApplicationConfigs.DATA_MODEL_GENERATED_PATH) +
             "/model-generated-" + new Random().nextInt() + ".json";
 
     ConnectorInterface connector = ConnectorsUtils
-        .sinksInit(modelEmpty, properties,
-            Collections.singletonList(ConnectorParser.stringToSink(source)), false)
+        .connectorInit(modelEmpty, properties,
+            Collections.singletonList(ConnectorParser.stringToConnector(source)), false)
         .get(0);
 
     return connector.generateModel(deepAnalysis).toJsonSchema(outputPath);

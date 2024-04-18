@@ -15,12 +15,13 @@ hadoop.home=/user/${USER}
 threads={{ globals['threads'] }}
 number.batches.default={{ globals['number_of_batches'] }}
 number.rows.default={{ globals['number_of_rows'] }}
-data.model.path=${DATAGEN_MODELS_DIR}
-data.model.received.path={{ globals['data_model_received'] }}
-data.model.generated.path={{ globals['data_model_generated'] }}
-data.model.default={{ globals['data_model'] }}
-custom.data.model={{ globals['custom_model_path'] }}
-scheduler.file.path={{ globals['scheduler_file_path'] }}
+datagen.home.directory={{ globals['datagen_home_dir'] }}
+datagen.model.path=${DATAGEN_MODELS_DIR}
+datagen.model.received.path={{ globals['data_model_received'] }}
+datagen.model.generated.path={{ globals['data_model_generated'] }}
+datagen.model.default={{ globals['data_model'] }}
+datagen.custom.model={{ globals['custom_model_path'] }}
+datagen.scheduler.file.path={{ globals['scheduler_file_path'] }}
 
 {% if globals['tls_enabled'] == 'true' %}
 # Spring internal TLS settings
@@ -149,3 +150,19 @@ kudu.security.user=#{kerberos.user}
 kudu.security.keytab=#{kerberos.keytab}
 kudu.truststore.location=#{truststore.location}
 kudu.truststore.password=#{truststore.password}
+
+# S3
+s3.access_key.id={{ globals['s3_access_key_id'] }}
+s3.access_key.secret={{ globals['s3_access_key_secret'] }}
+s3.region={{ globals['s3_region'] }}
+
+# Azure
+adls.account.name={{ globals['adls_account_name'] }}
+# Type can be either dfs or blob
+adls.account.type={{ globals['adls_account_type'] }}
+adls.sas.token={{ globals['adls_sas_token'] }}
+
+# GCS
+gcs.project.id={{ globals['gcs_project_id'] }}
+# Only if using a service account key, otherwise use any other ADC login
+gcs.accountkey.path={{ globals['gcs_account_key'] }}

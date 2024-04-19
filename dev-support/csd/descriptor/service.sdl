@@ -833,10 +833,12 @@
         },
         {
           "name": "gcs_account_key",
-          "label": "Google Cloud Storage Account key path on local machin",
+          "label": "Google Cloud Storage Account key path on local machine",
           "description": "(Optional): Google Cloud Storage Account key path. Use it only if no authentication has been set on where this server runs",
           "default": "",
-          "type": "path"
+          "type": "path",
+          "pathType": "serviceSpecific",
+          "mode": "0600"
         },
         {
           "name": "core_site_path",

@@ -54,21 +54,17 @@ public class PropertiesLoader {
     properties = new HashMap<>();
 
     // Load config file
-    java.util.Properties propertiesAsProperties =
-        new java.util.Properties();
+    java.util.Properties propertiesAsProperties = new java.util.Properties();
 
-    String pathToApplicationProperties =
-        "src/main/resources/application.properties";
-    if (springConfig.getActiveProfile()
-        .equalsIgnoreCase("cdp")) {
-      log.info(
-          "Detected to be in cdp profile, so will load service.properties file");
+    String pathToApplicationProperties = "application-" + springConfig.getActiveProfile() + ".properties";
+    if (springConfig.getActiveProfile().equalsIgnoreCase("cdp")) {
       pathToApplicationProperties = "service.properties";
-    } else if (!springConfig.getActiveProfile().equalsIgnoreCase("dev")) {
-      log.info("Detected another profile to be loaded, will use it");
-      pathToApplicationProperties = "src/main/resources/application-" +
-          springConfig.getActiveProfile() + ".properties";
+    } else if (springConfig.getActiveProfile().equalsIgnoreCase("dev") || 
+        springConfig.getActiveProfile().equalsIgnoreCase("test")) {
+      pathToApplicationProperties = "src/main/resources/application-" + springConfig.getActiveProfile() + ".properties";
     }
+
+    log.info("Detected to be in {} profile, will use properties file in: {}", springConfig.getActiveProfile(), pathToApplicationProperties);
 
     try {
       log.info("Reading properties from file : {}",
@@ -288,7 +284,8 @@ public class PropertiesLoader {
     }
 
     if (properties.get(ApplicationConfigs.KAFKA_SECURITY_PROTOCOL) ==
-        null) {
+        null &&
+        properties.get(ApplicationConfigs.KAFKA_CONF_CLIENT_PATH) != null) {
       log.info("Going to auto-discover kafka.security.protocol");
       String tlsEnabled = Utils.getOnePropertyValueFromPropertiesFile(
           properties.get(ApplicationConfigs.KAFKA_CONF_CLIENT_PATH),

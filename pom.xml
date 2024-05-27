@@ -6,7 +6,7 @@
 
     <groupId>com.cloudera.frisch</groupId>
     <artifactId>datagen</artifactId>
-    <version>0.5.0</version>
+    <version>0.5.1</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -19,8 +19,11 @@
         <java.version>11</java.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <!-- Check your EXACT version of CDP as all platform jars depends on it -->
+        <!-- Check your EXACT version of CDP as all CDP jars depends on it -->
         <cdp.version>7.1.9.4-4</cdp.version>
+        <gcp.version>26.34.0</gcp.version>
+        <aws.version>2.25.31</aws.version>
+        <azure.version>1.2.22</azure.version>
     </properties>
 
     <!-- Cloudera repository needed to get good CDP versions of jars -->
@@ -230,21 +233,21 @@
             <dependency>
                 <groupId>com.google.cloud</groupId>
                 <artifactId>libraries-bom</artifactId>
-                <version>26.34.0</version>
+                <version>${gcp.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-sdk-bom</artifactId>
-                <version>1.2.22</version>
+                <version>${azure.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
                 <artifactId>bom</artifactId>
-                <version>2.25.31</version>
+                <version>${aws.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

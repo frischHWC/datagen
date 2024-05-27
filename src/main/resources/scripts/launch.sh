@@ -17,17 +17,17 @@
 # under the License.
 #
 #!/usr/bin/env bash
-
-export DIR="/home/datagen/deploy/"
-
-echo "*** Starting to launch program ***"
-
-    cd $DIR
-
 echo "Launching jar via java command"
 
-    export JAVA_HOME=/usr/lib/jvm/java-11/
-    ${JAVA_HOME}/bin/java -Dnashorn.args=--no-deprecation-warning --add-opens java.base/jdk.internal.ref=ALL-UNNAMED -Dspring.profiles.active=cdp -Dserver.port=4242 -Xmx16G -jar datagen.jar --spring.config.location=file:${DIR}/application-test.properties $@
+    #export JAVA_HOME=/usr/lib/jvm/java-11/
+
+    ${JAVA_HOME}/bin/java \
+    -Dnashorn.args=--no-deprecation-warning --add-opens java.base/jdk.internal.ref=ALL-UNNAMED \
+    -Xmx2G -Xms1G \
+    -Dserver.port=4242 \
+    -Dlogging.config=file:$(pwd)/logback-spring.xml \
+    -Dspring.profiles.active=standalone \
+    -jar datagen.jar --spring.config.location=file:$(pwd)/application-standalone.properties
 
     sleep 5
 

@@ -24,24 +24,20 @@
 
 export USER=root
 export DEST_DIR="/home/datagen/deploy/"
+export DATAGEN_VERSION="0.5.1"
 
 echo "Create needed directory on platform and send required files there"
 
-ssh ${SSH_KEY} ${USER}@${HOST} "mkdir -p ${DEST_DIR}/"
-ssh ${SSH_KEY} ${USER}@${HOST} "mkdir -p ${DEST_DIR}/resources/"
+ssh ${SSH_KEY} ${USER}${SSH_PASSWORD}@${HOST} "mkdir -p ${DEST_DIR}/"
 
 scp ${SSH_KEY} src/main/resources/models/*.json ${USER}@${HOST}:${DEST_DIR}/
-scp ${SSH_KEY} src/main/resources/dictionnaries/* ${USER}@${HOST}:${DEST_DIR}/
-scp ${SSH_KEY} src/main/resources/*.properties ${USER}@${HOST}:${DEST_DIR}/
+scp ${SSH_KEY} src/main/resources/logback-spring.xml ${USER}@${HOST}:${DEST_DIR}/
+scp ${SSH_KEY} src/main/resources/application.properties ${USER}@${HOST}:${DEST_DIR}/application-standalone.properties
 scp ${SSH_KEY} src/main/resources/scripts/launch.sh ${USER}@${HOST}:${DEST_DIR}/
 
 ssh ${SSH_KEY} ${USER}@${HOST} "chmod +x ${DEST_DIR}/launch.sh"
 
-cd target/
-tar -cvzf datagen.tar.gz datagen-*.jar
-cd ../
-scp ${SSH_KEY} target/datagen.tar.gz ${USER}@${HOST}:${DEST_DIR}/datagen.tar.gz
-ssh ${SSH_KEY} ${USER}@${HOST} "tar -xvzf ${DEST_DIR}/ ${DEST_DIR}/datagen.tar.gz"
+scp ${SSH_KEY} "target/datagen-${DATAGEN_VERSION}.jar" ${USER}@${HOST}:${DEST_DIR}/datagen.jar
 
 echo "Finished to send required files"
 

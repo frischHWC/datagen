@@ -55,7 +55,6 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     return http
-        .requiresChannel(channel -> channel.anyRequest().requiresSecure())
         .authorizeRequests(
             authorize -> authorize.antMatchers("/metrics/**").permitAll())
         .authorizeRequests(
@@ -64,6 +63,7 @@ public class SecurityConfig {
         .httpBasic(withDefaults())
         .csrf().disable()
         .build();
+
   }
 
   @Bean

@@ -17,7 +17,7 @@
 # under the License.
 #
 #!/bin/bash
-export DATAGEN_VERSION="0.4.15"
+export DATAGEN_VERSION="0.5.1"
 export CDP_VERSION="7.1.9.4"
 
 export DISTRIBUTIONS_TO_BUILD="el7 el8 sles15"
@@ -124,7 +124,7 @@ then
 fi
 if [ -z ${STANDALONE_DIR} ]
 then
-  export STANDALONE_DIR="/tmp/datagen_standalone-${DATAGEN_VERSION}-${CDP_VERSION}"
+  export STANDALONE_DIR="/tmp/datagen_standalone-${DATAGEN_VERSION}"
 fi
 
 # INTERNAL: Do not touch these
@@ -168,16 +168,15 @@ then
     mkdir -p  ${STANDALONE_DIR}/models/
     mkdir -p  ${STANDALONE_DIR}/dictionaries/
 
+    cp -Rp ../../../src/main/resources/application.properties "${STANDALONE_DIR}/application-standalone.properties"
     cp -Rp ../../../src/main/resources/logback-spring.xml "${STANDALONE_DIR}/"
-    cp -Rp ../../../src/main/resources/application.properties "${STANDALONE_DIR}/"
-    cp -Rp ../../../target/datagen*.jar "${STANDALONE_DIR}/datagen-${DATAGEN_VERSION}.jar"
-    cp -Rp ../../../src/main/resources/dictionaries/* "${STANDALONE_DIR}/dictionaries/"
+    cp -Rp ../../../target/datagen*.jar "${STANDALONE_DIR}/datagen.jar"
     cp -Rp ../../../src/main/resources/models/* "${STANDALONE_DIR}/models/"
     cp -Rp ../../../src/main/resources/scripts/launch.sh "${STANDALONE_DIR}/"
 
     # For BSD-like, tar includes some files which should not be present to be GNU-compliant
     export COPYFILE_DISABLE=true
-    tar -czv --no-xattrs --exclude '._*' -f "${STANDALONE_DIR}/datagen-standalone-files.tar.gz" "${STANDALONE_DIR}/"
+    tar -czv --no-xattrs --exclude '._*' -f "${STANDALONE_DIR}/datagen-standalone-files.tar.gz" -C "${STANDALONE_DIR}/.." $(basename ${STANDALONE_DIR})
 
 fi
 

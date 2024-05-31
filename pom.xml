@@ -269,7 +269,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.cloudera.frisch.datagen.Main</mainClass>
+                    <mainClass>com.datagen.Main</mainClass>
                 </configuration>
             </plugin>
         </plugins>

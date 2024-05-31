@@ -107,7 +107,7 @@ public class OrcUtils {
             new LinkedHashMap<>(), null, null);
         break;
       case TIMESTAMP:
-        f = new TimestampField(columnName, null, Collections.emptyList());
+        f = new TimestampField(columnName, Collections.emptyList());
         break;
       case DATE:
         f = new BirthdateField(columnName, null, Collections.emptyList(),

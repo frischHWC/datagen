@@ -28,15 +28,12 @@ import org.apache.kudu.client.PartialRow;
 import org.apache.orc.TypeDescription;
 
 import java.sql.SQLException;
-import java.util.List;
 
 @Slf4j
 public class IpField extends Field<String> {
 
-  public IpField(String name, Integer length, List<String> possibleValues) {
+  public IpField(String name) {
     this.name = name;
-    this.length = length;
-    this.possibleValues = possibleValues;
   }
 
   public String generateRandomValue() {

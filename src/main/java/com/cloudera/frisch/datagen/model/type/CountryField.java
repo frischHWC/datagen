@@ -45,7 +45,6 @@ public class CountryField extends Field<String> {
   public CountryField(String name, Integer length,
                       List<String> possibleValues) {
     this.name = name;
-    this.length = length;
     this.possibleValues = possibleValues;
     this.countryDico =
         possibleValues.isEmpty() ? loadCountryDico() : possibleValues;

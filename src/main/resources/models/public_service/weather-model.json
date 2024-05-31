@@ -116,13 +116,11 @@
     "LOCAL_FILE_NAME":  "weather",
     "AVRO_NAME":  "datagenpublicserviceweather"
   },
-  "Primary_Keys": {
+  "Options": {
     "KAFKA_MSG_KEY": "city",
     "KUDU_PRIMARY_KEYS":  "city,date",
     "KUDU_HASH_KEYS":  "date",
-    "KUDU_RANGE_KEYS":  "city"
-  },
-  "Options": {
+    "KUDU_RANGE_KEYS":  "city",
     "SOLR_SHARDS":  3,
     "SOLR_REPLICAS":  1,
     "KAFKA_ACKS_CONFIG":  "all",

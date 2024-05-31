@@ -12,9 +12,9 @@ hadoop.user=${USER}
 hadoop.home=/user/${USER}
 
 # General default Conf
-threads={{ globals['threads'] }}
-number.batches.default={{ globals['number_of_batches'] }}
-number.rows.default={{ globals['number_of_rows'] }}
+generation.threads.default={{ globals['threads'] }}
+generation.batches.default={{ globals['number_of_batches'] }}
+generation.rows.default={{ globals['number_of_rows'] }}
 datagen.home.directory={{ globals['datagen_home_dir'] }}
 datagen.model.path=${DATAGEN_MODELS_DIR}
 datagen.model.received.path={{ globals['data_model_received'] }}

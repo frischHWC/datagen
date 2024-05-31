@@ -55,7 +55,7 @@ public class BirthdateField extends Field<LocalDate> {
           .toEpochDay();
     }
     if (max == null) {
-      this.max = LocalDate.of(2022, 1, 1).toEpochDay();
+      this.max = LocalDate.of(2024, 1, 1).toEpochDay();
     } else {
       String[] maxSplit = max.split("[/]");
       this.max = LocalDate.of(Integer.parseInt(maxSplit[2]),
@@ -65,7 +65,7 @@ public class BirthdateField extends Field<LocalDate> {
   }
 
   /**
-   * Generates a random birth date between 1910 & 2022 (unless min & max are specified)
+   * Generates a random birth date between 1910 & 2024 (unless min & max are specified)
    * @return
    */
   public LocalDate generateRandomValue() {

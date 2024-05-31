@@ -71,13 +71,6 @@
     "LOCAL_FILE_NAME":  "customer-jp",
     "AVRO_NAME":  "datagencustomer"
   },
-  "Primary_Keys": {
-    "KAFKA_MSG_KEY": "membership",
-    "HBASE_PRIMARY_KEY":  "id",
-    "KUDU_PRIMARY_KEYS":  "country,city,id",
-    "KUDU_HASH_KEYS":  "id",
-    "KUDU_RANGE_KEYS":  "country,city"
-  },
   "Options": {
     "HBASE_COLUMN_FAMILIES_MAPPING": "details:name,email,country,birthdate,phone_number;technicals:membership,id",
     "SOLR_SHARDS":  1,

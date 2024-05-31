@@ -28,7 +28,6 @@ import org.apache.kudu.client.PartialRow;
 import org.apache.orc.TypeDescription;
 
 import java.sql.SQLException;
-import java.util.List;
 
 @Slf4j
 public class IncrementLongField extends Field<Long> {
@@ -36,21 +35,14 @@ public class IncrementLongField extends Field<Long> {
   private Long counter = 0L;
 
   public IncrementLongField(String name,
-                            List<Long> possibleValues,
-                            String min, String max) {
+                            String min) {
     this.name = name;
     if (min == null) {
       this.min = 0L;
     } else {
       this.min = Long.parseLong(min);
     }
-    if (max == null) {
-      this.max = Long.MAX_VALUE;
-    } else {
-      this.max = Long.parseLong(max);
-    }
     counter = this.min;
-    this.possibleValues = possibleValues;
   }
 
   public synchronized Long generateRandomValue() {

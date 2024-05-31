@@ -33,10 +33,9 @@ import java.util.List;
 @Slf4j
 public class TimestampField extends Field<Long> {
 
-  public TimestampField(String name, Integer length,
+  public TimestampField(String name,
                         List<Long> possibleValues) {
     this.name = name;
-    this.length = length;
     this.possibleValues = possibleValues;
   }
 

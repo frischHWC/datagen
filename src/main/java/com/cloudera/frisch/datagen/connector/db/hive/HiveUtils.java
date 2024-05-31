@@ -140,7 +140,7 @@ public class HiveUtils {
               new LinkedHashMap<>(), null, null);
           break;
         case "TIMESTAMP":
-          f = new TimestampField(colName, null, Collections.emptyList());
+          f = new TimestampField(colName, Collections.emptyList());
           break;
         case "DATE":
         case "INTERVAL":

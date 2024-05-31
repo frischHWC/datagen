@@ -79,10 +79,9 @@ public class EmailField extends Field<String> {
   private List<String> nameDicoasString;
   private List<Name> nameDico;
 
-  public EmailField(String name, Integer length, List<String> possibleValues,
+  public EmailField(String name, List<String> possibleValues,
                     List<String> filters) {
     this.name = name;
-    this.length = length;
     this.possibleValues = possibleValues;
     this.nameDico = loadNameDico();
 

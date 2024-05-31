@@ -199,9 +199,7 @@ public abstract class Field<T> {
           max);
       break;
     case "INCREMENT_INTEGER":
-      field = new IncrementIntegerField(name,
-          possibleValues.stream().map(JsonNode::asInt)
-              .collect(Collectors.toList()), min, max);
+      field = new IncrementIntegerField(name, min);
       break;
     case "BOOLEAN":
       field = new BooleanField(name,
@@ -221,12 +219,10 @@ public abstract class Field<T> {
           max);
       break;
     case "INCREMENT_LONG":
-      field = new IncrementLongField(name,
-          possibleValues.stream().map(JsonNode::asLong)
-              .collect(Collectors.toList()), min, max);
+      field = new IncrementLongField(name, min);
       break;
     case "TIMESTAMP":
-      field = new TimestampField(name, length,
+      field = new TimestampField(name,
           possibleValues.stream().map(JsonNode::asLong)
               .collect(Collectors.toList()));
       break;
@@ -255,7 +251,7 @@ public abstract class Field<T> {
               .collect(Collectors.toList()));
       break;
     case "CITY":
-      field = new CityField(name, length,
+      field = new CityField(name,
           filters.stream().map(JsonNode::asText).collect(Collectors.toList()));
       break;
     case "BLOB":
@@ -264,15 +260,13 @@ public abstract class Field<T> {
               .collect(Collectors.toList()));
       break;
     case "EMAIL":
-      field = new EmailField(name, length,
+      field = new EmailField(name,
           possibleValues.stream().map(JsonNode::asText)
               .collect(Collectors.toList()),
           filters.stream().map(JsonNode::asText).collect(Collectors.toList()));
       break;
     case "IP":
-      field = new IpField(name, length,
-          possibleValues.stream().map(JsonNode::asText)
-              .collect(Collectors.toList()));
+      field = new IpField(name);
       break;
     case "LINK":
       field = new LinkField(name, length,

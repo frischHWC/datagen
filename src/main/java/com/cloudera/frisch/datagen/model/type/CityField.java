@@ -77,9 +77,8 @@ public class CityField extends Field<CityField.City> {
 
   private List<City> cityDico;
 
-  public CityField(String name, Integer length, List<String> filters) {
+  public CityField(String name, List<String> filters) {
     this.name = name;
-    this.length = length;
     this.cityDico = loadCityDico();
 
     List<City> possibleCities = new ArrayList<>();

@@ -39,11 +39,11 @@ public class ApplicationConfigMapper {
       return ApplicationConfigs.HADOOP_USER;
     case "hadoop.home":
       return ApplicationConfigs.HADOOP_HOME;
-    case "threads":
+    case "generation.threads.default":
       return ApplicationConfigs.THREADS;
-    case "number.batches.default":
+    case "generation.batches.default":
       return ApplicationConfigs.NUMBER_OF_BATCHES_DEFAULT;
-    case "number.rows.default":
+    case "generation.rows.default":
       return ApplicationConfigs.NUMBER_OF_ROWS_DEFAULT;
     case "datagen.home.directory":
       return ApplicationConfigs.DATA_HOME_DIRECTORY;

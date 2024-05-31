@@ -19,7 +19,6 @@ package com.cloudera.frisch.datagen.parsers;
 
 
 import com.cloudera.frisch.datagen.model.Model;
-import com.cloudera.frisch.datagen.model.OptionsConverter;
 import com.cloudera.frisch.datagen.model.type.Field;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,9 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Goal of this class is to be able to parse a codified file JSON and render a model based on it
@@ -60,20 +56,6 @@ public class JsonUnparser implements UnParser {
 
     root.putPOJO("Table_Names", model.getTableNames());
     root.putPOJO("Options", model.getOptions());
-
-    Map<OptionsConverter.PrimaryKeys, String> primaryKeys = new HashMap<>();
-    // Just flatten tje primary keys to be a list separated by a comma
-    model.getPrimaryKeys().forEach((k, v) -> {
-      List<String> vCasted = (List<String>) v;
-      StringBuilder sb = new StringBuilder();
-      vCasted.forEach(vc -> {
-        sb.append(vc);
-        sb.append(",");
-      });
-      sb.deleteCharAt(sb.lastIndexOf(","));
-      primaryKeys.put((OptionsConverter.PrimaryKeys) k, sb.toString());
-    });
-    root.putPOJO("Primary_Keys", primaryKeys);
 
     ArrayNode fieldsArray = root.putArray("Fields");
     model.getFields().forEach((name, f) -> {

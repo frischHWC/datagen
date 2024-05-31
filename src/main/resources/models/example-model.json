@@ -54,13 +54,11 @@
 
     "AVRO_NAME": "datagenMODEL_NAME"
   },
-  "Primary_Keys": {
+  "Options": {
     "KAFKA_MSG_KEY": "name",
     "HBASE_PRIMARY_KEY": "name",
     "KUDU_PRIMARY_KEYS": "name,age",
-    "KUDU_RANGE_KEYS": "age"
-  },
-  "Options": {
+    "KUDU_RANGE_KEYS": "age",
     "DELETE_PREVIOUS": false,
     "ONE_FILE_PER_ITERATION": true,
     "CSV_HEADER": true,

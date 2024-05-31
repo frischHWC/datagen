@@ -53,10 +53,8 @@
     "LOCAL_FILE_NAME":  "incident",
     "AVRO_NAME":  "datagenpublicserviceincident"
   },
-  "Primary_Keys": {
-    "KAFKA_MSG_KEY": "city"
-  },
   "Options": {
+    "KAFKA_MSG_KEY": "city",
     "KAFKA_ACKS_CONFIG":  "all",
     "KAFKA_RETRIES_CONFIG":  3,
     "KAFKA_MESSAGE_TYPE":  "AVRO",

@@ -18,8 +18,8 @@
         <logger name="org.apache.hadoop.hdfs.shortcircuit.DomainSocketFactory" level="ERROR" />
         <logger name="com.azure.core.util.logging.ClientLogger" level="ERROR" />
 
-        <!-- LOG everything at DEBUG level -->
-        <root level="debug">
+        <!-- LOG everything at INFO level -->
+        <root level="INFO">
             <appender-ref ref="Console" />
         </root>
 
@@ -42,8 +42,8 @@
         <logger name="org.apache.hadoop.hdfs.shortcircuit.DomainSocketFactory" level="ERROR" />
         <logger name="com.azure.core.util.logging.ClientLogger" level="ERROR" />
 
-        <!-- LOG everything at DEBUG level -->
-        <root level="debug">
+        <!-- LOG everything at INFO level -->
+        <root level="INFO">
             <appender-ref ref="Console" />
         </root>
 

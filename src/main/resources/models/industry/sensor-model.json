@@ -37,12 +37,6 @@
     "LOCAL_FILE_NAME":  "sensor",
     "AVRO_NAME":  "datagenindustrysensor"
   },
-  "Primary_Keys": {
-    "KAFKA_MSG_KEY": "sensor_id",
-    "HBASE_PRIMARY_KEY":  "sensor_id",
-    "KUDU_PRIMARY_KEYS":  "sensor_id",
-    "KUDU_HASH_KEYS":  "sensor_id"
-  },
   "Options": {
     "HBASE_COLUMN_FAMILIES_MAPPING": "parties:sender_id,receiver_id;details:amount,execution_date,currency",
     "DELETE_PREVIOUS":  "true",

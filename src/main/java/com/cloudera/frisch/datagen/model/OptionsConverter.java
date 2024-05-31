@@ -23,33 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OptionsConverter {
 
-  public enum PrimaryKeys {
-    KAFKA_MSG_KEY,
-    HBASE_PRIMARY_KEY,
-    KUDU_HASH_KEYS,
-    KUDU_RANGE_KEYS,
-    KUDU_PRIMARY_KEYS
-  }
-
-  static PrimaryKeys convertOptionToPrimaryKey(String option) {
-    switch (option.toUpperCase()) {
-    case "KAFKA_MSG_KEY":
-      return PrimaryKeys.KAFKA_MSG_KEY;
-    case "HBASE_PRIMARY_KEY":
-      return PrimaryKeys.HBASE_PRIMARY_KEY;
-    case "KUDU_PRIMARY_KEYS":
-      return PrimaryKeys.KUDU_PRIMARY_KEYS;
-    case "KUDU_HASH_KEYS":
-      return PrimaryKeys.KUDU_HASH_KEYS;
-    case "KUDU_RANGE_KEYS":
-      return PrimaryKeys.KUDU_RANGE_KEYS;
-    default:
-      log.warn("Option was not recognized: " + option +
-          " , please verify your JSON");
-      return null;
-    }
-  }
-
   public enum TableNames {
     HDFS_FILE_PATH,
     HDFS_FILE_NAME,
@@ -153,6 +126,11 @@ public class OptionsConverter {
   }
 
   public enum Options {
+    KAFKA_MSG_KEY,
+    HBASE_PRIMARY_KEY,
+    KUDU_HASH_KEYS,
+    KUDU_RANGE_KEYS,
+    KUDU_PRIMARY_KEYS,
     HBASE_COLUMN_FAMILIES_MAPPING,
     SOLR_SHARDS,
     SOLR_REPLICAS,
@@ -191,6 +169,16 @@ public class OptionsConverter {
 
   static Options convertOptionToOption(String option) {
     switch (option.toUpperCase()) {
+    case "KAFKA_MSG_KEY":
+      return Options.KAFKA_MSG_KEY;
+    case "HBASE_PRIMARY_KEY":
+      return Options.HBASE_PRIMARY_KEY;
+    case "KUDU_PRIMARY_KEYS":
+      return Options.KUDU_PRIMARY_KEYS;
+    case "KUDU_HASH_KEYS":
+      return Options.KUDU_HASH_KEYS;
+    case "KUDU_RANGE_KEYS":
+      return Options.KUDU_RANGE_KEYS;
     case "HBASE_COLUMN_FAMILIES_MAPPING":
       return Options.HBASE_COLUMN_FAMILIES_MAPPING;
     case "SOLR_SHARDS":

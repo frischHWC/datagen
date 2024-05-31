@@ -75,15 +75,6 @@ public class Row<T extends Field> {
     return sb.toString();
   }
 
-  public String getPrimaryKeysValues(OptionsConverter.PrimaryKeys pk) {
-    LinkedList<String> pkNames =
-        (LinkedList<String>) model.getPrimaryKeys().get(pk);
-    StringBuilder sb = new StringBuilder();
-    pkNames.forEach(key -> sb.append(
-        model.getFieldFromName(key).toStringValue(values.get(key))));
-    return sb.toString();
-  }
-
   public String toCSV() {
     StringBuilder sb = new StringBuilder();
     // Use of Model LinkedList of fields to keep order of fields
@@ -119,8 +110,8 @@ public class Row<T extends Field> {
             model.getFieldFromName(name.toString())
                 .toAvroValue(values.get(name.toString())))
     );
-    return new AbstractMap.SimpleEntry<>(
-        getPrimaryKeysValues(OptionsConverter.PrimaryKeys.KAFKA_MSG_KEY),
+    return new AbstractMap.SimpleEntry<>( (String)
+        model.getOptionsOrDefault(OptionsConverter.Options.KAFKA_MSG_KEY),
         genericRecordRow);
   }
 
@@ -133,13 +124,13 @@ public class Row<T extends Field> {
       value = this.toJSON();
     }
     return new AbstractMap.SimpleEntry<>(
-        getPrimaryKeysValues(OptionsConverter.PrimaryKeys.KAFKA_MSG_KEY),
+        (String) model.getOptionsOrDefault(OptionsConverter.Options.KAFKA_MSG_KEY),
         value);
   }
 
   public Put toHbasePut() {
     Put put = new Put(Bytes.toBytes(
-        getPrimaryKeysValues(OptionsConverter.PrimaryKeys.HBASE_PRIMARY_KEY)));
+        (String) model.getOptionsOrDefault(OptionsConverter.Options.HBASE_PRIMARY_KEY)));
     this.model.getFieldsToPrint().forEach((name, fieldtype) ->
         model.getFieldFromName(name.toString())
             .toHbasePut(values.get(name.toString()), put)

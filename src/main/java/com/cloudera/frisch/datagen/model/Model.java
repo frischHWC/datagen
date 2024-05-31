@@ -72,9 +72,6 @@ public class Model<T extends Field> {
 
   @Getter
   @Setter
-  private Map<OptionsConverter.PrimaryKeys, LinkedList<String>> primaryKeys;
-  @Getter
-  @Setter
   private Map<OptionsConverter.TableNames, String> tableNames;
   @Getter
   @Setter
@@ -108,7 +105,6 @@ public class Model<T extends Field> {
       }
     });
 
-    this.primaryKeys = convertPrimaryKeys(primaryKeys);
     this.tableNames = convertTableNames(tableNames);
     this.options = convertOptions(options);
 
@@ -146,7 +142,6 @@ public class Model<T extends Field> {
     this.fields = new LinkedHashMap<>();
     this.fieldsToPrint = new LinkedHashMap<>();
     this.options = new HashMap<>();
-    this.primaryKeys = new HashMap<>();
     this.tableNames = new HashMap<>();
   }
 
@@ -154,16 +149,6 @@ public class Model<T extends Field> {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append(fields.toString());
-    sb.append("Primary Keys : [");
-    primaryKeys.forEach((pk, fl) -> {
-      sb.append(pk);
-      sb.append(" : { ");
-      sb.append(fl.toString());
-      sb.append(" }");
-      sb.append(System.getProperty("line.separator"));
-    });
-    sb.append("]");
-    sb.append(System.getProperty("line.separator"));
 
     sb.append("Table Names : [");
     tableNames.forEach((tb, value) -> {
@@ -240,24 +225,6 @@ public class Model<T extends Field> {
     return fields.get(name);
   }
 
-  /**
-   * To convert the options passed in String format to a Java object with list of primary keys
-   * @param pks
-   * @return
-   */
-  private Map<OptionsConverter.PrimaryKeys, LinkedList<String>> convertPrimaryKeys(
-      Map<String, List<String>> pks) {
-    Map<OptionsConverter.PrimaryKeys, LinkedList<String>> pksConverted =
-        new HashMap<>();
-    pks.forEach((k, v) -> {
-      OptionsConverter.PrimaryKeys pk =
-          OptionsConverter.convertOptionToPrimaryKey(k);
-      if (pk != null) {
-        pksConverted.put(pk, new LinkedList<>(v));
-      }
-    });
-    return pksConverted;
-  }
 
   /**
    * To convert options passed in String format to Java object
@@ -473,15 +440,18 @@ public class Model<T extends Field> {
   }
 
   public LinkedList<String> getKuduPrimaryKeys() {
-    return primaryKeys.get(OptionsConverter.PrimaryKeys.KUDU_PRIMARY_KEYS);
+    String pkString = (String) options.get(OptionsConverter.Options.KUDU_PRIMARY_KEYS);
+    return Arrays.stream(pkString.split(",")).collect(Collectors.toCollection(LinkedList::new));
   }
 
   public LinkedList<String> getKuduRangeKeys() {
-    return primaryKeys.get(OptionsConverter.PrimaryKeys.KUDU_RANGE_KEYS);
+    String rangeString = (String) options.get(OptionsConverter.Options.KUDU_RANGE_KEYS);
+    return Arrays.stream(rangeString.split(",")).collect(Collectors.toCollection(LinkedList::new));
   }
 
   public LinkedList<String> getKuduHashKeys() {
-    return primaryKeys.get(OptionsConverter.PrimaryKeys.KUDU_HASH_KEYS);
+    String hashString = (String) options.get(OptionsConverter.Options.KUDU_HASH_KEYS);
+    return Arrays.stream(hashString.split(",")).collect(Collectors.toCollection(LinkedList::new));
   }
 
   /**

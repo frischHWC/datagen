@@ -52,11 +52,9 @@ public class Model<T extends Field> {
 
   // This is to keep right order of fields
   @Getter
-  @Setter
   private final LinkedHashMap<String, T> fields;
 
   @Getter
-  @Setter
   @JsonIgnore
   private final LinkedHashMap<String, T> fieldsToPrint;
 

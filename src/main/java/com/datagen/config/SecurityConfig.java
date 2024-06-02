@@ -19,13 +19,12 @@ package com.datagen.config;
 
 
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -56,12 +55,12 @@ public class SecurityConfig {
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     return http
         .authorizeRequests(
-            authorize -> authorize.antMatchers("/metrics/**").permitAll())
+            authorize -> authorize.requestMatchers("/metrics/**").permitAll())
         .authorizeRequests(
-            authorize -> authorize.antMatchers("/health/status").permitAll())
+            authorize -> authorize.requestMatchers("/health/status").permitAll())
         .authorizeRequests(authorize -> authorize.anyRequest().authenticated())
         .httpBasic(withDefaults())
-        .csrf().disable()
+        .csrf(AbstractHttpConfigurer::disable)
         .build();
 
   }

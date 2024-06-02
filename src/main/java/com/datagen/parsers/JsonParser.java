@@ -178,6 +178,20 @@ public class JsonParser<T extends Field> implements Parser {
       ghost = false;
     }
 
+    String formula;
+    try {
+      formula = jsonField.get("formula").asText();
+    } catch (NullPointerException e) {
+      formula = null;
+    }
+
+    String injection;
+    try {
+      injection = jsonField.get("injection").asText();
+    } catch (NullPointerException e) {
+      injection = null;
+    }
+
     String field;
     try {
       field = jsonField.get("field").asText();
@@ -204,6 +218,34 @@ public class JsonParser<T extends Field> implements Parser {
       regex = jsonField.get("regex").asText();
     } catch (NullPointerException e) {
       regex = null;
+    }
+
+    String request;
+    try {
+      request = jsonField.get("request").asText();
+    } catch (NullPointerException e) {
+      request = null;
+    }
+
+    String url;
+    try {
+      url = jsonField.get("url").asText();
+    } catch (NullPointerException e) {
+      url = null;
+    }
+
+    String user;
+    try {
+      user = jsonField.get("user").asText();
+    } catch (NullPointerException e) {
+      user = null;
+    }
+
+    String password;
+    try {
+      password = jsonField.get("password").asText();
+    } catch (NullPointerException e) {
+      password = null;
     }
 
     JsonNode filtersArray = jsonField.get("filters");
@@ -270,8 +312,14 @@ public class JsonParser<T extends Field> implements Parser {
         pattern,
         useNow,
         regex,
+        request,
         ghost,
-        field);
+        field,
+        formula,
+        injection,
+        url,
+        user,
+        password);
   }
 
   private Map<String, String> mapColNameToColQual(String mapping) {

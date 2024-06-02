@@ -163,8 +163,14 @@ public abstract class Field<T> {
                                        String pattern,
                                        Boolean useNow,
                                        String regex,
+                                       String request,
                                        Boolean ghost,
-                                       String mainField) {
+                                       String mainField,
+                                       String formula,
+                                       String injection,
+                                       String url,
+                                       String user,
+                                       String password) {
     if (name == null || name.isEmpty()) {
       throw new IllegalStateException(
           "Name can not be null or empty for field: " + name);
@@ -174,7 +180,7 @@ public abstract class Field<T> {
           "Type can not be null or empty for field: " + name);
     }
 
-    // If length is not precised, it should be let as is (default is -1) and let each type handles it
+    // If length is not accurate, it should be let as is (default is -1) and let each type handles it
     if (length == null || length < 1) {
       length = -1;
     }
@@ -302,7 +308,7 @@ public abstract class Field<T> {
       return null;
     }
 
-    // If hbase column qualifier is not precised, it should be let as is (default is "cq")
+    // If hbase column qualifier is not accurate, it should be let as is (default is "cq")
     if (columnQualifier != null && !columnQualifier.isEmpty()) {
       field.setHbaseColumnQualifier(columnQualifier);
     }
@@ -310,8 +316,12 @@ public abstract class Field<T> {
     field.setGhost(ghost);
 
     // If there are some conditions, we consider this field as computed (meaning it requires other fields' values to get its value)
-    if (conditionals != null && !conditionals.isEmpty()) {
-      log.debug("Field has been marked as conditional: " + field);
+    // and same thing for request if it contains a '$'
+    if ((conditionals != null && !conditionals.isEmpty())
+        || (request!=null && request.contains("$"))
+        || (formula!=null)
+        || (injection!=null)) {
+      log.debug("Field {} has been marked as conditional: ", field);
       field.setComputed(true);
       field.setConditional(new ConditionalEvaluator(conditionals));
     }

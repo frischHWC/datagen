@@ -19,9 +19,11 @@ package com.datagen.utils;
 
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.http.ssl.TrustStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -48,17 +50,16 @@ public class RestTemplateProvider {
           .loadTrustMaterial(null, acceptingTrustStrategy)
           .build();
 
-      SSLConnectionSocketFactory csf =
-          new SSLConnectionSocketFactory(sslContext);
+      SSLConnectionSocketFactory sslConFactory = new SSLConnectionSocketFactory(sslContext);
 
-      CloseableHttpClient httpClient = HttpClients.custom()
-          .setSSLSocketFactory(csf)
+      final HttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
+          .setSSLSocketFactory(sslConFactory)
           .build();
 
-      HttpComponentsClientHttpRequestFactory requestFactory =
-          new HttpComponentsClientHttpRequestFactory();
+      CloseableHttpClient httpClient = HttpClients.custom().setConnectionManager(cm).build();
 
-      requestFactory.setHttpClient(httpClient);
+      HttpComponentsClientHttpRequestFactory requestFactory =
+          new HttpComponentsClientHttpRequestFactory(httpClient);
 
       restTemplate = new RestTemplate(requestFactory);
     } catch (Exception e) {

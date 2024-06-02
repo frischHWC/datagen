@@ -9,6 +9,11 @@
       "type": "LONG",
       "min": 18,
       "max": 99
+    },
+    {
+      "name": "age",
+      "type": "OLLAMA",
+      "request": "generate a birthday wish to $name who is $age years old today"
     }
   ],
   "Table_Names": {

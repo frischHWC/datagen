@@ -133,9 +133,7 @@
     {
       "name": "formula_1",
       "type": "STRING",
-      "conditionals": {
-        "formula": "2 * $longPercent + 42 - $onePlusOne"
-      }
+      "formula": "2 * $longPercent + 42 - $onePlusOne"
     },
     {
       "name": "condition_2",
@@ -156,23 +154,17 @@
     {
       "name": "city_lat",
       "type": "LINK",
-      "conditionals": {
-        "link": "$city.lat"
-      }
+      "link": "$city.lat"
     },
     {
       "name": "city_long",
       "type": "LINK",
-      "conditionals": {
-        "link": "$city.long"
-      }
+      "link": "$city.long"
     },
     {
       "name": "city_country",
       "type": "LINK",
-      "conditionals": {
-        "link": "$city.country"
-      }
+      "link": "$city.country"
     },
     {
       "name": "recording_time",
@@ -195,9 +187,7 @@
     {
       "name": "person_department",
       "type": "LINK",
-      "conditionals": {
-        "link": "$person.department"
-      }
+      "link": "$person.department"
     },
     {
       "name": "phone_number",
@@ -211,9 +201,7 @@
     {
       "name": "email_from_name",
       "type": "STRING",
-      "conditionals": {
-        "injection": "toto_${name}@our_company_name.${country}"
-      }
+      "injection": "toto_${name}@our_company_name.${country}"
     }
   ],
   "Table_Names": {

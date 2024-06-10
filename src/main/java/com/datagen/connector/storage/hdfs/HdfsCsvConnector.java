@@ -148,7 +148,7 @@ public class HdfsCsvConnector extends HdfsUtils implements ConnectorInterface {
           e);
     }
 
-    return new Model(fields, primaryKeys, tableNames, options);
+    return new Model(fields, primaryKeys, tableNames, options, null);
   }
 
 

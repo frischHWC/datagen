@@ -62,9 +62,9 @@ public class SolRConnector implements ConnectorInterface {
         properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS));
 
     List<String> zkHosts = Arrays.stream(
-            properties.get(ApplicationConfigs.SOLR_ZK_QUORUM).split(","))
+            properties.get(ApplicationConfigs.SOLR_ZOOKEEPER_QUORUM).split(","))
         .collect(Collectors.toList());
-    String znode = properties.get(ApplicationConfigs.SOLR_ZK_NODE);
+    String znode = properties.get(ApplicationConfigs.SOLR_ZOOKEEPER_NODE);
 
     if (Boolean.parseBoolean(
         properties.get(ApplicationConfigs.SOLR_TLS_ENABLED))) {
@@ -172,7 +172,7 @@ public class SolRConnector implements ConnectorInterface {
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
     // TODO : Implement logic to create a model with at least names, pk, options and column names/types
-    return new Model(fields, primaryKeys, tableNames, options);
+    return new Model(fields, primaryKeys, tableNames, options, null);
   }
 
   private void createSolRCollectionIfNotExists() {

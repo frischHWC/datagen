@@ -142,7 +142,7 @@ public class CSVConnector implements ConnectorInterface {
           e);
     }
 
-    return new Model(fields, primaryKeys, tableNames, options);
+    return new Model(fields, primaryKeys, tableNames, options, null);
   }
 
 }

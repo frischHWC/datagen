@@ -158,7 +158,7 @@ public class HdfsParquetConnector extends HdfsUtils implements ConnectorInterfac
           this.directoryName, e);
     }
 
-    return new Model(fields, primaryKeys, tableNames, options);
+    return new Model(fields, primaryKeys, tableNames, options, null);
   }
 
 }

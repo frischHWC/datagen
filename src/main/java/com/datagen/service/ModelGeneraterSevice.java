@@ -47,9 +47,9 @@ public class ModelGeneraterSevice {
     this.propertiesLoader = propertiesLoader;
 
     FileUtils.createLocalDirectory(propertiesLoader.getPropertiesCopy()
-        .get(ApplicationConfigs.DATA_MODEL_GENERATED_PATH));
+        .get(ApplicationConfigs.DATAGEN_MODEL_GENERATED_PATH));
     FileUtils.createLocalDirectory(propertiesLoader.getPropertiesCopy()
-        .get(ApplicationConfigs.DATA_MODEL_PATH_DEFAULT));
+        .get(ApplicationConfigs.DATAGEN_MODEL_PATH));
   }
 
   public String generateModel(
@@ -90,7 +90,7 @@ public class ModelGeneraterSevice {
       tableNames.put(OptionsConverter.TableNames.LOCAL_FILE_PATH, filepath);
     }
 
-    String outputPath = properties.get(ApplicationConfigs.DATA_MODEL_GENERATED_PATH) +
+    String outputPath = properties.get(ApplicationConfigs.DATAGEN_MODEL_GENERATED_PATH) +
             "/model-generated-" + new Random().nextInt() + ".json";
 
     ConnectorInterface connector = ConnectorsUtils

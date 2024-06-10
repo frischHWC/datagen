@@ -57,25 +57,25 @@ public class ModelTesterSevice {
     if (modelFilePath == null) {
       log.info(
           "No model file passed, will default to custom data model or default defined one in configuration");
-      if (properties.get(ApplicationConfigs.CUSTOM_DATA_MODEL_DEFAULT) !=
+      if (properties.get(ApplicationConfigs.DATAGEN_CUSTOM_MODEL) !=
           null) {
         modelFile =
-            properties.get(ApplicationConfigs.CUSTOM_DATA_MODEL_DEFAULT);
+            properties.get(ApplicationConfigs.DATAGEN_CUSTOM_MODEL);
       } else {
-        modelFile = properties.get(ApplicationConfigs.DATA_MODEL_PATH_DEFAULT) +
-            properties.get(ApplicationConfigs.DATA_MODEL_DEFAULT);
+        modelFile = properties.get(ApplicationConfigs.DATAGEN_MODEL_PATH) +
+            properties.get(ApplicationConfigs.DATAGEN_MODEL_DEFAULT);
       }
     }
     if (modelFilePath != null && !modelFilePath.contains("/")) {
       log.info(
           "Model file passed is identified as one of the one provided, so will look for it in data model path: {} ",
-          properties.get(ApplicationConfigs.DATA_MODEL_PATH_DEFAULT));
-      modelFile = properties.get(ApplicationConfigs.DATA_MODEL_PATH_DEFAULT) +
+          properties.get(ApplicationConfigs.DATAGEN_MODEL_PATH));
+      modelFile = properties.get(ApplicationConfigs.DATAGEN_MODEL_PATH) +
           modelFilePath;
     }
     if (modelFileAsFile != null && !modelFileAsFile.isEmpty()) {
       log.info("Model passed is an uploaded file");
-      modelFile = properties.get(ApplicationConfigs.DATA_MODEL_RECEIVED_PATH) +
+      modelFile = properties.get(ApplicationConfigs.DATAGEN_MODEL_RECEIVED_PATH) +
           "/model-test-" + new Random().nextInt() + ".json";
       try {
         modelFileAsFile.transferTo(new File(modelFile));
@@ -94,7 +94,7 @@ public class ModelTesterSevice {
       log.warn("Error when parsing model file");
       return "{ \"commandUuid\": \"\" , \"error\": \"Error with Model File - Verify its path and structure\" }";
     }
-    Model model = parser.renderModelFromFile();
+    Model model = parser.renderModelFromFile(properties);
 
     List<Row> randomDataList = model.generateRandomRows(1, 1);
 

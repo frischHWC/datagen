@@ -69,11 +69,11 @@ public class HbaseConnector implements ConnectorInterface {
 
         Configuration config = HBaseConfiguration.create();
         config.set("hbase.zookeeper.quorum",
-            properties.get(ApplicationConfigs.HBASE_ZK_QUORUM));
+            properties.get(ApplicationConfigs.HBASE_ZOOKEEPER_QUORUM));
         config.set("hbase.zookeeper.property.clientPort",
-            properties.get(ApplicationConfigs.HBASE_ZK_QUORUM_PORT));
+            properties.get(ApplicationConfigs.HBASE_ZOOKEEPER_PORT));
         config.set("zookeeper.znode.parent",
-            properties.get(ApplicationConfigs.HBASE_ZK_ZNODE));
+            properties.get(ApplicationConfigs.HBASE_ZOOKEEPER_ZNODE));
         Utils.setupHadoopEnv(config, properties);
 
         // Setup Kerberos auth if needed
@@ -162,7 +162,7 @@ public class HbaseConnector implements ConnectorInterface {
         Map<String, String> tableNames = new HashMap<>();
         Map<String, String> options = new HashMap<>();
         // TODO : Implement logic to create a model with at least names, pk, options and column names/types
-        return new Model(fields, primaryKeys, tableNames, options);
+        return new Model(fields, primaryKeys, tableNames, options, null);
     }
 
     private void createNamespaceIfNotExists(String namespace) {

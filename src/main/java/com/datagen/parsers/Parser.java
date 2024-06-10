@@ -18,7 +18,10 @@
 package com.datagen.parsers;
 
 
+import com.datagen.config.ApplicationConfigs;
 import com.datagen.model.Model;
+
+import java.util.Map;
 
 /**
  * A parser is an entity able to read one type of file and render a {@see #com.cloudera.frisch.randomdatagen.model.Model}
@@ -28,5 +31,5 @@ public interface Parser {
 
   // TODO: Implement a yaml parser
 
-  Model renderModelFromFile();
+  Model renderModelFromFile(Map<ApplicationConfigs, String> properties);
 }

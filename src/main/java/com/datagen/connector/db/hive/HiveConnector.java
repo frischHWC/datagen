@@ -91,10 +91,10 @@ public class HiveConnector implements ConnectorInterface {
     this.locationTemporaryTable = (String) model.getTableNames()
         .get(OptionsConverter.TableNames.HIVE_HDFS_FILE_PATH);
     this.hiveUri =
-        "jdbc:hive2://" + properties.get(ApplicationConfigs.HIVE_ZK_QUORUM) +
+        "jdbc:hive2://" + properties.get(ApplicationConfigs.HIVE_ZOOKEEPER_QUORUM) +
             "/" +
             database + ";serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=" +
-            properties.get(ApplicationConfigs.HIVE_ZK_ZNODE) +
+            properties.get(ApplicationConfigs.HIVE_ZOOKEEPER_ZNODE) +
             "?tez.queue.name=" + queue;
     this.useKerberos = Boolean.parseBoolean(
         properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS));
@@ -132,8 +132,8 @@ public class HiveConnector implements ConnectorInterface {
     try {
       if (useKerberos) {
         KerberosUtils.loginUserWithKerberos(
-            properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS_USER),
-            properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS_KEYTAB),
+            properties.get(ApplicationConfigs.HIVE_SECURITY_USER),
+            properties.get(ApplicationConfigs.HIVE_SECURITY_KEYTAB),
             new Configuration());
       }
 
@@ -163,9 +163,9 @@ public class HiveConnector implements ConnectorInterface {
       }
 
       String hiveUriWithNoDatabase =
-          "jdbc:hive2://" + properties.get(ApplicationConfigs.HIVE_ZK_QUORUM) +
+          "jdbc:hive2://" + properties.get(ApplicationConfigs.HIVE_ZOOKEEPER_QUORUM) +
               "/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=" +
-              properties.get(ApplicationConfigs.HIVE_ZK_ZNODE) +
+              properties.get(ApplicationConfigs.HIVE_ZOOKEEPER_ZNODE) +
               "?tez.queue.name=" + queue;
 
       this.properties = properties;
@@ -360,7 +360,7 @@ public class HiveConnector implements ConnectorInterface {
       log.warn("Unable to close Hive connection");
     }
 
-    return new Model(fields, primaryKeys, tableNames, options);
+    return new Model(fields, primaryKeys, tableNames, options, null);
   }
 
 

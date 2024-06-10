@@ -30,7 +30,7 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.Map;
 
-import static com.datagen.config.ApplicationConfigs.DATA_HOME_DIRECTORY;
+import static com.datagen.config.ApplicationConfigs.DATAGEN_HOME_DIRECTORY;
 import static software.amazon.awssdk.transfer.s3.SizeConstant.MB;
 
 /**
@@ -78,7 +78,8 @@ public abstract class S3Utils {
         properties.get(ApplicationConfigs.S3_ACCESS_KEY_SECRET);
     this.region = properties.get(ApplicationConfigs.S3_REGION);
 
-    this.localFilePathForModelGeneration = properties.get(DATA_HOME_DIRECTORY) + "/model-gen/s3/";
+    this.localFilePathForModelGeneration = properties.get(
+        DATAGEN_HOME_DIRECTORY) + "/model-gen/s3/";
 
     AwsCredentialsProvider awsCredentialsProvider =
         StaticCredentialsProvider.create(

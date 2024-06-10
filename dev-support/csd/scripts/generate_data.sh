@@ -35,10 +35,10 @@ then
     exit 1
 fi
 
-DATAGEN_URL="http://localhost:${SERVER_PORT}"
+DATAGEN_URL="http://localhost:${SERVER_PORT}/api/v1"
 if [ "${TLS_ENABLED}" = "true" ]
 then
-  DATAGEN_URL="https://localhost:${SERVER_PORT}"
+  DATAGEN_URL="https://localhost:${SERVER_PORT}/api/v1"
 fi 
 
 # Generic Function to generate Data

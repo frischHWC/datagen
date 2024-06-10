@@ -166,7 +166,7 @@ public class AvroConnector implements ConnectorInterface {
           this.directoryName, e);
     }
 
-    return new Model(fields, primaryKeys, tableNames, options);
+    return new Model(fields, primaryKeys, tableNames, options, null);
   }
 
 }

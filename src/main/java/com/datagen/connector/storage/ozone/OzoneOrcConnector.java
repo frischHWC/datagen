@@ -220,7 +220,7 @@ public class OzoneOrcConnector extends OzoneUtils implements ConnectorInterface 
           "Could not connect and read key: {} into Ozone, due to error: ",
           keyNamePrefix, e);
     }
-    return new Model(fields, primaryKeys, tableNames, options);
+    return new Model(fields, primaryKeys, tableNames, options, null);
   }
 
 }

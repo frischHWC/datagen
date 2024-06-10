@@ -197,7 +197,7 @@ public class OzoneAvroConnector extends OzoneUtils implements ConnectorInterface
     }
 
 
-    return new Model(fields, primaryKeys, tableNames, options);
+    return new Model(fields, primaryKeys, tableNames, options, null);
   }
 
 

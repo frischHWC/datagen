@@ -175,7 +175,7 @@ public class ORCConnector implements ConnectorInterface {
       log.warn("Could not create reader to ORC local file due to error:", e);
     }
 
-    return new Model(fields, primaryKeys, tableNames, options);
+    return new Model(fields, primaryKeys, tableNames, options, null);
   }
 
 

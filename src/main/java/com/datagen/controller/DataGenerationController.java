@@ -18,6 +18,7 @@
 package com.datagen.controller;
 
 
+import com.datagen.config.ApplicationConfigMapper;
 import com.datagen.config.PropertiesLoader;
 import com.datagen.service.APISevice;
 import com.datagen.service.CommandRunnerService;
@@ -29,12 +30,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 
 @Slf4j
 @RestController
-@RequestMapping("/datagen")
+@RequestMapping("/api/v1/datagen")
 public class DataGenerationController {
 
   @Autowired
@@ -51,13 +53,15 @@ public class DataGenerationController {
   @ResponseBody
   public String generateIntoMultipleConnectors(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions,
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties,
       @RequestParam(name = "connectors") List<String> connectors
   ) {
     StringBuffer connectorList = new StringBuffer();
@@ -70,21 +74,24 @@ public class DataGenerationController {
         "Received request with model: {} , threads: {} , batches: {}, rows: {}, to connectors: {}",
         modelFilePath, threads, numberOfBatches, rowsPerBatch, connectorList);
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
-        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions, connectors,
-        null);
+        numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
+        connectors,
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoCsv(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for CSV with model: {} , threads: {} , batches: {}, rows: {}",
@@ -92,20 +99,23 @@ public class DataGenerationController {
     Boolean scheduled = delayBetweenExecutions != null;
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("CSV"), null);
+        Collections.singletonList("CSV"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoJson(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for JSON with model: {} , threads: {} , batches: {}, rows: {}",
@@ -113,20 +123,23 @@ public class DataGenerationController {
     Boolean scheduled = delayBetweenExecutions != null;
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("JSON"), null);
+        Collections.singletonList("JSON"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/avro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoAvro(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for Avro with model: {} , threads: {} , batches: {}, rows: {}",
@@ -134,20 +147,23 @@ public class DataGenerationController {
     Boolean scheduled = delayBetweenExecutions != null;
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("AVRO"), null);
+        Collections.singletonList("AVRO"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/parquet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoParquet(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for Parquet with model: {} , threads: {} , batches: {}, rows: {}",
@@ -155,20 +171,23 @@ public class DataGenerationController {
     Boolean scheduled = delayBetweenExecutions != null;
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("PARQUET"), null);
+        Collections.singletonList("PARQUET"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/orc", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoOrc(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for ORC with model: {} , threads: {} , batches: {}, rows: {}",
@@ -176,20 +195,23 @@ public class DataGenerationController {
     Boolean scheduled = delayBetweenExecutions != null;
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("ORC"), null);
+        Collections.singletonList("ORC"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/hdfs-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoHdfsCsv(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for HDFS-CSV with model: {} , threads: {} , batches: {}, rows: {}",
@@ -198,20 +220,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("HDFS-CSV"), null);
+        Collections.singletonList("HDFS-CSV"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/hdfs-avro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoHdfsAvro(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for HDFS-AVRO with model: {} , threads: {} , batches: {}, rows: {}",
@@ -221,20 +246,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("HDFS-AVRO"), null);
+        Collections.singletonList("HDFS-AVRO"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/hdfs-json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoHdfsJson(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for HDFS-JSON with model: {} , threads: {} , batches: {}, rows: {}",
@@ -244,20 +272,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("HDFS-JSON"), null);
+        Collections.singletonList("HDFS-JSON"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/hdfs-parquet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoHdfsParquet(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for HDFS-PARQUET with model: {} , threads: {} , batches: {}, rows: {}",
@@ -267,20 +298,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("HDFS-PARQUET"), null);
+        Collections.singletonList("HDFS-PARQUET"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/hdfs-orc", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoHdfsOrc(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for HDFS-ORC with model: {} , threads: {} , batches: {}, rows: {}",
@@ -290,20 +324,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("HDFS-ORC"), null);
+        Collections.singletonList("HDFS-ORC"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/hbase", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoHbase(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for HBASE with model: {} , threads: {} , batches: {}, rows: {}",
@@ -313,20 +350,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("HBASE"), null);
+        Collections.singletonList("HBASE"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/hive", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoHive(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for HIVE with model: {} , threads: {} , batches: {}, rows: {}",
@@ -336,20 +376,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("HIVE"), null);
+        Collections.singletonList("HIVE"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/ozone", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoOzone(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for OZONE with model: {} , threads: {} , batches: {}, rows: {}",
@@ -359,20 +402,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("OZONE"), null);
+        Collections.singletonList("OZONE"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/ozone-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoOzoneCsv(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for OZONE-CSV with model: {} , threads: {} , batches: {}, rows: {}",
@@ -382,20 +428,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("OZONE-CSV"), null);
+        Collections.singletonList("OZONE-CSV"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/ozone-json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoOzoneJson(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for OZONE-JSON with model: {} , threads: {} , batches: {}, rows: {}",
@@ -405,20 +454,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("OZONE-JSON"), null);
+        Collections.singletonList("OZONE-JSON"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/ozone-avro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoOzoneAvro(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for OZONE-AVRO with model: {} , threads: {} , batches: {}, rows: {}",
@@ -428,20 +480,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("OZONE-AVRO"), null);
+        Collections.singletonList("OZONE-AVRO"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/ozone-parquet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoOzoneParquet(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for OZONE-PARQUET with model: {} , threads: {} , batches: {}, rows: {}",
@@ -451,20 +506,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("OZONE-PARQUET"), null);
+        Collections.singletonList("OZONE-PARQUET"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/ozone-orc", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoOzoneOrc(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for OZONE-ORC with model: {} , threads: {} , batches: {}, rows: {}",
@@ -474,20 +532,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("OZONE-ORC"), null);
+        Collections.singletonList("OZONE-ORC"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/kafka", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoKafka(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for KAFKA with model: {} , threads: {} , batches: {}, rows: {}",
@@ -497,20 +558,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("KAFKA"), null);
+        Collections.singletonList("KAFKA"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/solr", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoSolR(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for SOLR with model: {} , threads: {} , batches: {}, rows: {}",
@@ -520,20 +584,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("SOLR"), null);
+        Collections.singletonList("SOLR"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/kudu", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoKudu(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for KUDU with model: {} , threads: {} , batches: {}, rows: {}",
@@ -543,14 +610,15 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("KUDU"), null);
+        Collections.singletonList("KUDU"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/api", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateAPI(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath
   ) {
     log.debug("Received request for API with model: {}", modelFilePath);
@@ -572,13 +640,15 @@ public class DataGenerationController {
   @ResponseBody
   public String generateIntoS3CSV(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for S3-CSV with model: {} , threads: {} , batches: {}, rows: {}",
@@ -588,20 +658,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("S3-CSV"), null);
+        Collections.singletonList("S3-CSV"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/s3-json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoS3Json(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for S3-JSON with model: {} , threads: {} , batches: {}, rows: {}",
@@ -611,20 +684,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("S3-JSON"), null);
+        Collections.singletonList("S3-JSON"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/s3-avro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoS3Avro(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for S3-AVRO with model: {} , threads: {} , batches: {}, rows: {}",
@@ -634,20 +710,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("S3-AVRO"), null);
+        Collections.singletonList("S3-AVRO"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/s3-parquet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoS3Parquet(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for S3-PARQUET with model: {} , threads: {} , batches: {}, rows: {}",
@@ -657,20 +736,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("S3-PARQUET"), null);
+        Collections.singletonList("S3-PARQUET"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/s3-orc", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoS3Orc(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for S3-ORC with model: {} , threads: {} , batches: {}, rows: {}",
@@ -680,20 +762,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("S3-ORC"), null);
+        Collections.singletonList("S3-ORC"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/adls-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoAdlsCSV(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for ADLS-CSV with model: {} , threads: {} , batches: {}, rows: {}",
@@ -703,20 +788,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("ADLS-CSV"), null);
+        Collections.singletonList("ADLS-CSV"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/adls-json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoAdlsJson(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for ADLS-JSON with model: {} , threads: {} , batches: {}, rows: {}",
@@ -726,20 +814,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("ADLS-JSON"), null);
+        Collections.singletonList("ADLS-JSON"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/adls-avro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoAdlsAvro(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for ADLS-AVRO with model: {} , threads: {} , batches: {}, rows: {}",
@@ -749,20 +840,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("ADLS-AVRO"), null);
+        Collections.singletonList("ADLS-AVRO"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/adls-parquet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoAdlsParquet(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for ADLS-PARQUET with model: {} , threads: {} , batches: {}, rows: {}",
@@ -772,20 +866,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("ADLS-PARQUET"), null);
+        Collections.singletonList("ADLS-PARQUET"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/adls-orc", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoAdlsOrc(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for ADLS-ORC with model: {} , threads: {} , batches: {}, rows: {}",
@@ -795,7 +892,8 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("ADLS-ORC"), null);
+        Collections.singletonList("ADLS-ORC"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
 
@@ -803,13 +901,15 @@ public class DataGenerationController {
   @ResponseBody
   public String generateIntoGcsCSV(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for GCS-CSV with model: {} , threads: {} , batches: {}, rows: {}",
@@ -819,20 +919,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("GCS-CSV"), null);
+        Collections.singletonList("GCS-CSV"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/gcs-json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoGcsJson(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for GCS-JSON with model: {} , threads: {} , batches: {}, rows: {}",
@@ -842,20 +945,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("GCS-JSON"), null);
+        Collections.singletonList("GCS-JSON"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/gcs-avro", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoGcsAvro(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for GCS-AVRO with model: {} , threads: {} , batches: {}, rows: {}",
@@ -865,20 +971,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("GCS-AVRO"), null);
+        Collections.singletonList("GCS-AVRO"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/gcs-parquet", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoGcsParquet(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for GCS-PARQUET with model: {} , threads: {} , batches: {}, rows: {}",
@@ -888,20 +997,23 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("GCS-PARQUET"), null);
+        Collections.singletonList("GCS-PARQUET"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
   @PostMapping(value = "/gcs-orc", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseBody
   public String generateIntoGcsOrc(
       @RequestPart(required = false, name = "model_file")
-          MultipartFile modelFile,
+      MultipartFile modelFile,
       @RequestParam(required = false, name = "model") String modelFilePath,
       @RequestParam(required = false, name = "threads") Integer threads,
       @RequestParam(required = false, name = "batches") Long numberOfBatches,
       @RequestParam(required = false, name = "rows") Long rowsPerBatch,
       @RequestParam(required = false, name = "delay_between_executions_seconds")
-          Long delayBetweenExecutions
+      Long delayBetweenExecutions,
+      @RequestParam(required = false, name = "extraProperties")
+      Map<String, String> extraProperties
   ) {
     log.debug(
         "Received request for GCS-ORC with model: {} , threads: {} , batches: {}, rows: {}",
@@ -911,7 +1023,8 @@ public class DataGenerationController {
 
     return commandRunnerService.generateData(modelFile, modelFilePath, threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
-        Collections.singletonList("GCS-ORC"), null);
+        Collections.singletonList("GCS-ORC"),
+        ApplicationConfigMapper.parsePropertiesMap(extraProperties));
   }
 
 }

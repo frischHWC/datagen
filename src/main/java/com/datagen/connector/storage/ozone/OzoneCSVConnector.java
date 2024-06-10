@@ -168,7 +168,7 @@ public class OzoneCSVConnector extends OzoneUtils implements ConnectorInterface 
           keyNamePrefix, e);
     }
 
-    return new Model(fields, primaryKeys, tableNames, options);
+    return new Model(fields, primaryKeys, tableNames, options, null);
   }
 
 }

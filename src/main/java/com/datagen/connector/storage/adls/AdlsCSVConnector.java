@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.*;
 import java.util.*;
 
-import static com.datagen.config.ApplicationConfigs.DATA_HOME_DIRECTORY;
+import static com.datagen.config.ApplicationConfigs.DATAGEN_HOME_DIRECTORY;
 
 /**
  * This is a CSV connector to write to one or multiple CSV files to ADLS
@@ -60,7 +60,8 @@ public class AdlsCSVConnector extends AdlsUtils implements ConnectorInterface  {
     this.lineSeparator = System.getProperty("line.separator");
     this.oneFilePerIteration = (Boolean) model.getOptionsOrDefault(
         OptionsConverter.Options.ONE_FILE_PER_ITERATION);
-    this.localFilePathForModelGeneration = properties.get(DATA_HOME_DIRECTORY) + "/model-gen/azure/";
+    this.localFilePathForModelGeneration = properties.get(
+        DATAGEN_HOME_DIRECTORY) + "/model-gen/azure/";
   }
 
   @Override
@@ -163,7 +164,7 @@ public class AdlsCSVConnector extends AdlsUtils implements ConnectorInterface  {
           e);
     }
 
-    return new Model(fields, primaryKeys, tableNames, options);
+    return new Model(fields, primaryKeys, tableNames, options, null);
   }
 
 

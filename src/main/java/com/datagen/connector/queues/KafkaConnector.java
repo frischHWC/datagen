@@ -167,7 +167,7 @@ public class KafkaConnector implements ConnectorInterface {
       props.put(SslConfigs.SSL_KEY_PASSWORD_CONFIG,
           properties.get(ApplicationConfigs.KAFKA_KEYSTORE_PASSWORD));
       props.put(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG,
-          properties.get(ApplicationConfigs.KAFKA_KEYSTORE_KEYPASSWORD));
+          properties.get(ApplicationConfigs.KAFKA_KEYSTORE_KEY_PASSWORD));
       props.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG,
           properties.get(ApplicationConfigs.KAFKA_TRUSTSTORE_PASSWORD));
     }
@@ -258,7 +258,7 @@ public class KafkaConnector implements ConnectorInterface {
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
     // TODO : Implement logic to create a model with at least names, pk, options and column names/types
-    return new Model(fields, primaryKeys, tableNames, options);
+    return new Model(fields, primaryKeys, tableNames, options, null);
   }
 
   /**

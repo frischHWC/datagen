@@ -19,6 +19,7 @@ package com.datagen.model.conditions;
 
 
 import com.datagen.model.Row;
+import com.datagen.utils.ParsingUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -42,42 +43,21 @@ public class ConditionsLine {
 
 
   // To indicate if there are multiple conditions on this line or only one
-  @Getter
-  @Setter
   private boolean combinedCondition = false;
 
-  @Getter
-  @Setter
-  private boolean formula = false;
-
-  @Getter
-  @Setter
-  private Formula formulaToEvaluate;
-
-  @Getter
-  @Setter
   private boolean defaultValue = false;
-
   @Getter
-  @Setter
   private String valueToReturn;
 
   @Getter
-  @Setter
-  private boolean link = false;
-
-  @Getter
-  @Setter
   private Link linkToEvaluate;
-
   @Getter
-  @Setter
+  private boolean link = false;
+  private boolean formula = false;
   private boolean injection = false;
 
-  @Getter
-  @Setter
-  private Injection injectionToEvaluate;
-
+  private LinkedList<ParsingUtils.StringFragment> stringFragments;
+  private JsEvaluator jsEvaluator;
 
   public ConditionsLine(String conditionLine, String valueToReturn) {
     this.valueToReturn = valueToReturn;
@@ -93,7 +73,8 @@ public class ConditionsLine {
     } else if (conditionSplitted[0].equalsIgnoreCase("formula")) {
       log.debug("Found a formula, that will need to be evaluated");
       this.formula = true;
-      this.formulaToEvaluate = new Formula(valueToReturn);
+      this.jsEvaluator = new JsEvaluator();
+      this.stringFragments = ParsingUtils.parseStringWithVars(valueToReturn);
       return;
     } else if (conditionSplitted[0].equalsIgnoreCase("link")) {
       log.debug("Found a link, that will need to be evaluated");
@@ -103,7 +84,7 @@ public class ConditionsLine {
     } else if (conditionSplitted[0].equalsIgnoreCase("injection")) {
       log.debug("Found an injection, that will need to be evaluated");
       this.injection = true;
-      this.injectionToEvaluate = new Injection(valueToReturn);
+      this.stringFragments = ParsingUtils.parseStringWithVars(valueToReturn);
       return;
     } else if (conditionSplitted[0].equalsIgnoreCase("default")) {
       log.debug("Found a default, No evaluation needed");
@@ -171,7 +152,9 @@ public class ConditionsLine {
         return listOfConditions.get(0).evaluateCondition(row);
       } else if (this.formula) {
         // Formula case
-        this.valueToReturn = formulaToEvaluate.evaluateFormula(row);
+        this.valueToReturn = jsEvaluator.evaluateJsExpression(
+            ParsingUtils.injectRowValuesToAString(row, this.stringFragments)
+        );
         return true;
       } else if (this.link) {
         // Formula case
@@ -179,7 +162,7 @@ public class ConditionsLine {
         return true;
       } else if (this.injection) {
         // Formula case
-        this.valueToReturn = injectionToEvaluate.evaluateInjection(row);
+        this.valueToReturn = ParsingUtils.injectRowValuesToAString(row, this.stringFragments);
         return true;
       } else {
         // Default case

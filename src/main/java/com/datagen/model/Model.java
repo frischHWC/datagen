@@ -18,6 +18,7 @@
 package com.datagen.model;
 
 
+import com.datagen.config.ApplicationConfigs;
 import com.datagen.model.conditions.ConditionalEvaluator;
 import com.datagen.model.type.Field;
 import com.datagen.parsers.JsonUnparser;
@@ -42,7 +43,7 @@ import java.util.stream.Collectors;
  * - Tables names
  * - Other options if needed
  * This class describes also how to generate random data
- * It also describe how to initialize certain systems for that model (i.e. table creation)
+ * It also describes how to initialize certain systems for that model (i.e. table creation)
  */
 @Slf4j
 @Getter
@@ -75,6 +76,11 @@ public class Model<T extends Field> {
   @Setter
   private Map<OptionsConverter.Options, Object> options;
 
+  // Properties of the application for this model (they contain specifications for access to some services)
+  @Getter
+  @JsonIgnore
+  private Map<ApplicationConfigs, String> properties;
+
 
   /**
    * Constructor that initializes the model and populates it completely
@@ -87,7 +93,8 @@ public class Model<T extends Field> {
    */
   public Model(LinkedHashMap<String, T> fields,
                Map<String, List<String>> primaryKeys,
-               Map<String, String> tableNames, Map<String, String> options) {
+               Map<String, String> tableNames, Map<String, String> options,
+               Map<ApplicationConfigs, String> properties) {
     this.fields = fields;
     this.fieldsRandomName =
         fields.entrySet().stream().filter(f -> !f.getValue().computed)
@@ -105,6 +112,7 @@ public class Model<T extends Field> {
 
     this.tableNames = convertTableNames(tableNames);
     this.options = convertOptions(options);
+    this.properties = properties==null?new HashMap<>(): properties;
 
 
     // For all conditions passed, we need to check types used to prepare future comparisons

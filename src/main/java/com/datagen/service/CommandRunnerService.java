@@ -58,19 +58,19 @@ public class CommandRunnerService {
   public CommandRunnerService(PropertiesLoader propertiesLoader) {
     this.propertiesLoader = propertiesLoader;
     this.scheduledCommandsFilePath = propertiesLoader.getPropertiesCopy()
-        .get(ApplicationConfigs.SCHEDULER_FILE_PATH);
+        .get(ApplicationConfigs.DATAGEN_SCHEDULER_FILE_PATH);
     this.commandsToProcess = new ConcurrentLinkedQueue<>();
     this.scheduledCommands = new HashMap<>();
     this.commands = new HashMap<>();
 
-    FileUtils.createLocalDirectory(propertiesLoader.getPropertiesCopy().get(ApplicationConfigs.DATA_HOME_DIRECTORY));
+    FileUtils.createLocalDirectory(propertiesLoader.getPropertiesCopy().get(ApplicationConfigs.DATAGEN_HOME_DIRECTORY));
 
     readScheduledCommands();
     // After reading scheduled values, file should be re-written
     writeScheduledCommands();
 
     FileUtils.createLocalDirectory(propertiesLoader.getPropertiesCopy()
-        .get(ApplicationConfigs.DATA_MODEL_RECEIVED_PATH));
+        .get(ApplicationConfigs.DATAGEN_MODEL_RECEIVED_PATH));
   }
 
   public CommandSoft getCommandStatusShort(UUID uuid) {
@@ -176,7 +176,7 @@ public class CommandRunnerService {
                 "Model has not been found or is incorrect, correct it. This command has been removed from scheduler");
             wrongScheduledCommandsRead.add(c.getCommandUuid());
           }
-          c.setModel(parser.renderModelFromFile());
+          c.setModel(parser.renderModelFromFile(propertiesLoader.getPropertiesCopy()));
 
           // Previous Failed commands should not be taken
           if (c.getStatus() == Command.CommandStatus.FAILED) {
@@ -273,25 +273,25 @@ public class CommandRunnerService {
         (modelFileAsFile == null || modelFileAsFile.isEmpty())) {
       log.info(
           "No model file passed, will default to custom data model or default defined one in configuration");
-      if (properties.get(ApplicationConfigs.CUSTOM_DATA_MODEL_DEFAULT) !=
+      if (properties.get(ApplicationConfigs.DATAGEN_CUSTOM_MODEL) !=
           null) {
         modelFile =
-            properties.get(ApplicationConfigs.CUSTOM_DATA_MODEL_DEFAULT);
+            properties.get(ApplicationConfigs.DATAGEN_CUSTOM_MODEL);
       } else {
-        modelFile = properties.get(ApplicationConfigs.DATA_MODEL_PATH_DEFAULT) +
-            properties.get(ApplicationConfigs.DATA_MODEL_DEFAULT);
+        modelFile = properties.get(ApplicationConfigs.DATAGEN_MODEL_PATH) +
+            properties.get(ApplicationConfigs.DATAGEN_MODEL_DEFAULT);
       }
     }
     if (modelFilePath != null && !modelFilePath.contains("/")) {
       log.info(
           "Model file passed is identified as one of the one provided, so will look for it in data model path: {} ",
-          properties.get(ApplicationConfigs.DATA_MODEL_PATH_DEFAULT));
-      modelFile = properties.get(ApplicationConfigs.DATA_MODEL_PATH_DEFAULT) +
+          properties.get(ApplicationConfigs.DATAGEN_MODEL_PATH));
+      modelFile = properties.get(ApplicationConfigs.DATAGEN_MODEL_PATH) +
           modelFilePath;
     }
     if (modelFileAsFile != null && !modelFileAsFile.isEmpty()) {
       log.info("Model passed is an uploaded file");
-      modelFile = properties.get(ApplicationConfigs.DATA_MODEL_RECEIVED_PATH) +
+      modelFile = properties.get(ApplicationConfigs.DATAGEN_MODEL_RECEIVED_PATH) +
           "/model-" + System.currentTimeMillis() + "-" + String.format("%06d",new Random().nextInt(100000)) + ".json";
       try {
         modelFileAsFile.transferTo(new File(modelFile));
@@ -321,7 +321,7 @@ public class CommandRunnerService {
       log.warn("Error when parsing model file");
       return "{ \"commandUuid\": \"\" , \"error\": \"Error with Model File - Verify its path and structure\" }";
     }
-    Model model = parser.renderModelFromFile();
+    Model model = parser.renderModelFromFile(properties);
 
     // Creation of connectors
     List<ConnectorParser.Connector> connectorsList = new ArrayList<>();
@@ -347,7 +347,7 @@ public class CommandRunnerService {
     if (isModelUploaded) {
       // If model has been uploaded, it must be renamed to use its UUID for user and admin convenience
       String newModelFilePath =
-          properties.get(ApplicationConfigs.DATA_MODEL_RECEIVED_PATH) +
+          properties.get(ApplicationConfigs.DATAGEN_MODEL_RECEIVED_PATH) +
               "/model-" + command.getCommandUuid().toString() + ".json";
       FileUtils.moveLocalFile(modelFile, newModelFilePath);
       command.setModelFilePath(newModelFilePath);

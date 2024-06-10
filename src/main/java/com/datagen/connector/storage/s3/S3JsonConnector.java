@@ -156,7 +156,7 @@ public class S3JsonConnector extends S3Utils implements ConnectorInterface  {
           e);
     }
 
-    return new Model(fields, primaryKeys, tableNames, options);
+    return new Model(fields, primaryKeys, tableNames, options, null);
   }
 
 

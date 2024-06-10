@@ -146,7 +146,7 @@ public class PropertiesLoader {
         "Starting auto-discover of properties after load of properties file");
 
     if (Boolean.parseBoolean(
-        properties.get(ApplicationConfigs.CM_AUTO_DISCOVERY))) {
+        properties.get(ApplicationConfigs.CM_AUTODISCOVERY))) {
       autoDiscoverWithCMApi(properties.get(ApplicationConfigs.CM_URL),
           properties.get(ApplicationConfigs.CM_USER),
           properties.get(ApplicationConfigs.CM_PASSWORD),
@@ -165,34 +165,34 @@ public class PropertiesLoader {
       properties.put(ApplicationConfigs.HDFS_URI, hdfsUri);
     }
 
-    if (properties.get(ApplicationConfigs.HBASE_ZK_QUORUM) == null
+    if (properties.get(ApplicationConfigs.HBASE_ZOOKEEPER_QUORUM) == null
         &&
         properties.get(ApplicationConfigs.HADOOP_HBASE_SITE_PATH) != null) {
       log.info("Going to auto-discover hbase.zookeeper.quorum");
 
-      properties.put(ApplicationConfigs.HBASE_ZK_QUORUM,
+      properties.put(ApplicationConfigs.HBASE_ZOOKEEPER_QUORUM,
           Utils.getPropertyFromXMLFile(
               properties.get(ApplicationConfigs.HADOOP_HBASE_SITE_PATH),
               "hbase.zookeeper.quorum"));
     }
 
-    if (properties.get(ApplicationConfigs.HBASE_ZK_QUORUM_PORT) == null
+    if (properties.get(ApplicationConfigs.HBASE_ZOOKEEPER_PORT) == null
         &&
         properties.get(ApplicationConfigs.HADOOP_HBASE_SITE_PATH) != null) {
       log.info("Going to auto-discover hbase.zookeeper.port");
 
-      properties.put(ApplicationConfigs.HBASE_ZK_QUORUM_PORT,
+      properties.put(ApplicationConfigs.HBASE_ZOOKEEPER_PORT,
           Utils.getPropertyFromXMLFile(
               properties.get(ApplicationConfigs.HADOOP_HBASE_SITE_PATH),
               "hbase.zookeeper.property.clientPort"));
     }
 
-    if (properties.get(ApplicationConfigs.HBASE_ZK_ZNODE) == null
+    if (properties.get(ApplicationConfigs.HBASE_ZOOKEEPER_ZNODE) == null
         &&
         properties.get(ApplicationConfigs.HADOOP_HBASE_SITE_PATH) != null) {
       log.info("Going to auto-discover hbase.zookeeper.znode");
 
-      properties.put(ApplicationConfigs.HBASE_ZK_ZNODE,
+      properties.put(ApplicationConfigs.HBASE_ZOOKEEPER_ZNODE,
           Utils.getPropertyFromXMLFile(
               properties.get(ApplicationConfigs.HADOOP_HBASE_SITE_PATH),
               "zookeeper.znode.parent"));
@@ -209,7 +209,7 @@ public class PropertiesLoader {
               "ozone.service.id"));
     }
 
-    if (properties.get(ApplicationConfigs.HIVE_ZK_QUORUM) == null
+    if (properties.get(ApplicationConfigs.HIVE_ZOOKEEPER_QUORUM) == null
         &&
         properties.get(ApplicationConfigs.HADOOP_HIVE_SITE_PATH) != null) {
       log.info("Going to auto-discover hive.zookeeper.quorum");
@@ -223,33 +223,33 @@ public class PropertiesLoader {
           "hive.zookeeper.quorum").replaceAll(",", zookeeperPortSuffix) +
           ":" + zookeeperPort;
 
-      properties.put(ApplicationConfigs.HIVE_ZK_QUORUM,
+      properties.put(ApplicationConfigs.HIVE_ZOOKEEPER_QUORUM,
           zookeeperUriWithPort);
     }
 
-    if (properties.get(ApplicationConfigs.HIVE_ZK_ZNODE) == null
+    if (properties.get(ApplicationConfigs.HIVE_ZOOKEEPER_ZNODE) == null
         &&
         properties.get(ApplicationConfigs.HADOOP_HIVE_SITE_PATH) != null) {
       log.info("Going to auto-discover hive.zookeeper.znode");
 
-      properties.put(ApplicationConfigs.HIVE_ZK_ZNODE,
+      properties.put(ApplicationConfigs.HIVE_ZOOKEEPER_ZNODE,
           Utils.getPropertyFromXMLFile(
               properties.get(ApplicationConfigs.HADOOP_HIVE_SITE_PATH),
               "hive.server2.zookeeper.namespace"));
     }
 
-    if (properties.get(ApplicationConfigs.SOLR_ZK_QUORUM) == null
+    if (properties.get(ApplicationConfigs.SOLR_ZOOKEEPER_QUORUM) == null
         && properties.get(ApplicationConfigs.SOLR_ENV_PATH) != null) {
       log.info("Going to auto-discover solr.zookeeper.quorum");
-      properties.put(ApplicationConfigs.SOLR_ZK_QUORUM,
+      properties.put(ApplicationConfigs.SOLR_ZOOKEEPER_QUORUM,
           Utils.getSolrZKQuorumFromEnvsh(
               properties.get(ApplicationConfigs.SOLR_ENV_PATH)));
     }
 
-    if (properties.get(ApplicationConfigs.SOLR_ZK_NODE) == null
+    if (properties.get(ApplicationConfigs.SOLR_ZOOKEEPER_NODE) == null
         && properties.get(ApplicationConfigs.SOLR_ENV_PATH) != null) {
       log.info("Going to auto-discover solr.zookeeper.znode");
-      properties.put(ApplicationConfigs.SOLR_ZK_NODE,
+      properties.put(ApplicationConfigs.SOLR_ZOOKEEPER_NODE,
           Utils.getSolrZKznodeFromEnvsh(
               properties.get(ApplicationConfigs.SOLR_ENV_PATH)));
     }
@@ -395,20 +395,20 @@ public class PropertiesLoader {
         }
       }
 
-      if (properties.get(ApplicationConfigs.HBASE_ZK_QUORUM) == null) {
+      if (properties.get(ApplicationConfigs.HBASE_ZOOKEEPER_QUORUM) == null) {
         log.info(
             "Going to auto-discover hbase.zookeeper.quorum with CM API");
 
         String zkQuorum =
             cmApiService.getZkQuorum(servicesExisting.get("ZOOKEEPER"));
         if (!zkQuorum.isEmpty()) {
-          properties.put(ApplicationConfigs.HBASE_ZK_QUORUM,
+          properties.put(ApplicationConfigs.HBASE_ZOOKEEPER_QUORUM,
               zkQuorum);
         }
 
       }
 
-      if (properties.get(ApplicationConfigs.HBASE_ZK_QUORUM_PORT) ==
+      if (properties.get(ApplicationConfigs.HBASE_ZOOKEEPER_PORT) ==
           null) {
         log.info(
             "Going to auto-discover hbase.zookeeper.port with CM API");
@@ -416,19 +416,19 @@ public class PropertiesLoader {
         String zkPort =
             cmApiService.getZkPort(servicesExisting.get("ZOOKEEPER"));
         if (!zkPort.isEmpty()) {
-          properties.put(ApplicationConfigs.HBASE_ZK_QUORUM_PORT,
+          properties.put(ApplicationConfigs.HBASE_ZOOKEEPER_PORT,
               zkPort);
         }
 
       }
 
-      if (properties.get(ApplicationConfigs.HBASE_ZK_ZNODE) == null) {
+      if (properties.get(ApplicationConfigs.HBASE_ZOOKEEPER_ZNODE) == null) {
         log.info(
             "Going to auto-discover hbase.zookeeper.znode with CM API");
         String zknode =
             cmApiService.getHbaseZkZnode(servicesExisting.get("HBASE"));
         if (!zknode.isEmpty()) {
-          properties.put(ApplicationConfigs.HBASE_ZK_ZNODE, zknode);
+          properties.put(ApplicationConfigs.HBASE_ZOOKEEPER_ZNODE, zknode);
         }
 
       }
@@ -445,51 +445,51 @@ public class PropertiesLoader {
 
       }
 
-      if (properties.get(ApplicationConfigs.HIVE_ZK_QUORUM) == null) {
+      if (properties.get(ApplicationConfigs.HIVE_ZOOKEEPER_QUORUM) == null) {
         log.info(
             "Going to auto-discover hive.zookeeper.quorum with CM API");
 
         String zkQuorum = cmApiService.getZkQuorumWithPort(
             servicesExisting.get("ZOOKEEPER"));
         if (!zkQuorum.isEmpty()) {
-          properties.put(ApplicationConfigs.HIVE_ZK_QUORUM,
+          properties.put(ApplicationConfigs.HIVE_ZOOKEEPER_QUORUM,
               zkQuorum);
         }
 
       }
 
-      if (properties.get(ApplicationConfigs.HIVE_ZK_ZNODE) == null) {
+      if (properties.get(ApplicationConfigs.HIVE_ZOOKEEPER_ZNODE) == null) {
         log.info(
             "Going to auto-discover hive.zookeeper.znode with CM API");
         String hiveZnode =
             cmApiService.getHiveZnode(servicesExisting.get("HIVE_ON_TEZ"));
         if (!hiveZnode.isEmpty()) {
-          properties.put(ApplicationConfigs.HIVE_ZK_ZNODE, hiveZnode);
+          properties.put(ApplicationConfigs.HIVE_ZOOKEEPER_ZNODE, hiveZnode);
         }
 
       }
 
-      if (properties.get(ApplicationConfigs.SOLR_ZK_QUORUM) == null) {
+      if (properties.get(ApplicationConfigs.SOLR_ZOOKEEPER_QUORUM) == null) {
         log.info(
             "Going to auto-discover solr.zookeeper.quorum with CM API");
 
         String zkQuorum = cmApiService.getZkQuorumWithPort(
             servicesExisting.get("ZOOKEEPER"));
         if (!zkQuorum.isEmpty()) {
-          properties.put(ApplicationConfigs.SOLR_ZK_QUORUM,
+          properties.put(ApplicationConfigs.SOLR_ZOOKEEPER_QUORUM,
               zkQuorum);
         }
 
       }
 
-      if (properties.get(ApplicationConfigs.SOLR_ZK_NODE) == null) {
+      if (properties.get(ApplicationConfigs.SOLR_ZOOKEEPER_NODE) == null) {
         log.info(
             "Going to auto-discover solr.zookeeper.znode with CM API");
 
         String solrZnode =
             cmApiService.getSolRZnode(servicesExisting.get("SOLR"));
         if (!solrZnode.isEmpty()) {
-          properties.put(ApplicationConfigs.SOLR_ZK_NODE, solrZnode);
+          properties.put(ApplicationConfigs.SOLR_ZOOKEEPER_NODE, solrZnode);
         }
 
       }

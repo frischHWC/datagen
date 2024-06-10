@@ -67,9 +67,9 @@ public class KuduConnector implements ConnectorInterface {
 
       if (useKerberos) {
         KerberosUtils.loginUserWithKerberos(
-            properties.get(ApplicationConfigs.KUDU_AUTH_KERBEROS_USER),
+            properties.get(ApplicationConfigs.KUDU_SECURITY_USER),
             properties.get(
-                ApplicationConfigs.KUDU_AUTH_KERBEROS_KEYTAB),
+                ApplicationConfigs.KUDU_SECURITY_KEYTAB),
             new Configuration());
 
         UserGroupInformation.getLoginUser().doAs(
@@ -187,7 +187,7 @@ public class KuduConnector implements ConnectorInterface {
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
     // TODO : Implement logic to create a model with at least names, pk, options and column names/types
-    return new Model(fields, primaryKeys, tableNames, options);
+    return new Model(fields, primaryKeys, tableNames, options, null);
   }
 
   private void createTableIfNotExists() {

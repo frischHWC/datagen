@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
-import static com.datagen.config.ApplicationConfigs.DATA_HOME_DIRECTORY;
+import static com.datagen.config.ApplicationConfigs.DATAGEN_HOME_DIRECTORY;
 
 /**
  * Everything that is only related to ADLS is set here and ADLS connectors extends this class
@@ -66,7 +66,8 @@ public abstract class AdlsUtils {
     this.directoryName = directoryNotFormatted;
     this.localDirectory = (String) model.getTableNames()
         .get(OptionsConverter.TableNames.ADLS_LOCAL_FILE_PATH);
-    this.localFilePathForModelGeneration = properties.get(DATA_HOME_DIRECTORY) + "/model-gen/azure/";
+    this.localFilePathForModelGeneration = properties.get(
+        DATAGEN_HOME_DIRECTORY) + "/model-gen/azure/";
 
     this.sasToken = properties.get(ApplicationConfigs.ADLS_SAS_TOKEN);
     this.accountName =

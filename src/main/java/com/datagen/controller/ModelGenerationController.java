@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/model_generation")
+@RequestMapping("/api/v1/model_generation")
 public class ModelGenerationController {
 
   @Autowired

@@ -133,7 +133,7 @@
     {
       "name": "formula_1",
       "type": "STRING",
-      "formula": "2 * $longPercent + 42 - $onePlusOne"
+      "formula": "2 * ${longPercent} + 42 - ${onePlusOne}"
     },
     {
       "name": "condition_2",
@@ -202,6 +202,13 @@
       "name": "email_from_name",
       "type": "STRING",
       "injection": "toto_${name}@our_company_name.${country}"
+    },
+    {
+      "name": "birthday_wish",
+      "type": "OLLAMA",
+      "request": "generate a birthday wish to ${name} born ${birthdate} and who is living in ${city} , ${city_country}",
+      "temperature": 1.5,
+      "model_type": "mistral"
     }
   ],
   "Table_Names": {

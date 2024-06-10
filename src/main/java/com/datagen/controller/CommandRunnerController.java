@@ -34,7 +34,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping("/command")
+@RequestMapping("/api/v1/command")
 public class CommandRunnerController {
 
   @Autowired

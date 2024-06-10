@@ -18,6 +18,7 @@
 package com.datagen.model.type;
 
 
+import com.datagen.config.ApplicationConfigs;
 import com.datagen.model.Row;
 import com.datagen.model.conditions.ConditionalEvaluator;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -46,60 +47,345 @@ import java.util.stream.Collectors;
 @Slf4j
 public abstract class Field<T> {
 
-  Random random = new Random();
-
   @Getter
   @Setter
   public String name;
-
   @Getter
   @Setter
   public Boolean computed = false;
-
   @Getter
   @Setter
   public List<T> possibleValues;
-
   @Getter
   @Setter
   public Integer possibleValueSize;
-
   @Getter
   @Setter
   public List<T> filters;
-
   @Getter
   @Setter
   public String file;
-
   // This is a conditional evaluator holding all complexity (parsing, preparing comparison, evaluating it)
   @Getter
   @Setter
   public ConditionalEvaluator conditional;
-
   // Default length is -1, if user does not provide a strict superior to 0 length,
   // each Extended field class should by default override it to a number strictly superior to 0
   @Getter
   @Setter
   public int length = -1;
-
   // Minimum possible value for Int/Long
   @Getter
   @Setter
   public Long min;
-
   // Maximum possible value Int/Long
   @Getter
   @Setter
   public Long max;
-
   @Getter
   @Setter
   public String hbaseColumnQualifier = "cq";
-
   @Getter
   @Setter
   public boolean ghost;
+  Random random = new Random();
+
+  public static String toString(List<Field> fieldList) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Fields :  [ ");
+    sb.append(System.getProperty("line.separator"));
+    fieldList.forEach(f -> {
+      sb.append(" { ");
+      sb.append(f.toString());
+      sb.append(" }");
+      sb.append(System.getProperty("line.separator"));
+    });
+    sb.append(" ] ");
+    sb.append(System.getProperty("line.separator"));
+    return sb.toString();
+  }
+
+  /**
+   * Create the right instance of a field (i.e. String, password etc..) according to its type
+   *
+   * @param name            of the field that will be created
+   * @param type            of the field, which is used to instantiate the right field
+   * @param length          of the field, in could be null or -1, in this case, it will be ignored and default field length will be used
+   * @param columnQualifier Hbase column qualifier if there is one
+   * @return Field instantiated or null if type has not been recognized
+   */
+  public static Field instantiateField(
+      Map<ApplicationConfigs, String> properties,
+      String name,
+      String type,
+      Integer length,
+      String min,
+      String max,
+      String columnQualifier,
+      List<JsonNode> possibleValues,
+      LinkedHashMap<String, Long> possible_values_weighted,
+      List<JsonNode> filters,
+      LinkedHashMap<String, String> conditionals,
+      String file,
+      String separator,
+      String pattern,
+      Boolean useNow,
+      String regex,
+      String request,
+      Boolean ghost,
+      String mainField,
+      String formula,
+      String injection,
+      String link,
+      String url,
+      String user,
+      String password,
+      String modelType,
+      Float temperature,
+      Float frequencyPenalty,
+      Float presencePenalty,
+      Integer maxTokens,
+      Float topP
+      ) {
+    if (name == null || name.isEmpty()) {
+      throw new IllegalStateException(
+          "Name can not be null or empty for field: " + name);
+    }
+    if (type == null || type.isEmpty()) {
+      throw new IllegalStateException(
+          "Type can not be null or empty for field: " + name);
+    }
+
+    // If length is not accurate, it should be let as is (default is -1) and let each type handles it
+    if (length == null || length < 1) {
+      length = -1;
+    }
+
+    Field field = switch (type.toUpperCase()) {
+      case "STRING":
+        yield new StringField(name, length,
+            possibleValues.stream().map(JsonNode::asText)
+                .collect(Collectors.toList()), possible_values_weighted);
+
+      case "STRINGAZ":
+        yield new StringAZField(name, length,
+            possibleValues.stream().map(JsonNode::asText)
+                .collect(Collectors.toList()));
+
+      case "INTEGER":
+        yield new IntegerField(name,
+            possibleValues.stream().map(JsonNode::asInt)
+                .collect(Collectors.toList()), possible_values_weighted, min,
+            max);
+
+      case "INCREMENT_INTEGER":
+        yield new IncrementIntegerField(name, min);
+
+      case "BOOLEAN":
+        yield new BooleanField(name,
+            possibleValues.stream().map(JsonNode::asBoolean)
+                .collect(Collectors.toList()), possible_values_weighted);
+
+      case "FLOAT":
+        yield new FloatField(name,
+            possibleValues.stream().map(j -> (float) j.asDouble())
+                .collect(Collectors.toList()), possible_values_weighted, min,
+            max);
+
+      case "LONG":
+        yield new LongField(name,
+            possibleValues.stream().map(JsonNode::asLong)
+                .collect(Collectors.toList()), possible_values_weighted, min,
+            max);
+
+      case "INCREMENT_LONG":
+        yield new IncrementLongField(name, min);
+
+      case "TIMESTAMP":
+        yield new TimestampField(name,
+            possibleValues.stream().map(JsonNode::asLong)
+                .collect(Collectors.toList()));
+
+      case "BYTES":
+        yield new BytesField(name, length,
+            possibleValues.stream().map(j -> j.asText().getBytes())
+                .collect(Collectors.toList()));
+
+      case "HASHMD5":
+        yield new HashMd5Field(name, length,
+            possibleValues.stream().map(j -> j.asText().getBytes())
+                .collect(Collectors.toList()));
+
+      case "BIRTHDATE":
+        yield new BirthdateField(name, length,
+            possibleValues.stream().map(JsonNode::asText)
+                .collect(Collectors.toList()), min, max);
+
+      case "NAME":
+        yield new NameField(name, length,
+            filters.stream().map(JsonNode::asText)
+                .collect(Collectors.toList()));
+
+      case "COUNTRY":
+        yield new CountryField(name, length,
+            possibleValues.stream().map(JsonNode::asText)
+                .collect(Collectors.toList()));
+
+      case "CITY":
+        yield new CityField(name,
+            filters.stream().map(JsonNode::asText)
+                .collect(Collectors.toList()));
+
+      case "BLOB":
+        yield new BlobField(name, length,
+            possibleValues.stream().map(j -> j.asText().getBytes())
+                .collect(Collectors.toList()));
+
+      case "EMAIL":
+        yield new EmailField(name,
+            possibleValues.stream().map(JsonNode::asText)
+                .collect(Collectors.toList()),
+            filters.stream().map(JsonNode::asText)
+                .collect(Collectors.toList()));
+
+      case "IP":
+        yield new IpField(name);
+
+      case "LINK":
+        yield new LinkField(name, length,
+            possibleValues.stream().map(JsonNode::asText)
+                .collect(Collectors.toList()));
+
+      case "CSV":
+        yield new CsvField(name, length,
+            filters.stream().map(JsonNode::asText).collect(Collectors.toList()),
+            file, separator, mainField);
+
+      case "PHONE":
+        yield new PhoneField(name, length,
+            filters.stream().map(JsonNode::asText)
+                .collect(Collectors.toList()));
+
+      case "UUID":
+        yield new UuidField(name);
+
+      case "DATE":
+        yield new DateField(name, possibleValues.stream().map(JsonNode::asText)
+            .collect(Collectors.toList()), min, max, useNow);
+
+      case "DATE_AS_STRING":
+        yield new DateAsStringField(name,
+            possibleValues.stream().map(JsonNode::asText)
+                .collect(Collectors.toList()), min, max, useNow, pattern);
+
+      case "STRING_REGEX":
+        yield new StringRegexField(name, regex);
+
+      case "OLLAMA":
+        yield new OllamaField(name,
+            url,
+            user, password, request,
+            modelType == null ?
+                properties.get(ApplicationConfigs.OLLAMA_MODEL_DEFAULT) :
+                modelType,
+            temperature == null ? Float.valueOf(
+                properties.get(ApplicationConfigs.OLLAMA_TEMPERATURE_DEFAULT)) :
+                temperature,
+            frequencyPenalty == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.OLLAMA_FREQUENCY_PENALTY_DEFAULT)) : frequencyPenalty,
+            presencePenalty == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.OLLAMA_PRESENCE_PENALTY_DEFAULT)) : presencePenalty,
+            topP == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.OLLAMA_TOP_P_DEFAULT)) : topP
+        );
+
+      case "BEDROCK":
+        yield new BedrockField(name, url,
+            user == null ?
+                properties.get(ApplicationConfigs.BEDROCK_ACCESS_KEY_ID) : user,
+            password == null ?
+                properties.get(ApplicationConfigs.BEDROCK_ACCESS_KEY_SECRET) :
+                password,
+            request,
+            modelType == null ?
+                properties.get(ApplicationConfigs.BEDROCK_MODEL_DEFAULT) :
+                modelType,
+            temperature == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.BEDROCK_TEMPERATURE_DEFAULT)) : temperature,
+            properties.get(ApplicationConfigs.BEDROCK_REGION),
+            maxTokens == null ? Integer.valueOf(properties.get(
+                ApplicationConfigs.BEDROCK_MAX_TOKENS_DEFAULT)) : maxTokens
+            );
+
+      case "OPENAI":
+        yield new OpenAIField(name, url,
+            user,
+            password == null ?
+                properties.get(ApplicationConfigs.OPENAI_API_KEY) :
+                password,
+            request,
+            modelType == null ?
+                properties.get(ApplicationConfigs.OPENAI_MODEL_DEFAULT) :
+                modelType,
+            temperature == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.OPENAI_TEMPERATURE_DEFAULT)) : temperature,
+            frequencyPenalty == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.OPENAI_FREQUENCY_PENALTY_DEFAULT)) : frequencyPenalty,
+            presencePenalty == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.OPENAI_PRESENCE_PENALTY_DEFAULT)) : presencePenalty,
+            maxTokens == null ? Integer.valueOf(properties.get(
+                ApplicationConfigs.OPENAI_MAX_TOKENS_DEFAULT)) : maxTokens,
+            topP == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.OPENAI_TOP_P_DEFAULT)) : topP
+        );
+
+      default:
+        log.warn("Type : " + type +
+            " has not been recognized and hence will be ignored");
+        yield null;
+    };
+
+    // If hbase column qualifier is not accurate, it should be let as is (default is "cq")
+    if (columnQualifier != null && !columnQualifier.isEmpty()) {
+      field.setHbaseColumnQualifier(columnQualifier);
+    }
+
+    field.setGhost(ghost);
+
+    // If there are some conditions, we consider this field as computed (meaning it requires other fields' values to get its value)
+    // and same thing for request if it contains a '$'
+    if ((conditionals != null && !conditionals.isEmpty())
+        || (request != null && request.contains("$"))
+        || (formula != null)
+        || (injection != null)
+        || (link != null)) {
+      log.debug("Field {} has been marked as computed: ", field);
+      field.setComputed(true);
+    }
+
+    // Set conditionals or formula or injections for the field if there are
+    if ((conditionals != null && !conditionals.isEmpty())) {
+      field.setConditional(new ConditionalEvaluator(conditionals));
+    } else if (formula != null) {
+      LinkedHashMap<String, String> lm = new LinkedHashMap<>();
+      lm.put("formula", formula);
+      field.setConditional(new ConditionalEvaluator(lm));
+    } else if (injection != null) {
+      LinkedHashMap<String, String> lm = new LinkedHashMap<>();
+      lm.put("injection", injection);
+      field.setConditional(new ConditionalEvaluator(lm));
+    } else if (link != null) {
+      LinkedHashMap<String, String> lm = new LinkedHashMap<>();
+      lm.put("link", link);
+      field.setConditional(new ConditionalEvaluator(lm));
+    }
+
+    if (log.isDebugEnabled()) {
+      log.debug("Field has been created: " + field);
+    }
+
+    return field;
+  }
 
   @Override
   public String toString() {
@@ -121,216 +407,6 @@ public abstract class Field<T> {
 
   public T generateComputedValue(Row row) {
     return toCastValue(conditional.evaluateConditions(row));
-  }
-
-  public static String toString(List<Field> fieldList) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("Fields :  [ ");
-    sb.append(System.getProperty("line.separator"));
-    fieldList.forEach(f -> {
-      sb.append(" { ");
-      sb.append(f.toString());
-      sb.append(" }");
-      sb.append(System.getProperty("line.separator"));
-    });
-    sb.append(" ] ");
-    sb.append(System.getProperty("line.separator"));
-    return sb.toString();
-  }
-
-
-  /**
-   * Create the right instance of a field (i.e. String, password etc..) according to its type
-   *
-   * @param name            of the field that will be created
-   * @param type            of the field, which is used to instantiate the right field
-   * @param length          of the field, in could be null or -1, in this case, it will be ignored and default field length will be used
-   * @param columnQualifier Hbase column qualifier if there is one
-   * @return Field instantiated or null if type has not been recognized
-   */
-  public static Field instantiateField(String name,
-                                       String type,
-                                       Integer length,
-                                       String columnQualifier,
-                                       List<JsonNode> possibleValues,
-                                       LinkedHashMap<String, Long> possible_values_weighted,
-                                       LinkedHashMap<String, String> conditionals,
-                                       String min,
-                                       String max,
-                                       List<JsonNode> filters,
-                                       String file,
-                                       String separator,
-                                       String pattern,
-                                       Boolean useNow,
-                                       String regex,
-                                       String request,
-                                       Boolean ghost,
-                                       String mainField,
-                                       String formula,
-                                       String injection,
-                                       String url,
-                                       String user,
-                                       String password) {
-    if (name == null || name.isEmpty()) {
-      throw new IllegalStateException(
-          "Name can not be null or empty for field: " + name);
-    }
-    if (type == null || type.isEmpty()) {
-      throw new IllegalStateException(
-          "Type can not be null or empty for field: " + name);
-    }
-
-    // If length is not accurate, it should be let as is (default is -1) and let each type handles it
-    if (length == null || length < 1) {
-      length = -1;
-    }
-
-    Field field;
-
-    switch (type.toUpperCase()) {
-    case "STRING":
-      field = new StringField(name, length,
-          possibleValues.stream().map(JsonNode::asText)
-              .collect(Collectors.toList()), possible_values_weighted);
-      break;
-    case "STRINGAZ":
-      field = new StringAZField(name, length,
-          possibleValues.stream().map(JsonNode::asText)
-              .collect(Collectors.toList()));
-      break;
-    case "INTEGER":
-      field = new IntegerField(name,
-          possibleValues.stream().map(JsonNode::asInt)
-              .collect(Collectors.toList()), possible_values_weighted, min,
-          max);
-      break;
-    case "INCREMENT_INTEGER":
-      field = new IncrementIntegerField(name, min);
-      break;
-    case "BOOLEAN":
-      field = new BooleanField(name,
-          possibleValues.stream().map(JsonNode::asBoolean)
-              .collect(Collectors.toList()), possible_values_weighted);
-      break;
-    case "FLOAT":
-      field = new FloatField(name,
-          possibleValues.stream().map(j -> (float) j.asDouble())
-              .collect(Collectors.toList()), possible_values_weighted, min,
-          max);
-      break;
-    case "LONG":
-      field = new LongField(name,
-          possibleValues.stream().map(JsonNode::asLong)
-              .collect(Collectors.toList()), possible_values_weighted, min,
-          max);
-      break;
-    case "INCREMENT_LONG":
-      field = new IncrementLongField(name, min);
-      break;
-    case "TIMESTAMP":
-      field = new TimestampField(name,
-          possibleValues.stream().map(JsonNode::asLong)
-              .collect(Collectors.toList()));
-      break;
-    case "BYTES":
-      field = new BytesField(name, length,
-          possibleValues.stream().map(j -> j.asText().getBytes())
-              .collect(Collectors.toList()));
-      break;
-    case "HASHMD5":
-      field = new HashMd5Field(name, length,
-          possibleValues.stream().map(j -> j.asText().getBytes())
-              .collect(Collectors.toList()));
-      break;
-    case "BIRTHDATE":
-      field = new BirthdateField(name, length,
-          possibleValues.stream().map(JsonNode::asText)
-              .collect(Collectors.toList()), min, max);
-      break;
-    case "NAME":
-      field = new NameField(name, length,
-          filters.stream().map(JsonNode::asText).collect(Collectors.toList()));
-      break;
-    case "COUNTRY":
-      field = new CountryField(name, length,
-          possibleValues.stream().map(JsonNode::asText)
-              .collect(Collectors.toList()));
-      break;
-    case "CITY":
-      field = new CityField(name,
-          filters.stream().map(JsonNode::asText).collect(Collectors.toList()));
-      break;
-    case "BLOB":
-      field = new BlobField(name, length,
-          possibleValues.stream().map(j -> j.asText().getBytes())
-              .collect(Collectors.toList()));
-      break;
-    case "EMAIL":
-      field = new EmailField(name,
-          possibleValues.stream().map(JsonNode::asText)
-              .collect(Collectors.toList()),
-          filters.stream().map(JsonNode::asText).collect(Collectors.toList()));
-      break;
-    case "IP":
-      field = new IpField(name);
-      break;
-    case "LINK":
-      field = new LinkField(name, length,
-          possibleValues.stream().map(JsonNode::asText)
-              .collect(Collectors.toList()));
-      break;
-    case "CSV":
-      field = new CsvField(name, length,
-          filters.stream().map(JsonNode::asText).collect(Collectors.toList()),
-          file, separator, mainField);
-      break;
-    case "PHONE":
-      field = new PhoneField(name, length,
-          filters.stream().map(JsonNode::asText).collect(Collectors.toList()));
-      break;
-    case "UUID":
-      field = new UuidField(name);
-      break;
-    case "DATE":
-      field = new DateField(name, possibleValues.stream().map(JsonNode::asText)
-          .collect(Collectors.toList()), min, max, useNow);
-      break;
-    case "DATE_AS_STRING":
-      field = new DateAsStringField(name, possibleValues.stream().map(JsonNode::asText)
-          .collect(Collectors.toList()), min, max, useNow, pattern);
-      break;
-    case "STRING_REGEX":
-      field = new StringRegexField(name, regex);
-      break;
-    default:
-      log.warn("Type : " + type +
-          " has not been recognized and hence will be ignored");
-      return null;
-    }
-
-    // If hbase column qualifier is not accurate, it should be let as is (default is "cq")
-    if (columnQualifier != null && !columnQualifier.isEmpty()) {
-      field.setHbaseColumnQualifier(columnQualifier);
-    }
-
-    field.setGhost(ghost);
-
-    // If there are some conditions, we consider this field as computed (meaning it requires other fields' values to get its value)
-    // and same thing for request if it contains a '$'
-    if ((conditionals != null && !conditionals.isEmpty())
-        || (request!=null && request.contains("$"))
-        || (formula!=null)
-        || (injection!=null)) {
-      log.debug("Field {} has been marked as conditional: ", field);
-      field.setComputed(true);
-      field.setConditional(new ConditionalEvaluator(conditionals));
-    }
-
-    if (log.isDebugEnabled()) {
-      log.debug("Field has been created: " + field);
-    }
-
-    return field;
   }
 
   public String getTypeForModel() {
@@ -381,8 +457,12 @@ public abstract class Field<T> {
       return "STRING_REGEX";
     case "timestampfield":
       return "TIMESTAMP";
-    case "uuidfiel":
+    case "uuidfield":
       return "UUID";
+    case "ollamafield":
+      return "OLLAMA";
+    case "bedrockfield":
+      return "BEDROCK";
     default:
       return "STRING";
     }

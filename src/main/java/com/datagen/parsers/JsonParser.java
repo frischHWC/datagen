@@ -18,6 +18,7 @@
 package com.datagen.parsers;
 
 
+import com.datagen.config.ApplicationConfigs;
 import com.datagen.model.Model;
 import com.datagen.model.type.Field;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -61,7 +62,7 @@ public class JsonParser<T extends Field> implements Parser {
    *
    * @return Model instantiated and populated
    */
-  public Model renderModelFromFile() {
+  public Model renderModelFromFile(Map<ApplicationConfigs, String> properties) {
 
     // Release 0.4.15 introduced an easier format with PK, TB & Options being just one JSON node instead of an array
     // But we need to keep working wih old format for retro-compatbility.  (Fields is untouched)
@@ -118,13 +119,13 @@ public class JsonParser<T extends Field> implements Parser {
 
     while (fieldsIterator.hasNext()) {
       JsonNode fieldNode = fieldsIterator.next();
-      T field = getOneField(fieldNode, hbaseFamilyColsMap);
+      T field = getOneField(fieldNode, properties, hbaseFamilyColsMap);
       if (field != null) {
         fields.put(fieldNode.get("name").asText(), field);
       }
     }
 
-    return new Model(fields, pks, tbs, opsMap);
+    return new Model(fields, pks, tbs, opsMap, properties);
   }
 
 
@@ -135,7 +136,21 @@ public class JsonParser<T extends Field> implements Parser {
    * @param jsonField
    * @return
    */
-  private T getOneField(JsonNode jsonField, Map<String, String> opsMap) {
+  private T getOneField(JsonNode jsonField, Map<ApplicationConfigs, String> properties, Map<String, String> opsMap) {
+    String name;
+    try {
+      name = jsonField.get("name").asText();
+    } catch (NullPointerException e) {
+      name = "UNDEFINED_COL_NAME";
+    }
+
+    String type;
+    try {
+      type = jsonField.get("type").asText();
+    } catch (NullPointerException e) {
+      type = "UNDEFINED_TYPE";
+    }
+
     Integer length;
     try {
       length = jsonField.get("length").asInt();
@@ -227,6 +242,13 @@ public class JsonParser<T extends Field> implements Parser {
       request = null;
     }
 
+    String link;
+    try {
+      link = jsonField.get("link").asText();
+    } catch (NullPointerException e) {
+      link = null;
+    }
+
     String url;
     try {
       url = jsonField.get("url").asText();
@@ -246,6 +268,48 @@ public class JsonParser<T extends Field> implements Parser {
       password = jsonField.get("password").asText();
     } catch (NullPointerException e) {
       password = null;
+    }
+
+    String modelType;
+    try {
+      modelType = jsonField.get("model_type").asText();
+    } catch (NullPointerException e) {
+      modelType = null;
+    }
+
+    Float temperature;
+    try {
+      temperature = Float.valueOf(jsonField.get("temperature").asText());
+    } catch (NullPointerException e) {
+      temperature = null;
+    }
+
+    Float frequencyPenalty;
+    try {
+      frequencyPenalty = Float.valueOf(jsonField.get("frequency_penalty").asText());
+    } catch (NullPointerException e) {
+      frequencyPenalty = null;
+    }
+
+    Float presencePenalty;
+    try {
+      presencePenalty = Float.valueOf(jsonField.get("presence_penalty").asText());
+    } catch (NullPointerException e) {
+      presencePenalty = null;
+    }
+
+    Integer maxTokens;
+    try {
+      maxTokens = Integer.valueOf(jsonField.get("max_tokens").asText());
+    } catch (NullPointerException e) {
+      maxTokens = null;
+    }
+
+    Float topP;
+    try {
+      topP = Float.valueOf(jsonField.get("top_p").asText());
+    } catch (NullPointerException e) {
+      topP = null;
     }
 
     JsonNode filtersArray = jsonField.get("filters");
@@ -297,16 +361,17 @@ public class JsonParser<T extends Field> implements Parser {
     }
 
     return (T) Field.instantiateField(
-        jsonField.get("name").asText(),
-        jsonField.get("type").asText(),
+        properties,
+        name,
+        type,
         length,
-        opsMap.get(jsonField.get("name").asText()),
-        possibleValues,
-        possible_values_weighted,
-        conditionals,
         min,
         max,
+        opsMap.get(name),
+        possibleValues,
+        possible_values_weighted,
         filters,
+        conditionals,
         file,
         separator,
         pattern,
@@ -317,9 +382,16 @@ public class JsonParser<T extends Field> implements Parser {
         field,
         formula,
         injection,
+        link,
         url,
         user,
-        password);
+        password,
+        modelType,
+        temperature,
+        frequencyPenalty,
+        presencePenalty,
+        maxTokens,
+        topP);
   }
 
   private Map<String, String> mapColNameToColQual(String mapping) {

@@ -11,11 +11,31 @@
       "max": 99
     },
     {
+      "name": "birthday_wish_bedrock",
+      "type": "BEDROCK",
+      "request": "generate a one line birthday wish to ${name} who is ${age} years old today",
+      "model_type": "meta.llama3-8b-instruct-v1:0",
+      "user": "<YOUR_ACCESS_KEY>",
+      "password": "<YOUR_SECRET_KEY>",
+      "temperature": 1.0,
+      "max_tokens": 256
+    },
+    {
+      "name": "birthday_wish_ollama",
+      "type": "OLLAMA",
+      "request": "generate a one line birthday wish to ${name} who is ${age} years old today",
+      "model_type": "mistral",
+      "temperature": 1.0,
+      "frequency_penalty": 1.5,
+      "presence_penalty": 1.3,
+      "top_p": 1.0
+    },
+    {
       "name": "birthday_wish_openai",
       "type": "OPENAI",
       "request": "generate a one line birthday wish to ${name} who is ${age} years old today",
       "model_type": "gpt-4o",
-      "password": "",
+      "password": "<YOUR_OPEN_AI_KEY>",
       "temperature": 1.0,
       "frequency_penalty": 1.5,
       "presence_penalty": 1.3,

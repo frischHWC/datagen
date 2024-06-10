@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Map;
 
-import static com.datagen.config.ApplicationConfigs.DATA_HOME_DIRECTORY;
+import static com.datagen.config.ApplicationConfigs.DATAGEN_HOME_DIRECTORY;
 
 /**
  * Everything that is only related to GCS is set here and GCS connectors extends this class
@@ -61,7 +61,7 @@ public abstract class GcsUtils {
     this.localDirectory = (String) model.getTableNames()
         .get(OptionsConverter.TableNames.GCS_LOCAL_FILE_PATH);
     this.localFilePathForModelGeneration =
-        properties.get(DATA_HOME_DIRECTORY) + "/model-gen/GCS/";
+        properties.get(DATAGEN_HOME_DIRECTORY) + "/model-gen/GCS/";
 
     if (serviceAccountKeyPath != null && !serviceAccountKeyPath.isBlank()) {
       System.setProperty("GOOGLE_APPLICATION_CREDENTIALS",

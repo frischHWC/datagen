@@ -171,7 +171,7 @@ public class AdlsParquetConnector extends AdlsUtils implements ConnectorInterfac
           e);
     }
 
-    return new Model(fields, primaryKeys, tableNames, options);
+    return new Model(fields, primaryKeys, tableNames, options, null);
   }
 
 

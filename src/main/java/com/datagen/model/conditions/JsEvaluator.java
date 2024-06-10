@@ -15,30 +15,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.datagen.controller;
+package com.datagen.model.conditions;
 
-
-import com.datagen.service.MetricsService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.PolyglotException;
 
 @Slf4j
-@RestController
-@RequestMapping("/api/v1/metrics")
-public class MetricController {
+public class JsEvaluator {
 
-  @Autowired
-  private MetricsService metricsService;
+  private final Context context;
 
-  @GetMapping(value = "/all")
-  @ResponseBody
-  public String getAllMetrics() {
-    return metricsService.getMetricsAsAJson();
+  JsEvaluator() {
+    this.context = Context.newBuilder()
+        .allowAllAccess(true)
+        .build();
+    context.initialize("js");
   }
+
+  String evaluateJsExpression(String expression) {
+    Object value = 0f;
+    try {
+      value = context.eval("js", expression);
+      log.debug("Evaluating formula: " + expression + " to: " + value);
+    } catch (PolyglotException e) {
+      log.warn("Could not evaluate expression: " + expression + " due to error: ",
+          e);
+    }
+    return value.toString();
+  }
+
 
 }

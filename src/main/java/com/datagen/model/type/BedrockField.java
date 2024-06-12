@@ -55,9 +55,10 @@ public class BedrockField extends Field<String> {
   private final String modelId;
   private final BedrockModelType bedrockmodeltype;
   private JSONObject preparedRequest = null;
+  private final String context;
 
   public BedrockField(String name, String url, String user, String password,
-                      String request, String modelType, Float temperature, String region, Integer maxTokens) {
+                      String request, String modelType, Float temperature, String region, Integer maxTokens, String context) {
     this.name = name;
     this.url = url;
     this.user = user;
@@ -75,6 +76,10 @@ public class BedrockField extends Field<String> {
         .credentialsProvider(awsCredentialsProvider)
         .region(this.region)
         .build();
+
+    var contextAsMessage = context!=null?"Use the following information to answer the question:"+System.lineSeparator()+context:"";
+    this.context = "Generate only the answer."+System.lineSeparator()+contextAsMessage;
+    log.debug("Will provide following System information to the model: {}", context);
 
     // See model Ids available at: https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids.html
     this.modelId = modelType == null ? "amazon.titan-text-lite-v1" : modelType;
@@ -107,6 +112,7 @@ public class BedrockField extends Field<String> {
           yield new JSONObject()
               .put("temperature", this.temperature)
               .put("stop_sequences", List.of("\n\nHuman:"))
+              .put("system", context)
               .put("max_tokens_to_sample", this.maxTokens);
         case MISTRAL:
           yield new JSONObject()
@@ -134,10 +140,13 @@ public class BedrockField extends Field<String> {
       case ANTHROPIC -> preparedRequest.put("prompt",
           "Human: " + stringToEvaluate + "\\n\\nAssistant:");
       case MISTRAL -> preparedRequest.put("prompt",
-          "<s>[INST] " + stringToEvaluate + "[/INST]");
+          "<s>[INST] " + stringToEvaluate + "[/INST]" + context);
       case TITAN -> preparedRequest.put("inputText", stringToEvaluate);
+      case LLAMA -> preparedRequest.put("prompt", stringToEvaluate);
       default -> preparedRequest.put("prompt", stringToEvaluate);
       }
+
+      log.debug("Request to Bedrock is: {}", preparedRequest.toString());
 
       // Encode and send the request.
       var response = bedrockRuntimeClient.invokeModel(req -> req
@@ -169,7 +178,7 @@ public class BedrockField extends Field<String> {
           e);
     }
 
-    return responseText;
+    return responseText.trim().replaceAll("\\n[ \\t]*\\n","");
   }
 
   @Override

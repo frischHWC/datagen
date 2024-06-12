@@ -28,12 +28,16 @@ import org.apache.hive.jdbc.HivePreparedStatement;
 import org.apache.kudu.Type;
 import org.apache.kudu.client.PartialRow;
 import org.apache.orc.TypeDescription;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.openai.OpenAiChatClient;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
 
 import java.sql.SQLException;
 import java.util.LinkedList;
+import java.util.List;
 
 @Slf4j
 public class OpenAIField extends Field<String> {
@@ -47,10 +51,11 @@ public class OpenAIField extends Field<String> {
   private final OpenAiChatClient openAiChatClient;
   private final OpenAiChatOptions openAiChatOptions;
   private final String modelId;
+  private final SystemMessage systemMessage;
 
   public OpenAIField(String name, String url, String user, String password,
                      String request, String modelType, Float temperature, Float frequencyPenalty,
-                     Float presencePenalty, Integer maxTokens, Float topP) {
+                     Float presencePenalty, Integer maxTokens, Float topP, String context) {
     this.name = name;
     this.url = url;
     this.user = user;
@@ -71,6 +76,10 @@ public class OpenAIField extends Field<String> {
         .build();
     this.openAiChatClient = new OpenAiChatClient(openAiApi, openAiChatOptions);
 
+    var contextAsMessage = context!=null?"Use the following information to answer the question:"+System.lineSeparator()+context:"";
+    this.systemMessage = new SystemMessage("Generate only the answer."+System.lineSeparator()+contextAsMessage);
+    log.debug("Will provide following System information to the model: {}", systemMessage.getContent());
+
   }
 
   @Override
@@ -78,7 +87,13 @@ public class OpenAIField extends Field<String> {
     String stringToEvaluate =
         ParsingUtils.injectRowValuesToAString(row, requestToInject);
     log.debug("Asking to OpenAI: {}", stringToEvaluate);
-    return openAiChatClient.call(stringToEvaluate);
+    UserMessage userMessage = new UserMessage(stringToEvaluate);
+
+    return openAiChatClient.call(new Prompt(
+        List.of(userMessage, this.systemMessage),
+        this.openAiChatOptions
+    )).getResult().getOutput().getContent()
+        .trim().replaceAll("\\n[ \\t]*\\n","");
   }
 
   @Override

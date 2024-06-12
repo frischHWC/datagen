@@ -312,6 +312,13 @@ public class JsonParser<T extends Field> implements Parser {
       topP = null;
     }
 
+    String context;
+    try {
+      context = jsonField.get("context").asText();
+    } catch (NullPointerException e) {
+      context = null;
+    }
+
     JsonNode filtersArray = jsonField.get("filters");
     List<JsonNode> filters = new ArrayList<>();
     try {
@@ -391,7 +398,8 @@ public class JsonParser<T extends Field> implements Parser {
         frequencyPenalty,
         presencePenalty,
         maxTokens,
-        topP);
+        topP,
+        context);
   }
 
   private Map<String, String> mapColNameToColQual(String mapping) {

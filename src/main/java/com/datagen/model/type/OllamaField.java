@@ -28,6 +28,8 @@ import org.apache.hive.jdbc.HivePreparedStatement;
 import org.apache.kudu.Type;
 import org.apache.kudu.client.PartialRow;
 import org.apache.orc.TypeDescription;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.ollama.OllamaChatClient;
 import org.springframework.ai.ollama.api.OllamaApi;
@@ -35,6 +37,7 @@ import org.springframework.ai.ollama.api.OllamaOptions;
 
 import java.sql.SQLException;
 import java.util.LinkedList;
+import java.util.List;
 
 @Slf4j
 public class OllamaField extends Field<String> {
@@ -46,11 +49,12 @@ public class OllamaField extends Field<String> {
   private final OllamaApi ollamaApi;
   private final OllamaChatClient ollamaChatClient;
   private final OllamaOptions ollamaOptions;
+  private final SystemMessage systemMessage;
 
 
   public OllamaField(String name, String url, String user, String password, String request,
                      String modelType, Float temperature, Float frequencyPenalty,
-                     Float presencePenalty, Float topP) {
+                     Float presencePenalty, Float topP, String context) {
     this.name = name;
     this.url = url;
     this.user = user;
@@ -64,18 +68,24 @@ public class OllamaField extends Field<String> {
         .withFrequencyPenalty(frequencyPenalty == null ? 1.0f : frequencyPenalty)
         .withPresencePenalty(presencePenalty == null ? 1.0f : presencePenalty)
         .withTopP(topP == null ? 1.0f : topP);
+
+    var contextAsMessage = context!=null?"Use the following information to answer the question:"+System.lineSeparator()+context:"";
+    this.systemMessage = new SystemMessage("Generate only the answer."+System.lineSeparator()+contextAsMessage);
+    log.debug("Will provide following System information to the model: {}", systemMessage.getContent());
   }
 
   @Override
   public String generateComputedValue(Row row) {
     String stringToEvaluate = ParsingUtils.injectRowValuesToAString(row, requestToInject);
     log.debug("Asking to Ollama: {}", stringToEvaluate);
+    UserMessage userMessage = new UserMessage(stringToEvaluate);
 
     return this.ollamaChatClient.call(
         new Prompt(
-            stringToEvaluate,
+            List.of(userMessage, this.systemMessage),
             this.ollamaOptions
-        )).getResult().getOutput().getContent();
+        )).getResult().getOutput().getContent()
+        .trim().replaceAll("\\n[ \\t]*\\n","");
   }
 
   @Override

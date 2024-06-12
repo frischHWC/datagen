@@ -18,7 +18,8 @@
       "user": "<YOUR_ACCESS_KEY>",
       "password": "<YOUR_SECRET_KEY>",
       "temperature": 1.0,
-      "max_tokens": 256
+      "max_tokens": 256,
+      "context": "For their birthday, kids wants a toy, young wants a new car, adults wants a prosper family and friends, elder wants a strong health"
     },
     {
       "name": "birthday_wish_ollama",
@@ -28,7 +29,8 @@
       "temperature": 1.0,
       "frequency_penalty": 1.5,
       "presence_penalty": 1.3,
-      "top_p": 1.0
+      "top_p": 1.0,
+      "context": "For their birthday, kids wants a toy, young wants a new car, adults wants a prosper family and friends, elder wants a strong health"
     },
     {
       "name": "birthday_wish_openai",
@@ -40,7 +42,8 @@
       "frequency_penalty": 1.5,
       "presence_penalty": 1.3,
       "max_tokens": 256,
-      "top_p": 1.0
+      "top_p": 1.0,
+      "context": "For their birthday, kids wants a toy, young wants a new car, adults wants a prosper family and friends, elder wants a strong health"
     }
   ],
   "Table_Names": {

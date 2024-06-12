@@ -145,7 +145,8 @@ public abstract class Field<T> {
       Float frequencyPenalty,
       Float presencePenalty,
       Integer maxTokens,
-      Float topP
+      Float topP,
+      String context
       ) {
     if (name == null || name.isEmpty()) {
       throw new IllegalStateException(
@@ -296,7 +297,8 @@ public abstract class Field<T> {
             presencePenalty == null ? Float.valueOf(properties.get(
                 ApplicationConfigs.OLLAMA_PRESENCE_PENALTY_DEFAULT)) : presencePenalty,
             topP == null ? Float.valueOf(properties.get(
-                ApplicationConfigs.OLLAMA_TOP_P_DEFAULT)) : topP
+                ApplicationConfigs.OLLAMA_TOP_P_DEFAULT)) : topP,
+            context
         );
 
       case "BEDROCK":
@@ -314,7 +316,8 @@ public abstract class Field<T> {
                 ApplicationConfigs.BEDROCK_TEMPERATURE_DEFAULT)) : temperature,
             properties.get(ApplicationConfigs.BEDROCK_REGION),
             maxTokens == null ? Integer.valueOf(properties.get(
-                ApplicationConfigs.BEDROCK_MAX_TOKENS_DEFAULT)) : maxTokens
+                ApplicationConfigs.BEDROCK_MAX_TOKENS_DEFAULT)) : maxTokens,
+            context
             );
 
       case "OPENAI":
@@ -336,7 +339,8 @@ public abstract class Field<T> {
             maxTokens == null ? Integer.valueOf(properties.get(
                 ApplicationConfigs.OPENAI_MAX_TOKENS_DEFAULT)) : maxTokens,
             topP == null ? Float.valueOf(properties.get(
-                ApplicationConfigs.OPENAI_TOP_P_DEFAULT)) : topP
+                ApplicationConfigs.OPENAI_TOP_P_DEFAULT)) : topP,
+            context
         );
 
       default:

@@ -102,6 +102,20 @@ public class Utils {
         properties.get(ApplicationConfigs.HADOOP_HOME));
   }
 
+  /**
+   *
+   * Given a stacktrace format it as a string
+   * @return
+   */
+  public static String formatStackTrace(StackTraceElement[] stes) {
+    var sb = new StringBuilder();
+    for(StackTraceElement ste: stes) {
+      sb.append(ste.toString());
+      sb.append(System.lineSeparator());
+    }
+   return sb.toString();
+  }
+
 
   /**
    * Given a time in milliseconds, format it to a better human comprehensive way

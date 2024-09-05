@@ -19,6 +19,7 @@ package com.datagen.model.type;
 
 import com.datagen.model.Row;
 import com.datagen.utils.ParsingUtils;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -40,17 +41,24 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Slf4j
+@Getter
 public class OllamaField extends Field<String> {
 
+  private final String rawRequest;
+  private final String context;
   private final String url;
   private final String user;
   private final String password;
+  private final String modelType;
+  private final Float temperature;
+  private final Float frequencyPenalty;
+  private final Float presencePenalty;
+  private final Float topP;
   private final LinkedList<ParsingUtils.StringFragment> requestToInject;
   private final OllamaApi ollamaApi;
   private final OllamaChatClient ollamaChatClient;
   private final OllamaOptions ollamaOptions;
   private final SystemMessage systemMessage;
-
 
   public OllamaField(String name, String url, String user, String password, String request,
                      String modelType, Float temperature, Float frequencyPenalty,
@@ -59,18 +67,26 @@ public class OllamaField extends Field<String> {
     this.url = url;
     this.user = user;
     this.password = password;
+    this.rawRequest = request;
+    this.context = context;
     this.requestToInject = ParsingUtils.parseStringWithVars(request);
-    this.ollamaApi = url == null ? new OllamaApi() : new OllamaApi(url);
+    this.ollamaApi = (url == null || url.isBlank() || url.isEmpty())?
+        new OllamaApi() : new OllamaApi(url);
     this.ollamaChatClient = new OllamaChatClient(this.ollamaApi);
+    this.modelType = modelType==null?"llama3":modelType;
+    this.temperature = temperature == null ? 1.0f : temperature;
+    this.frequencyPenalty = frequencyPenalty == null ? 1.0f : frequencyPenalty;
+    this.presencePenalty = presencePenalty == null ? 1.0f : presencePenalty;
+    this.topP = topP == null ? 1.0f : topP;
     this.ollamaOptions = OllamaOptions.create()
-        .withModel(modelType==null?"llama3":modelType)
-        .withTemperature(temperature == null ? 1.0f : temperature)
-        .withFrequencyPenalty(frequencyPenalty == null ? 1.0f : frequencyPenalty)
-        .withPresencePenalty(presencePenalty == null ? 1.0f : presencePenalty)
+        .withModel(this.modelType)
+        .withTemperature(this.temperature)
+        .withFrequencyPenalty(this.frequencyPenalty)
+        .withPresencePenalty(this.presencePenalty)
         .withTopP(topP == null ? 1.0f : topP);
 
-    var contextAsMessage = context!=null?"Use the following information to answer the question:"+System.lineSeparator()+context:"";
-    this.systemMessage = new SystemMessage("Generate only the answer."+System.lineSeparator()+contextAsMessage);
+    var contextAsMessage = context!=null?"Use the following information to answer the question:"+System.lineSeparator()+this.context:"";
+    this.systemMessage = new SystemMessage("Generate only the answer and no explanations."+System.lineSeparator()+contextAsMessage);
     log.debug("Will provide following System information to the model: {}", systemMessage.getContent());
   }
 

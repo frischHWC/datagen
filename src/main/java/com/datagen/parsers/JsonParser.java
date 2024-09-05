@@ -21,13 +21,19 @@ package com.datagen.parsers;
 import com.datagen.config.ApplicationConfigs;
 import com.datagen.model.Model;
 import com.datagen.model.type.Field;
+import com.datagen.model.type.FieldRepresentation;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -36,6 +42,8 @@ import java.util.*;
 @SuppressWarnings("unchecked")
 @Slf4j
 public class JsonParser<T extends Field> implements Parser {
+
+  DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
 
   @Getter
   private JsonNode root;
@@ -46,6 +54,8 @@ public class JsonParser<T extends Field> implements Parser {
       log.info("Model used is from Json file : {} ", jsonFilePath);
       root = mapper.readTree(new File(jsonFilePath));
       log.debug("JSON file content is : {}", root.toPrettyString());
+    } catch (FileNotFoundException e) {
+      log.warn("JSON Model File not found: {}", jsonFilePath);
     } catch (IOException e) {
       log.error(
           "Could not read JSON file: {}, please verify its structure, error is : ",
@@ -57,12 +67,27 @@ public class JsonParser<T extends Field> implements Parser {
     }
   }
 
+  public JsonParser(InputStream inputStream) {
+    ObjectMapper mapper = new ObjectMapper();
+    try {
+      log.info("Model used is from Json input");
+      root = mapper.readTree(inputStream);
+      log.debug("JSON content is : {}", root.toPrettyString());
+    } catch (IOException e) {
+      log.error(
+          "Could not read JSON input, please verify its structure, error is : ", e);
+    }
+  }
+
   /**
    * Creates a model and populate it by reading the JSON file provided as argument of the constructor
    *
    * @return Model instantiated and populated
    */
   public Model renderModelFromFile(Map<ApplicationConfigs, String> properties) {
+
+    // Release 0.7.0 introduced possibility to name the model
+    var modelName = root.get("model_name")!=null ? root.get("model_name").asText("") : "";
 
     // Release 0.4.15 introduced an easier format with PK, TB & Options being just one JSON node instead of an array
     // But we need to keep working wih old format for retro-compatbility.  (Fields is untouched)
@@ -125,7 +150,7 @@ public class JsonParser<T extends Field> implements Parser {
       }
     }
 
-    return new Model(fields, pks, tbs, opsMap, properties);
+    return new Model(modelName, fields, pks, tbs, opsMap, properties);
   }
 
 
@@ -136,225 +161,97 @@ public class JsonParser<T extends Field> implements Parser {
    * @param jsonField
    * @return
    */
-  private T getOneField(JsonNode jsonField, Map<ApplicationConfigs, String> properties, Map<String, String> opsMap) {
-    String name;
-    try {
-      name = jsonField.get("name").asText();
-    } catch (NullPointerException e) {
-      name = "UNDEFINED_COL_NAME";
-    }
+  private T getOneField(JsonNode jsonField, Map<ApplicationConfigs, String> properties, Map<String, String> hbaseFamilyColsMap) {
+    String name = jsonField.get("name").asText("UNDEFINED_COL_NAME");
+    String type= jsonField.get("type").asText("STRING");
 
-    String type;
-    try {
-      type = jsonField.get("type").asText();
-    } catch (NullPointerException e) {
-      type = "UNDEFINED_TYPE";
-    }
+    FieldRepresentation fieldRepresentation = new FieldRepresentation(name, type);
+    fieldRepresentation.setColumnQualifier(hbaseFamilyColsMap.get(name));
 
-    Integer length;
-    try {
-      length = jsonField.get("length").asInt();
-    } catch (NullPointerException e) {
-      length = null;
-    }
+    fieldRepresentation.setLength(jsonField.get("length")==null?null:(jsonField.get("length").asInt()));
+    fieldRepresentation.setMin(jsonField.get("min")==null?null:(jsonField.get("min").asLong()));
+    fieldRepresentation.setMax(jsonField.get("max")==null?null:(jsonField.get("max").asLong()));
+    fieldRepresentation.setFile(jsonField.get("file")==null?null:(jsonField.get("file").asText()));
+    fieldRepresentation.setSeparator(jsonField.get("separator")==null?null:(jsonField.get("separator").asText()));
+    fieldRepresentation.setGhost(jsonField.get("ghost")==null?null:(jsonField.get("ghost").asBoolean()));
+    fieldRepresentation.setFormula(jsonField.get("formula")==null?null:(jsonField.get("formula").asText()));
+    fieldRepresentation.setInjection(jsonField.get("injection")==null?null:(jsonField.get("injection").asText()));
+    fieldRepresentation.setMainField(jsonField.get("field")==null?null:(jsonField.get("field").asText()));
+    fieldRepresentation.setPattern(jsonField.get("pattern")==null?null:(jsonField.get("pattern").asText()));
+    fieldRepresentation.setUseNow(jsonField.get("use_now")==null?null:(jsonField.get("use_now").asBoolean()));
+    fieldRepresentation.setRegex(jsonField.get("regex")==null?null:(jsonField.get("regex").asText()));
+    fieldRepresentation.setRequest(jsonField.get("request")==null?null:(jsonField.get("request").asText()));
+    fieldRepresentation.setLink(jsonField.get("link")==null?null:(jsonField.get("link").asText()));
+    fieldRepresentation.setUrl(jsonField.get("url")==null?null:(jsonField.get("url").asText()));
+    fieldRepresentation.setUser(jsonField.get("user")==null?null:(jsonField.get("user").asText()));
+    fieldRepresentation.setPassword(jsonField.get("password")==null?null:(jsonField.get("password").asText()));
+    fieldRepresentation.setModelType(jsonField.get("model_type")==null?null:(jsonField.get("model_type").asText()));
+    fieldRepresentation.setTemperature(jsonField.get("temperature")==null?null:Float.valueOf(jsonField.get("temperature").asText()));
+    fieldRepresentation.setFrequencyPenalty(jsonField.get("frequency_penalty")==null?null:Float.valueOf(jsonField.get("frequency_penalty").asText()));
+    fieldRepresentation.setPresencePenalty(jsonField.get("presence_penalty")==null?null:Float.valueOf(jsonField.get("presence_penalty").asText()));
+    fieldRepresentation.setMaxTokens(jsonField.get("max_tokens")==null?null:(jsonField.get("max_tokens").asInt()));
+    fieldRepresentation.setTopP(jsonField.get("top_p")==null?null:Float.valueOf(jsonField.get("top_p").asText()));
+    fieldRepresentation.setContext(jsonField.get("context")==null?null:(jsonField.get("context").asText()));
 
-    String min;
-    try {
-      min = jsonField.get("min").asText();
-    } catch (NullPointerException e) {
-      min = null;
+    if(jsonField.get("min_date")!=null) {
+      var minDateJson = jsonField.get("min_date").asText();
+      if(minDateJson.length()<=10) {
+        log.debug("Min date provided is a date");
+        String[] maxSplit = minDateJson.split("[/]");
+        fieldRepresentation.setMinDate(LocalDate.of(Integer.parseInt(maxSplit[2]),
+            Integer.parseInt(maxSplit[1]), Integer.parseInt(maxSplit[0])));
+      } else {
+        log.debug("Min date provided is a date with time");
+        String minFormatted = minDateJson.substring(0,11) + "T" + minDateJson.substring(12) + "Z";
+        fieldRepresentation.setMinDateTime(LocalDateTime.parse(minFormatted, formatter));
+      }
     }
-
-    String max;
-    try {
-      max = jsonField.get("max").asText();
-    } catch (NullPointerException e) {
-      max = null;
+    if(jsonField.get("max_date")!=null) {
+      var maxDateJson = jsonField.get("max_date").asText();
+      if(maxDateJson.length()<=10) {
+        log.debug("Max date provided is a date");
+        String[] maxSplit = maxDateJson.split("[/]");
+        fieldRepresentation.setMaxDate(LocalDate.of(Integer.parseInt(maxSplit[2]),
+            Integer.parseInt(maxSplit[1]), Integer.parseInt(maxSplit[0])));
+      } else {
+        log.debug("Max date provided is a date with time");
+        String minFormatted = maxDateJson.substring(0,11) + "T" + maxDateJson.substring(12) + "Z";
+        fieldRepresentation.setMaxDateTime(LocalDateTime.parse(minFormatted, formatter));
+      }
     }
-
-    String file;
-    try {
-      file = jsonField.get("file").asText();
-    } catch (NullPointerException e) {
-      file = null;
-    }
-
-    String separator;
-    try {
-      separator = jsonField.get("separator").asText();
-    } catch (NullPointerException e) {
-      separator = ",";
-    }
-
-    boolean ghost;
-    try {
-      ghost = jsonField.get("ghost").asBoolean();
-    } catch (NullPointerException e) {
-      ghost = false;
-    }
-
-    String formula;
-    try {
-      formula = jsonField.get("formula").asText();
-    } catch (NullPointerException e) {
-      formula = null;
-    }
-
-    String injection;
-    try {
-      injection = jsonField.get("injection").asText();
-    } catch (NullPointerException e) {
-      injection = null;
-    }
-
-    String field;
-    try {
-      field = jsonField.get("field").asText();
-    } catch (NullPointerException e) {
-      field = null;
-    }
-
-    String pattern;
-    try {
-      pattern = jsonField.get("pattern").asText();
-    } catch (NullPointerException e) {
-      pattern = null;
-    }
-
-    boolean useNow;
-    try {
-      useNow = jsonField.get("use_now").asBoolean();
-    } catch (NullPointerException e) {
-      useNow = false;
-    }
-
-    String regex;
-    try {
-      regex = jsonField.get("regex").asText();
-    } catch (NullPointerException e) {
-      regex = null;
-    }
-
-    String request;
-    try {
-      request = jsonField.get("request").asText();
-    } catch (NullPointerException e) {
-      request = null;
-    }
-
-    String link;
-    try {
-      link = jsonField.get("link").asText();
-    } catch (NullPointerException e) {
-      link = null;
-    }
-
-    String url;
-    try {
-      url = jsonField.get("url").asText();
-    } catch (NullPointerException e) {
-      url = null;
-    }
-
-    String user;
-    try {
-      user = jsonField.get("user").asText();
-    } catch (NullPointerException e) {
-      user = null;
-    }
-
-    String password;
-    try {
-      password = jsonField.get("password").asText();
-    } catch (NullPointerException e) {
-      password = null;
-    }
-
-    String modelType;
-    try {
-      modelType = jsonField.get("model_type").asText();
-    } catch (NullPointerException e) {
-      modelType = null;
-    }
-
-    Float temperature;
-    try {
-      temperature = Float.valueOf(jsonField.get("temperature").asText());
-    } catch (NullPointerException e) {
-      temperature = null;
-    }
-
-    Float frequencyPenalty;
-    try {
-      frequencyPenalty = Float.valueOf(jsonField.get("frequency_penalty").asText());
-    } catch (NullPointerException e) {
-      frequencyPenalty = null;
-    }
-
-    Float presencePenalty;
-    try {
-      presencePenalty = Float.valueOf(jsonField.get("presence_penalty").asText());
-    } catch (NullPointerException e) {
-      presencePenalty = null;
-    }
-
-    Integer maxTokens;
-    try {
-      maxTokens = Integer.valueOf(jsonField.get("max_tokens").asText());
-    } catch (NullPointerException e) {
-      maxTokens = null;
-    }
-
-    Float topP;
-    try {
-      topP = Float.valueOf(jsonField.get("top_p").asText());
-    } catch (NullPointerException e) {
-      topP = null;
-    }
-
-    String context;
-    try {
-      context = jsonField.get("context").asText();
-    } catch (NullPointerException e) {
-      context = null;
-    }
-
     JsonNode filtersArray = jsonField.get("filters");
-    List<JsonNode> filters = new ArrayList<>();
+    List<String> filters = new ArrayList<>();
     try {
       if (filtersArray.isArray()) {
         for (JsonNode possibleValue : filtersArray) {
-          filters.add(possibleValue);
+          filters.add(possibleValue.asText());
         }
       }
     } catch (NullPointerException e) {
       filters = Collections.emptyList();
     }
+    fieldRepresentation.setFilters(filters);
 
+    LinkedHashMap<String, Long> possibleValuesWeighted = new LinkedHashMap<>();
     JsonNode possibleValuesArray = jsonField.get("possible_values");
-    List<JsonNode> possibleValues = new ArrayList<>();
-    try {
-      if (possibleValuesArray.isArray()) {
-        for (JsonNode possibleValue : possibleValuesArray) {
-          possibleValues.add(possibleValue);
-        }
+    if (possibleValuesArray!=null && possibleValuesArray.isArray()) {
+      for (JsonNode possibleValue : possibleValuesArray) {
+        possibleValuesWeighted.put(possibleValue.asText(), 1L);
       }
-    } catch (NullPointerException e) {
-      possibleValues = Collections.emptyList();
     }
 
     JsonNode weightsObject = jsonField.get("possible_values_weighted");
-    LinkedHashMap<String, Long> possible_values_weighted =
-        new LinkedHashMap<>();
+
     if (weightsObject != null) {
       Iterator<Map.Entry<String, JsonNode>> weightsIterator =
           weightsObject.fields();
       while (weightsIterator.hasNext()) {
         Map.Entry<String, JsonNode> weight = weightsIterator.next();
-        possible_values_weighted.put(weight.getKey(),
+        possibleValuesWeighted.put(weight.getKey(),
             weight.getValue().asLong());
       }
     }
+    fieldRepresentation.setPossibleValuesWeighted(possibleValuesWeighted);
 
     JsonNode conditionalsObject = jsonField.get("conditionals");
     LinkedHashMap<String, String> conditionals = new LinkedHashMap<>();
@@ -366,40 +263,9 @@ public class JsonParser<T extends Field> implements Parser {
         conditionals.put(conditional.getKey(), conditional.getValue().asText());
       }
     }
+    fieldRepresentation.setConditionals(conditionals);
 
-    return (T) Field.instantiateField(
-        properties,
-        name,
-        type,
-        length,
-        min,
-        max,
-        opsMap.get(name),
-        possibleValues,
-        possible_values_weighted,
-        filters,
-        conditionals,
-        file,
-        separator,
-        pattern,
-        useNow,
-        regex,
-        request,
-        ghost,
-        field,
-        formula,
-        injection,
-        link,
-        url,
-        user,
-        password,
-        modelType,
-        temperature,
-        frequencyPenalty,
-        presencePenalty,
-        maxTokens,
-        topP,
-        context);
+    return (T) Field.instantiateField(properties, fieldRepresentation);
   }
 
   private Map<String, String> mapColNameToColQual(String mapping) {

@@ -28,30 +28,30 @@ import org.apache.kudu.client.PartialRow;
 import org.apache.orc.TypeDescription;
 
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Slf4j
 public class BooleanField extends Field<Boolean> {
 
-  public BooleanField(String name, List<Boolean> possibleValues,
-                      LinkedHashMap<String, Long> possible_values_weighted) {
+  public BooleanField(String name,
+                      HashMap<String, Long> possible_values_weighted) {
     this.name = name;
-    this.possibleValues = possibleValues;
+    this.possibleValuesProvided = new ArrayList<>();
     if (possible_values_weighted != null &&
         !possible_values_weighted.isEmpty()) {
       possible_values_weighted.forEach((value, probability) -> {
         for (long i = 0; i < probability; i++) {
-          this.possibleValues.add(Boolean.valueOf(value));
+          this.possibleValuesProvided.add(Boolean.valueOf(value));
         }
       });
     }
-    this.possibleValueSize = this.possibleValues.size();
+    this.possibleValueSize = this.possibleValuesProvided.size();
   }
 
   public Boolean generateRandomValue() {
-    if (!possibleValues.isEmpty()) {
-      return possibleValues.get(random.nextInt(possibleValues.size()));
+    if (!possibleValuesProvided.isEmpty()) {
+      return possibleValuesProvided.get(random.nextInt(possibleValuesProvided.size()));
     } else {
       return random.nextBoolean();
     }

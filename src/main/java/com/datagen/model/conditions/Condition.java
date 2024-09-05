@@ -178,5 +178,16 @@ public class Condition {
     }
   }
 
+  public enum Operators {
+    EQUALS,
+    UNEQUALS,
+    SUPERIOR,
+    INFERIOR
+  }
+
+  public enum ConditionOperators {
+    AND,
+    OR
+  }
 
 }

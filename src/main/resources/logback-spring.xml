@@ -17,6 +17,8 @@
         <logger name="org.apache.hadoop.util.NativeCodeLoader" level="ERROR" />
         <logger name="org.apache.hadoop.hdfs.shortcircuit.DomainSocketFactory" level="ERROR" />
         <logger name="com.azure.core.util.logging.ClientLogger" level="ERROR" />
+        <logger name="com.vaadin.flow.internal.nodefeature.ElementListenerMap" level="WARN" />
+        <logger name="com.vaadin.flow.server.communication.rpc.AbstractRpcInvocationHandler" level="WARN" />
 
         <!-- LOG everything at INFO level -->
         <root level="INFO">
@@ -41,6 +43,8 @@
         <logger name="org.apache.hadoop.util.NativeCodeLoader" level="ERROR" />
         <logger name="org.apache.hadoop.hdfs.shortcircuit.DomainSocketFactory" level="ERROR" />
         <logger name="com.azure.core.util.logging.ClientLogger" level="ERROR" />
+        <logger name="com.vaadin.flow.internal.nodefeature.ElementListenerMap" level="WARN" />
+        <logger name="com.vaadin.flow.server.communication.rpc.AbstractRpcInvocationHandler" level="WARN" />
 
         <!-- LOG everything at INFO level -->
         <root level="INFO">
@@ -76,7 +80,8 @@
         <logger name="org.apache.hadoop.util.NativeCodeLoader" level="ERROR" />
         <logger name="org.apache.hadoop.hdfs.shortcircuit.DomainSocketFactory" level="ERROR" />
         <logger name="com.azure.core.util.logging.ClientLogger" level="ERROR" />
-
+        <logger name="com.vaadin.flow.internal.nodefeature.ElementListenerMap" level="WARN" />
+        <logger name="com.vaadin.flow.server.communication.rpc.AbstractRpcInvocationHandler" level="WARN" />
 
         <!-- LOG everything at INFO level -->
         <root level="info">
@@ -121,6 +126,8 @@
         <logger name="org.apache.hadoop.util.NativeCodeLoader" level="ERROR" />
         <logger name="org.apache.hadoop.hdfs.shortcircuit.DomainSocketFactory" level="ERROR" />
         <logger name="com.azure.core.util.logging.ClientLogger" level="ERROR" />
+        <logger name="com.vaadin.flow.internal.nodefeature.ElementListenerMap" level="WARN" />
+        <logger name="com.vaadin.flow.server.communication.rpc.AbstractRpcInvocationHandler" level="WARN" />
 
 
         <!-- LOG everything at INFO level -->

@@ -32,7 +32,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,12 +44,22 @@ public class CountryField extends Field<String> {
 
   private List<String> countryDico;
 
-  public CountryField(String name, Integer length,
-                      List<String> possibleValues) {
+  public CountryField(String name,
+                      HashMap<String, Long> possible_values_weighted) {
     this.name = name;
-    this.possibleValues = possibleValues;
+    this.possibleValuesProvided = new ArrayList<>();
+    if (possible_values_weighted != null &&
+        !possible_values_weighted.isEmpty()) {
+      possible_values_weighted.forEach((value, probability) -> {
+        for (long i = 0; i < probability; i++) {
+          this.possibleValuesProvided.add(value);
+        }
+      });
+    }
+    this.possibleValueSize = this.possibleValuesProvided.size();
     this.countryDico =
-        possibleValues.isEmpty() ? loadCountryDico() : possibleValues;
+        possibleValuesProvided.isEmpty() ? loadCountryDico() :
+            possibleValuesProvided;
   }
 
   public String generateRandomValue() {

@@ -69,10 +69,16 @@ public abstract class AdlsUtils {
     this.localFilePathForModelGeneration = properties.get(
         DATAGEN_HOME_DIRECTORY) + "/model-gen/azure/";
 
-    this.sasToken = properties.get(ApplicationConfigs.ADLS_SAS_TOKEN);
-    this.accountName =
-        properties.get(ApplicationConfigs.ADLS_ACCOUNT_NAME);
-    this.accountType = properties.get(ApplicationConfigs.ADLS_ACCOUNT_TYPE);
+    // For credentials, first try to get them from model if they exist, otherwise default to application's one
+    this.sasToken = model.getTableNames().get(OptionsConverter.TableNames.ADLS_SAS_TOKEN)==null?
+        properties.get(ApplicationConfigs.ADLS_SAS_TOKEN):
+        model.getTableNames().get(OptionsConverter.TableNames.ADLS_SAS_TOKEN).toString();
+    this.accountName = model.getTableNames().get(OptionsConverter.TableNames.ADLS_ACCOUNT_NAME)==null?
+        properties.get(ApplicationConfigs.ADLS_ACCOUNT_NAME):
+        model.getTableNames().get(OptionsConverter.TableNames.ADLS_ACCOUNT_NAME).toString();
+    this.accountType = model.getTableNames().get(OptionsConverter.TableNames.ADLS_ACCOUNT_TYPE)==null?
+        properties.get(ApplicationConfigs.ADLS_ACCOUNT_TYPE):
+        model.getTableNames().get(OptionsConverter.TableNames.ADLS_ACCOUNT_TYPE).toString();
 
     this.blockSize = Long.parseLong((String) model.getOptionsOrDefault(
         OptionsConverter.Options.ADLS_BLOCK_SIZE));
@@ -95,6 +101,7 @@ public abstract class AdlsUtils {
       this.blobServiceClient = null;
       this.blobContainerClient = null;
       this.parallelTransferOptions = null;
+
     } else if (this.accountType.equalsIgnoreCase("blob")) {
       this.blobServiceClient = new BlobServiceClientBuilder()
           .endpoint("https://" + accountName + ".blob.core.windows.net")
@@ -108,6 +115,7 @@ public abstract class AdlsUtils {
           .setMaxSingleUploadSizeLong(this.maxUploadSizePerRequest);
       this.dataLakeServiceClient = null;
       this.dataLakeFileSystemClient = null;
+
     } else {
       this.dataLakeServiceClient = null;
       this.dataLakeFileSystemClient = null;
@@ -141,9 +149,9 @@ public abstract class AdlsUtils {
     try {
       if (this.accountType.equalsIgnoreCase("dfs")) {
         DataLakeFileClient fileClient =
-            this.directoryClient.getFileClient(fullFileName);
-
+            this.directoryClient.getFileClient(fileName);
         fileClient.uploadFromFile(localPath);
+
       } else if (this.accountType.equalsIgnoreCase("blob")) {
         BlobUploadFromFileOptions options =
             new BlobUploadFromFileOptions(localPath);
@@ -156,7 +164,7 @@ public abstract class AdlsUtils {
       if (e.getMessage().contains("PathAlreadyExists")) {
         log.warn(
             "Could not upload local file: {} to ADLS container: {} in directory: {}, because it already exists:" +
-                " Delete it before or set DELETE_PREVIOUS: true in model file");
+                " Delete it before or set DELETE_PREVIOUS: true in model file", fileName, containerName, directoryName);
       } else {
         log.warn(
             "Could not upload local file: {} to ALDS container: {} in directory: {}, due to error",
@@ -243,7 +251,7 @@ public abstract class AdlsUtils {
           if (!item.isDirectory() && item.getName().endsWith(suffix) &&
               item.getName().startsWith(directoryName + "/" + fileNamePrefix)) {
             log.debug("Found file: {} to delete", item.getName());
-            directoryClient.getFileClient(
+            this.directoryClient.getFileClient(
                     item.getName().substring(item.getName().lastIndexOf("/") + 1))
                 .delete();
           }
@@ -261,9 +269,13 @@ public abstract class AdlsUtils {
             });
       }
     } catch (Exception e) {
-      log.warn(
-          "Cannot delete files: {} under directory: {} in container: {} due to error: ",
-          fileNamePrefix, directoryName, containerName, e);
+      if(e.getMessage().contains("path does not exist")) {
+        log.info("Cannot delete any files under: {} as path does not exists", directoryName);
+      } else {
+        log.warn(
+            "Cannot delete files: {} under directory: {} in container: {} due to error: ",
+            fileNamePrefix, directoryName, containerName, e);
+      }
     }
 
     return success;

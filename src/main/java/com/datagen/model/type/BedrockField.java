@@ -19,6 +19,7 @@ package com.datagen.model.type;
 
 import com.datagen.model.Row;
 import com.datagen.utils.ParsingUtils;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -42,8 +43,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Slf4j
+@Getter
 public class BedrockField extends Field<String> {
 
+  private final String rawRequest;
+  private final String context;
   private final String url;
   private final String user;
   private final String password;
@@ -52,10 +56,9 @@ public class BedrockField extends Field<String> {
   private final Region region;
   private final LinkedList<ParsingUtils.StringFragment> requestToInject;
   private final BedrockRuntimeClient bedrockRuntimeClient;
-  private final String modelId;
+  private final String modelType;
   private final BedrockModelType bedrockmodeltype;
   private JSONObject preparedRequest = null;
-  private final String context;
 
   public BedrockField(String name, String url, String user, String password,
                       String request, String modelType, Float temperature, String region, Integer maxTokens, String context) {
@@ -63,6 +66,7 @@ public class BedrockField extends Field<String> {
     this.url = url;
     this.user = user;
     this.password = password;
+    this.rawRequest = request;
     this.temperature = temperature == null ? 0.5 : temperature;
     this.maxTokens = maxTokens == null ? 256 : maxTokens;
     this.requestToInject = ParsingUtils.parseStringWithVars(request);
@@ -82,7 +86,7 @@ public class BedrockField extends Field<String> {
     log.debug("Will provide following System information to the model: {}", context);
 
     // See model Ids available at: https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids.html
-    this.modelId = modelType == null ? "amazon.titan-text-lite-v1" : modelType;
+    this.modelType = modelType == null ? "amazon.titan-text-lite-v1" : modelType;
     /*
     Tested with
       MISTRAL: mistral.mistral-small-2402-v1:0
@@ -90,7 +94,7 @@ public class BedrockField extends Field<String> {
       LLAMA: meta.llama3-8b-instruct-v1:0
      */
 
-    this.bedrockmodeltype = switch (modelId.split("\\.")[0]) {
+    this.bedrockmodeltype = switch (this.modelType.split("\\.")[0]) {
       case "anthropic":
         yield BedrockModelType.ANTHROPIC;
       case "mistral":
@@ -153,7 +157,7 @@ public class BedrockField extends Field<String> {
           .accept("application/json")
           .contentType("application/json")
           .body(SdkBytes.fromUtf8String(preparedRequest.toString()))
-          .modelId(modelId));
+          .modelId(modelType));
 
       // Extract response
       var responseBody = new JSONObject(response.body().asUtf8String());

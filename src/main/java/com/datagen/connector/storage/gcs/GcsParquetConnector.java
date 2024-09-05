@@ -172,7 +172,7 @@ public class GcsParquetConnector extends GcsUtils implements ConnectorInterface 
           e);
     }
 
-    return new Model(fields, primaryKeys, tableNames, options, null);
+    return new Model("",fields, primaryKeys, tableNames, options, null);
   }
 
 

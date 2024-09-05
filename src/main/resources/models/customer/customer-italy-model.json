@@ -1,4 +1,5 @@
 {
+  "model_name": "customer-italy",
   "Fields": [
     {
       "name": "name",
@@ -14,8 +15,8 @@
     {
       "name": "birthdate",
       "type": "BIRTHDATE",
-      "min": "1/1/1945",
-      "max": "1/1/1994"
+      "min_date": "1/1/1945",
+      "max_date": "1/1/1994"
     },
     {
       "name": "city",

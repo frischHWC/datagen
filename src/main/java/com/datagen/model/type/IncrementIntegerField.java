@@ -35,12 +35,12 @@ public class IncrementIntegerField extends Field<Integer> {
   private Integer counter = 0;
 
   public IncrementIntegerField(String name,
-                               String min) {
+                               Long min) {
     this.name = name;
     if (min == null) {
       this.min = 0L;
     } else {
-      this.min = Long.parseLong(min);
+      this.min = min;
     }
     counter = this.min.intValue();
   }

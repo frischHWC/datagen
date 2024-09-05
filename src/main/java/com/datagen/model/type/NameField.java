@@ -76,32 +76,33 @@ public class NameField extends Field<String> {
 
   private List<Name> nameDico;
 
-  public NameField(String name, Integer length, List<String> filters) {
+  public NameField(String name, List<String> filters) {
     this.name = name;
-    this.length = length;
+    this.filters = filters;
     this.nameDico = loadNameDico();
 
-    this.possibleValues = new ArrayList<>();
+    this.possibleValuesInternal = new ArrayList<>();
 
     if (!filters.isEmpty()) {
       filters.forEach(filterOnCountry -> {
-        this.possibleValues.addAll(
+        this.possibleValuesInternal.addAll(
             nameDico.stream().filter(
                     n -> n.country.equalsIgnoreCase(filterOnCountry))
                 .map(n -> n.first_name)
-                .collect(Collectors.toList()));
+                .toList());
       });
     } else {
-      this.possibleValues.addAll(
+      this.possibleValuesInternal.addAll(
           nameDico.stream()
               .map(n -> n.first_name)
-              .collect(Collectors.toList())
+              .toList()
       );
     }
+    this.possibleValueSize = possibleValuesInternal.size();
   }
 
   public String generateRandomValue() {
-    return possibleValues.get(random.nextInt(possibleValues.size()));
+    return possibleValuesInternal.get(random.nextInt(possibleValueSize));
   }
 
   private List<Name> loadNameDico() {
@@ -177,5 +178,64 @@ public class NameField extends Field<String> {
   public TypeDescription getTypeDescriptionOrc() {
     return TypeDescription.createString();
   }
+
+  public static final List<String> listOfAvailableCountries =
+      List.of(
+          "Albania",
+          "Algeria",
+          "Arabia",
+          "Armenia",
+          "Austria",
+          "Azerbaijan",
+          "Belarus",
+          "Belgium",
+          "Bosnia",
+          "Bulgaria",
+          "China",
+          "Croatia",
+          "Czech",
+          "Denmark",
+          "Estonia",
+          "Finland",
+          "France",
+          "Georgia",
+          "Germany",
+          "Greece",
+          "Hungary",
+          "Iceland",
+          "India",
+          "Ireland",
+          "Israel",
+          "Italy",
+          "Japan",
+          "Kazakhstan",
+          "Korea",
+          "Kosovo",
+          "Latvia",
+          "Lithuania",
+          "Luxembourg",
+          "Macedonia",
+          "Moldova",
+          "Montenegro",
+          "Morocco",
+          "Netherlands",
+          "Norway",
+          "Poland",
+          "Portugal",
+          "Romania",
+          "Russia",
+          "Serbia",
+          "Slovakia",
+          "Slovenia",
+          "Spain",
+          "Sweden",
+          "Switzerland",
+          "Tunisia",
+          "Turkey",
+          "UK",
+          "USA",
+          "Ukraine",
+          "Vietnam"
+      );
 
 }

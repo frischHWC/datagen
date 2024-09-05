@@ -50,8 +50,10 @@ public abstract class HdfsUtils {
     this.replicationFactor = (short) model.getOptionsOrDefault(
         OptionsConverter.Options.HDFS_REPLICATION_FACTOR);
     this.hdfsUri = properties.get(ApplicationConfigs.HDFS_URI);
-    this.useKerberos = Boolean.parseBoolean(
-        properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS));
+    this.useKerberos =
+        model.getTableNames().get(OptionsConverter.TableNames.HDFS_USE_KERBEROS)==null ?
+    Boolean.parseBoolean(properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS)) :
+            Boolean.parseBoolean(model.getTableNames().get(OptionsConverter.TableNames.HDFS_USE_KERBEROS).toString());
 
     this.configuration = new Configuration();
     configuration.set("dfs.replication", String.valueOf(replicationFactor));
@@ -60,8 +62,12 @@ public abstract class HdfsUtils {
     // Set all kerberos if needed (Note that connection will require a user and its appropriate keytab with right privileges to access folders and files on HDFSCSV)
     if (useKerberos) {
       KerberosUtils.loginUserWithKerberos(
-          properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_USER),
-          properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_KEYTAB),
+          model.getTableNames().get(OptionsConverter.TableNames.HDFS_USER)==null ?
+              properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_USER) :
+              model.getTableNames().get(OptionsConverter.TableNames.HDFS_USER).toString(),
+          model.getTableNames().get(OptionsConverter.TableNames.HDFS_KEYTAB)==null ?
+              properties.get(ApplicationConfigs.HDFS_AUTH_KERBEROS_KEYTAB) :
+              model.getTableNames().get(OptionsConverter.TableNames.HDFS_KEYTAB).toString(),
           configuration);
     }
 

@@ -156,7 +156,7 @@ if [ "${BUILD_DATAGEN_JAR}" = "true" ]
 then
   cd ../../../
 
-  mvn clean package
+  mvn clean package -Pproduction
 
   cd $DEPLOY_DIR
 fi

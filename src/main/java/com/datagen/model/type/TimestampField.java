@@ -28,20 +28,29 @@ import org.apache.kudu.client.PartialRow;
 import org.apache.orc.TypeDescription;
 
 import java.sql.SQLException;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Slf4j
 public class TimestampField extends Field<Long> {
 
-  public TimestampField(String name,
-                        List<Long> possibleValues) {
+  public TimestampField(String name, HashMap<String, Long> possible_values_weighted) {
     this.name = name;
-    this.possibleValues = possibleValues;
+    this.possibleValuesProvided = new ArrayList<>();
+    if (possible_values_weighted != null &&
+        !possible_values_weighted.isEmpty()) {
+      possible_values_weighted.forEach((value, probability) -> {
+        for (long i = 0; i < probability; i++) {
+          this.possibleValuesProvided.add(Long.valueOf(value));
+        }
+      });
+    }
+    this.possibleValueSize = this.possibleValuesProvided.size();
   }
 
   public Long generateRandomValue() {
-    return possibleValues.isEmpty() ? System.currentTimeMillis() :
-        possibleValues.get(random.nextInt(possibleValues.size()));
+    return possibleValuesProvided.isEmpty() ? System.currentTimeMillis() :
+        possibleValuesProvided.get(random.nextInt(possibleValuesProvided.size()));
   }
 
   /*

@@ -55,16 +55,21 @@ public class OzoneUtils {
         (int) model.getOptionsOrDefault(
             OptionsConverter.Options.OZONE_REPLICATION_FACTOR));
 
-    this.useKerberos = Boolean.parseBoolean(
-        properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS));
+    this.useKerberos = model.getTableNames().get(OptionsConverter.TableNames.OZONE_USE_KERBEROS)==null ?
+        Boolean.parseBoolean(properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS)) :
+        Boolean.parseBoolean(model.getTableNames().get(OptionsConverter.TableNames.OZONE_USE_KERBEROS).toString());
     this.config = new OzoneConfiguration();
     Utils.setupHadoopEnv(config, properties);
     this.replicationConfig = ReplicationConfig.parse(ReplicationType.RATIS, String.valueOf(replicationFactor), config);
 
     if (useKerberos) {
       KerberosUtils.loginUserWithKerberos(
-          properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_USER),
-          properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_KEYTAB),
+          model.getTableNames().get(OptionsConverter.TableNames.OZONE_USER)==null ?
+              properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_USER) :
+              model.getTableNames().get(OptionsConverter.TableNames.OZONE_USER).toString(),
+          model.getTableNames().get(OptionsConverter.TableNames.OZONE_KEYTAB)==null ?
+              properties.get(ApplicationConfigs.OZONE_AUTH_KERBEROS_KEYTAB) :
+              model.getTableNames().get(OptionsConverter.TableNames.OZONE_KEYTAB).toString(),
           config);
     }
     try {

@@ -45,6 +45,9 @@ public class StringRegexField extends Field<String> {
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
       "0123456789";
 
+  @Getter
+  private final String regex;
+
   // pattern to match all groups that needs to be replaced by something (all rest should be as is)
   private final Pattern pattern = Pattern.compile("(\\[[^]]*\\])(\\{[0-9]*\\})");
   private final Pattern patternReadRegexInterval = Pattern.compile("[A-Za-z0-9]-[A-Za-z0-9]");
@@ -60,6 +63,7 @@ public class StringRegexField extends Field<String> {
 
   public StringRegexField(String name, String regex) {
     this.name = name;
+    this.regex = regex;
 
     Matcher matcher = pattern.matcher(regex);
 

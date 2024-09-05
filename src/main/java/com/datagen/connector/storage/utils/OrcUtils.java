@@ -10,7 +10,7 @@ import org.apache.orc.TypeDescription;
 import org.apache.orc.Writer;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 @Slf4j
@@ -81,52 +81,44 @@ public class OrcUtils {
       switch (columnType) {
       case BOOLEAN:
       case BINARY:
-        f = new BooleanField(columnName, Collections.emptyList(),
-            new LinkedHashMap<>());
+        f = new BooleanField(columnName, new HashMap<>());
         break;
       case INT:
-        f = new IntegerField(columnName, Collections.emptyList(),
-            new LinkedHashMap<>(), null, null);
+        f = new IntegerField(columnName, new HashMap<>(), null, null);
         break;
       case LONG:
-        f = new LongField(columnName, Collections.emptyList(),
-            new LinkedHashMap<>(), null, null);
+        f = new LongField(columnName, new HashMap<>(), null, null);
         break;
       case BYTE:
-        f = new IntegerField(columnName, Collections.emptyList(),
-            new LinkedHashMap<>(), "-128", "127");
+        f = new IntegerField(columnName, new HashMap<>(), -128L, 127L);
         break;
       case SHORT:
-        f = new IntegerField(columnName, Collections.emptyList(),
-            new LinkedHashMap<>(), "-32768", "32767");
+        f = new IntegerField(columnName, new HashMap<>(), -32768L, 32767L);
         break;
       case FLOAT:
       case DOUBLE:
       case DECIMAL:
-        f = new FloatField(columnName, Collections.emptyList(),
-            new LinkedHashMap<>(), null, null);
+        f = new FloatField(columnName, new HashMap<>(), null, null);
         break;
       case TIMESTAMP:
-        f = new TimestampField(columnName, Collections.emptyList());
+        f = new TimestampField(columnName, new HashMap<>());
         break;
       case DATE:
-        f = new BirthdateField(columnName, null, Collections.emptyList(),
+        f = new BirthdateField(columnName, null,
             null,
             null);
         break;
       case STRING:
-        f = new StringField(columnName, null, Collections.emptyList(),
-            new LinkedHashMap<>());
+        f = new StringField(columnName, null, new HashMap<>());
         break;
       case VARCHAR:
-        f = new StringAZField(columnName, null, Collections.emptyList());
+        f = new StringAZField(columnName, null, new HashMap<>());
         break;
       case CHAR:
-        f = new StringAZField(columnName, 1, Collections.emptyList());
+        f = new StringAZField(columnName, 1, new HashMap<>());
         break;
       default:
-        f = new StringField(columnName, null, Collections.emptyList(),
-            new LinkedHashMap<>());
+        f = new StringField(columnName, null, new HashMap<>());
       }
       fields.put(columnName, f);
     }

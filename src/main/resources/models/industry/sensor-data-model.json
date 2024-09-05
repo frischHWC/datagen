@@ -1,4 +1,5 @@
 {
+  "model_name": "sensor-data",
   "Fields": [
     {
       "name": "sensor_id",

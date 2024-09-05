@@ -51,14 +51,15 @@ public class SecurityConfig {
     this.propertiesLoader = propertiesLoader;
   }
 
+
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     return http
         .authorizeRequests(
-            authorize -> authorize.requestMatchers("/metrics/**").permitAll())
+            authorize -> authorize.requestMatchers("/api/v1/metrics/**").permitAll())
         .authorizeRequests(
-            authorize -> authorize.requestMatchers("/health/status").permitAll())
-        .authorizeRequests(authorize -> authorize.anyRequest().authenticated())
+            authorize -> authorize.requestMatchers("/api/v1/health/status").permitAll())
+        .authorizeRequests(authorize -> authorize.requestMatchers("/api/v1/**").authenticated())
         .httpBasic(withDefaults())
         .csrf(AbstractHttpConfigurer::disable)
         .build();

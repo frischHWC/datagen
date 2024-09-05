@@ -204,7 +204,7 @@ public class OzoneParquetConnector extends OzoneUtils implements ConnectorInterf
           "Could not connect and read key: {} into Ozone, due to error: ",
           keyNamePrefix, e);
     }
-    return new Model(fields, primaryKeys, tableNames, options, null);
+    return new Model("",fields, primaryKeys, tableNames, options, null);
   }
 
 

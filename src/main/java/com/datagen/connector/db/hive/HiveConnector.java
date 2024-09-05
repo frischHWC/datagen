@@ -96,8 +96,9 @@ public class HiveConnector implements ConnectorInterface {
             database + ";serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=" +
             properties.get(ApplicationConfigs.HIVE_ZOOKEEPER_ZNODE) +
             "?tez.queue.name=" + queue;
-    this.useKerberos = Boolean.parseBoolean(
-        properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS));
+    this.useKerberos = model.getTableNames().get(OptionsConverter.TableNames.HIVE_USE_KERBEROS)==null ?
+        Boolean.parseBoolean(properties.get(ApplicationConfigs.HIVE_AUTH_KERBEROS)) :
+        Boolean.parseBoolean(model.getTableNames().get(OptionsConverter.TableNames.HIVE_USE_KERBEROS).toString());
     this.hiveTableType = model.getHiveTableType();
     this.hiveTableFormat = model.getHiveTableFormat();
 
@@ -132,8 +133,12 @@ public class HiveConnector implements ConnectorInterface {
     try {
       if (useKerberos) {
         KerberosUtils.loginUserWithKerberos(
-            properties.get(ApplicationConfigs.HIVE_SECURITY_USER),
-            properties.get(ApplicationConfigs.HIVE_SECURITY_KEYTAB),
+            model.getTableNames().get(OptionsConverter.TableNames.HIVE_USER)==null ?
+                properties.get(ApplicationConfigs.HIVE_SECURITY_USER) :
+                model.getTableNames().get(OptionsConverter.TableNames.HIVE_USER).toString(),
+            model.getTableNames().get(OptionsConverter.TableNames.HIVE_KEYTAB)==null ?
+                properties.get(ApplicationConfigs.HIVE_SECURITY_KEYTAB) :
+                model.getTableNames().get(OptionsConverter.TableNames.HIVE_KEYTAB).toString(),
             new Configuration());
       }
 
@@ -184,33 +189,33 @@ public class HiveConnector implements ConnectorInterface {
     if (writer) {
       try {
         prepareAndExecuteStatement(
-            "CREATE DATABASE IF NOT EXISTS " + database);
+            "CREATE DATABASE IF NOT EXISTS `" + database + "`" );
 
         hiveConnection.setSchema(database);
 
         if ((Boolean) model.getOptionsOrDefault(
             OptionsConverter.Options.DELETE_PREVIOUS)) {
           prepareAndExecuteStatement(
-              "DROP TABLE IF EXISTS " + tableName);
+              "DROP TABLE IF EXISTS `" + tableName + "`");
         }
 
         String tableStatementCreation = "";
         if (hiveTableType == Model.HiveTableType.MANAGED) {
           log.info("Creating Managed table: " + tableName);
           tableStatementCreation =
-              "CREATE TABLE IF NOT EXISTS " + tableName +
+              "CREATE TABLE IF NOT EXISTS `" + tableName + "`" +
                   model.getSQLSchema(partCols) + this.extraCreate +
                   model.HiveTFtoString(this.hiveTableFormat);
         } else if (hiveTableType == Model.HiveTableType.ICEBERG) {
           log.info("Creating Iceberg table: " + tableName);
           tableStatementCreation =
-              "CREATE TABLE IF NOT EXISTS " + tableName +
+              "CREATE TABLE IF NOT EXISTS `" + tableName + "`" +
                   model.getSQLSchema(partCols) + this.extraCreate +
                   " STORED BY ICEBERG";
         } else if (hiveTableType == Model.HiveTableType.EXTERNAL) {
           log.info("Creating External table: " + tableName);
           tableStatementCreation =
-              "CREATE EXTERNAL TABLE IF NOT EXISTS " + tableName +
+              "CREATE EXTERNAL TABLE IF NOT EXISTS `" + tableName + "`" +
                   model.getSQLSchema(null) +
                   model.HiveTFtoString(this.hiveTableFormat) +
                   " LOCATION '" + this.locationTemporaryTable + "'";
@@ -251,8 +256,8 @@ public class HiveConnector implements ConnectorInterface {
 
           if (hiveTableType == Model.HiveTableType.MANAGED) {
             String tableStatementCreationTemp =
-                "CREATE EXTERNAL TABLE IF NOT EXISTS " +
-                    tableNameTemporary + model.getSQLSchema(null) +
+                "CREATE EXTERNAL TABLE IF NOT EXISTS `" + tableNameTemporary + "`" +
+                    model.getSQLSchema(null) +
                     model.HiveTFtoString(this.hiveTableFormat) +
                     " LOCATION '" + this.locationTemporaryTable + "'";
             log.info("Hive temporary Table statement creation : " +
@@ -264,7 +269,7 @@ public class HiveConnector implements ConnectorInterface {
         log.info("SQL Insert schema for hive: " +
             model.getInsertSQLStatement() + this.extraInsert);
         insertStatement =
-            "INSERT INTO " + tableName + model.getInsertSQLStatement() +
+            "INSERT INTO `" + tableName + "`" + model.getInsertSQLStatement() +
                 this.extraInsert;
 
       } catch (SQLException e) {
@@ -287,11 +292,11 @@ public class HiveConnector implements ConnectorInterface {
         if (hiveTableType == Model.HiveTableType.MANAGED) {
           log.info("Starting to load data to final table");
           prepareAndExecuteStatement(
-              "INSERT INTO " + tableName + this.extraInsert +
-                  " SELECT * FROM " + tableNameTemporary);
+              "INSERT INTO `" + tableName + "`" + this.extraInsert +
+                  " SELECT * FROM `" + tableNameTemporary + "`");
           log.info("Dropping Temporary Table");
           prepareAndExecuteStatement(
-              "DROP TABLE IF EXISTS " + tableNameTemporary);
+              "DROP TABLE IF EXISTS `" + tableNameTemporary + "`");
         }
       }
 
@@ -340,7 +345,7 @@ public class HiveConnector implements ConnectorInterface {
       HiveUtils.setBasicFields(fields, columnsInfo);
 
       ResultSet descTableInfo =
-          hiveConnection.prepareStatement("DESCRIBE FORMATTED " + tableName)
+          hiveConnection.prepareStatement("DESCRIBE FORMATTED `" + tableName + "`")
               .executeQuery();
 
       HiveUtils.setTableInfo(tableNames, options, descTableInfo);
@@ -360,7 +365,7 @@ public class HiveConnector implements ConnectorInterface {
       log.warn("Unable to close Hive connection");
     }
 
-    return new Model(fields, primaryKeys, tableNames, options, null);
+    return new Model("",fields, primaryKeys, tableNames, options, null);
   }
 
 

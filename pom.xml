@@ -6,7 +6,8 @@
 
     <groupId>com.cloudera.frisch</groupId>
     <artifactId>datagen</artifactId>
-    <version>0.6.0</version>
+    <name>datagen</name>
+    <version>0.8.0</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -21,13 +22,13 @@
         <maven.compiler.target>17</maven.compiler.target>
         <!-- Check your EXACT version of CDP as all CDP jars depends on it -->
         <cdp.version>7.1.9.4-4</cdp.version>
+
+        <vaadin.version>24.4.1</vaadin.version>
         <gcp.version>26.34.0</gcp.version>
         <aws.version>2.25.31</aws.version>
-        <azure.version>1.2.22</azure.version>
+        <azure.version>1.2.26</azure.version>
         <spring.ai.version>1.0.3</spring.ai.version>
         <jakarta-servlet.version>5.0.0</jakarta-servlet.version>
-
-
     </properties>
 
     <!-- Cloudera repository needed to get good CDP versions of jars -->
@@ -39,6 +40,13 @@
         <repository>
             <id>hortonworks</id>
             <url>https://repo.hortonworks.com/content/repositories/releases/</url>
+        </repository>
+        <repository>
+            <id>Vaadin Directory</id>
+            <url>https://maven.vaadin.com/vaadin-addons</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
 
@@ -76,6 +84,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <!-- Spring Security -->
@@ -92,6 +110,18 @@
         <dependency>
             <groupId>io.springboot.ai</groupId>
             <artifactId>spring-ai-openai</artifactId>
+        </dependency>
+        <!-- To solve issues with Spring AI APIs -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>12.0.9</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>jetty-util</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Swagger -->
@@ -130,12 +160,55 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Vaadin for front-End -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>copilot</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.parttio</groupId>
+            <artifactId>line-awesome</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-testbench-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.vaadin.olli</groupId>
+            <artifactId>file-download-wrapper</artifactId>
+            <version>7.0.0</version>
+        </dependency>
+
+        <!-- To run internal LLM -->
+        <dependency>
+            <groupId>de.kherud</groupId>
+            <artifactId>llama</artifactId>
+            <version>3.3.0</version>
+        </dependency>
 
         <!-- HDFS -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
             <version>3.1.1.${cdp.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -252,14 +325,36 @@
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-storage-file-datalake</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.azure</groupId>
+                    <artifactId>azure-core-http-netty</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-storage-blob</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.azure</groupId>
+                    <artifactId>azure-core-http-netty</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-storage-common</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.azure</groupId>
+                    <artifactId>azure-core-http-netty</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-core-http-okhttp</artifactId>
         </dependency>
 
         <!-- GCS -->
@@ -304,19 +399,62 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-bom</artifactId>
+                <version>${vaadin.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
 
     <build>
         <plugins>
+            <!-- To avoid having extra parameters in the command line -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifestEntries>
+                                    <Add-Exports>java.base/sun.nio.ch</Add-Exports>
+                                    <Add-Opens> java.base/jdk.internal.ref java.base/java.nio</Add-Opens>
+                                </manifestEntries>
+                            </archive>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>executable-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <executable>true</executable>
+                        </configuration>
+                    </execution>
+                </executions>
                 <configuration>
                     <mainClass>com.datagen.Main</mainClass>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -325,6 +463,21 @@
                     <target>17</target>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-maven-plugin</artifactId>
+                <version>${vaadin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-frontend</goal>
+                        </goals>
+                        <phase>compile</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
 
         <resources>
@@ -338,6 +491,43 @@
             </resource>
         </resources>
     </build>
+
+    <profiles>
+    <profile>
+        <!-- Production mode is activated using -Pproduction -->
+        <id>production</id>
+        <dependencies>
+            <!-- Exclude development dependencies from production -->
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-core</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.vaadin</groupId>
+                        <artifactId>vaadin-dev</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+        </dependencies>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>vaadin-maven-plugin</artifactId>
+                    <version>${vaadin.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>build-frontend</goal>
+                            </goals>
+                            <phase>compile</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </build>
+    </profile>
+    </profiles>
 
 
 </project>

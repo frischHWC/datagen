@@ -1,4 +1,5 @@
 {
+  "model_name": "weather-sensor",
   "Fields": [
     {
       "name": "city",

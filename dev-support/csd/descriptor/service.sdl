@@ -2,7 +2,7 @@
   "name": "DATAGEN",
   "label": "Datagen",
   "description": "The service to generate Data into various services of CDP platform",
-  "version": "0.5.1",
+  "version": "0.8.0",
   "parcel": {
     "requiredTags": [
       "datagen"
@@ -20,7 +20,7 @@
   "compatibility": {
     "generation": 2,
     "cdhVersion": {
-      "min": "7.1.7",
+      "min": "7.1.9",
       "max": "8.0.0"
     }
   },
@@ -209,8 +209,8 @@
       "metricsSource": {
         "metricsFormat": "SIMPLE",
         "httpSource": {
-          "httpUrl": "http://${host}:${app_port}/metrics/all",
-          "httpsUrl": "https://${host}:${app_port}/metrics/all",
+          "httpUrl": "http://${host}:${app_port}/api/v1/metrics/all",
+          "httpsUrl": "https://${host}:${app_port}/api/v1/metrics/all",
           "sslEnabled": "${ssl_enabled}",
           "mtlsEnabled": "false",
           "kerberosEnabled": "false",
@@ -243,11 +243,18 @@
         "loggingType": "logback"
       },
       "externalLink": {
-        "name": "datagen_swagger",
-        "label": "Datagen Swagger Web UI",
-        "url": "http://${host}:${app_port}/swagger-ui.html",
-        "secureUrl": "https://${host}:${app_port}/swagger-ui.html"
+        "name": "datagen_ui",
+        "label": "Datagen Web UI",
+        "url": "http://${host}:${app_port}/",
+        "secureUrl": "https://${host}:${app_port}/"
       },
+      "additionalExternalLinks" : [
+        {
+        "name" : "datagen_swagger",
+        "label" : "Datagen Swagger",
+        "url" : "http://${host}:${app_port}/swagger-ui/index.html#/"
+        }
+       ],
       "topology": {
         "minInstances": "1"
       },
@@ -543,35 +550,6 @@
           "type": "long"
         },
         {
-          "name": "data_model",
-          "label": "Data Model",
-          "description": "The Model of data to use to generate data",
-          "required": true,
-          "configurableInWizard": true,
-          "default": "full-model.json",
-          "type": "string_enum",
-          "validValues": [
-            "full-model.json",
-            "customer/customer-china-model.json",
-            "customer/customer-france-model.json",
-            "customer/customer-germany-model.json",
-            "customer/customer-india-model.json",
-            "customer/customer-italy-model.json",
-            "customer/customer-japan-model.json",
-            "customer/customer-spain-model.json",
-            "customer/customer-turkey-model.json",
-            "customer/customer-usa-model.json",
-            "finance/transaction-model.json",
-            "industry/sensor-model.json",
-            "industry/sensor-data-model.json",
-            "industry/plant-model.json",
-            "public_service/incident-model.json",
-            "public_service/intervention-team-model.json",
-            "public_service/weather-model.json",
-            "public_service/weather-sensor-model.json"
-          ]
-        },
-        {
           "name": "app_port",
           "label": "Web Server Port",
           "description": "Port that Web Server should expose",
@@ -841,6 +819,13 @@
           "mode": "0600"
         },
         {
+          "name": "gcs_region",
+          "label": "Google Cloud Region",
+          "description": "(Optional): Google Cloud Region",
+          "default": "EUROPE-WEST9",
+          "type": "string"
+        },
+        {
           "name": "core_site_path",
           "label": "AUTO-DISCOVERY: Hadoop Core Site Path",
           "description": "Path to core-site.xml. This is used to auto-discover services: HDFS. (if settings are not explicitly set)",
@@ -915,16 +900,7 @@
         {
           "name": "kudu_conf_path",
           "label": "AUTO-DISCOVERY: Kudu configuration Path.",
-          "description": "Path to Kudu Confiuration File. This is used to auto-discover services: KUDU. (if settings are not explicitly set)",
-          "default": "",
-          "type": "path",
-          "pathType": "serviceSpecific",
-          "mode": "0755"
-        },
-        {
-          "name": "custom_model_path",
-          "label": "Custom Model Path",
-          "description": "The custom Model Path to use instead of the furnished data model. This file must exists on the machine where the web server is installed. Learn how to create a model here: https://github.com/frischHWC/random-datagen#data-generated",
+          "description": "Path to Kudu Configuration File. This is used to auto-discover services: KUDU. (if settings are not explicitly set)",
           "default": "",
           "type": "path",
           "pathType": "serviceSpecific",
@@ -958,10 +934,53 @@
           "mode": "0750"
         },
         {
+          "name": "data_model_store",
+          "label": "Data Model Store Path",
+          "description": "The path where to store locally data models",
+          "default": "/home/datagen/models-store",
+          "type": "path",
+          "pathType": "serviceSpecific",
+          "mode": "0700"
+        },
+        {
           "name": "scheduler_file_path",
           "label": "Scheduler File path",
           "description": "Where to store the internal scheduler file that lists all commands scheduled. It is used in case of restart of the application",
           "default": "/home/datagen/scheduler/commands.txt",
+          "type": "path",
+          "pathType": "serviceSpecific",
+          "mode": "0700"
+        },
+        {
+          "name": "commands_file_path",
+          "label": "Commands directory",
+          "description": "Where to store the internal status of commands and their information",
+          "default": "/home/datagen/commands",
+          "type": "path",
+          "pathType": "serviceSpecific",
+          "mode": "0700"
+        },
+        {
+          "name": "load_default_models",
+          "label": "Load Default models",
+          "description": "Where to load default models at startup or not",
+          "default": "true",
+          "type": "boolean"
+        },
+        {
+          "name": "credentials_file_path",
+          "label": "Credentials directory",
+          "description": "Where to store the internal stored credentials. This directory must be protected and point to a secure place, because credentials given by users are stored there",
+          "default": "/home/datagen/credentials",
+          "type": "path",
+          "pathType": "serviceSpecific",
+          "mode": "0700"
+        },
+        {
+          "name": "analysis_file_path",
+          "label": "Analysis directory",
+          "description": "Where to store the internal status of analysis commands and their information",
+          "default": "/home/datagen/analysis",
           "type": "path",
           "pathType": "serviceSpecific",
           "mode": "0700"
@@ -972,6 +991,181 @@
           "description": "To use CM (with an internal readOnly user) to make auto-discovery of services",
           "default": "true",
           "type": "boolean"
+        },
+        {
+          "name": "ollama_base_url",
+          "label": "Ollama Base URL",
+          "description": "URL to contact Ollama running service in format: host:port",
+          "default": "localhost:11434",
+          "type": "string"
+        },
+        {
+          "name": "ollama_model",
+          "label": "Ollama Model",
+          "description": "Name of the model deployed and to use with Ollama",
+          "default": "mistral",
+          "type": "string"
+        },
+        {
+          "name": "ollama_temperature",
+          "label": "Ollama Temperature",
+          "description": "Temperature to set on request to the model when generating data",
+          "default": 1.0,
+          "type": "double"
+        },
+        {
+          "name": "ollama_frequency_penalty",
+          "label": "Ollama Frequency Penalty",
+          "description": "Frequency Penalty to set on request to the model when generating data",
+          "default": 2.0,
+          "type": "double"
+        },
+        {
+          "name": "ollama_presence_penalty",
+          "label": "Ollama Presence Penalty",
+          "description": "Presence Penalty to set on request to the model when generating data",
+          "default": 2.0,
+          "type": "double"
+        },
+        {
+          "name": "ollama_top_p",
+          "label": "Ollama TopP",
+          "description": "Top P to set on request to the model when generating data",
+          "default": 2.0,
+          "type": "double"
+        },
+        {
+          "name": "bedrock_region",
+          "label": "Bedrock Region",
+          "description": "AWS Bedrock Region",
+          "default": "us-east-1",
+          "type": "string"
+        },
+        {
+          "name": "bedrock_model",
+          "label": "Bedrock Model",
+          "description": "Name of the model to choose and use in Bedrock",
+          "default": "amazon.titan-text-lite-v1",
+          "type": "string"
+        },
+        {
+          "name": "bedrock_temperature",
+          "label": "Bedrock Temperature",
+          "description": "Temperature to set on request to the model when generating data",
+          "default": 1.0,
+          "type": "double"
+        },
+        {
+          "name": "bedrock_max_tokens",
+          "label": "Bedrock Max Tokens",
+          "description": "Maximum Tokens to set on request to the model when generating data",
+          "default": 256,
+          "type": "long"
+        },
+        {
+          "name": "bedrock_access_key_id",
+          "label": "Bedrock Access Key ID",
+          "description": "AWS Access Key ID to use Bedrock",
+          "default": "",
+          "type": "string"
+        },
+        {
+          "name": "bedrock_access_key_secret",
+          "label": "Bedrock Access Key Secret",
+          "description": "AWS Access Key Secret to use Bedrock",
+          "default": "",
+          "type": "password"
+        },
+        {
+          "name": "openai_key_name",
+          "label": "OpenAI API Key name",
+          "description": "Open API Key name (can be let as is, even if key ahs been uploaded)",
+          "default": "test",
+          "type": "string"
+        },
+        {
+          "name": "openai_key",
+          "label": "Open AI Key",
+          "description": "OpenAI Key valid with a budget to send request to OpenAI",
+          "default": "",
+          "type": "password"
+        },
+        {
+          "name": "openai_model",
+          "label": "OpenAI Model",
+          "description": "Name of the model deployed and to use with Open AI",
+          "default": "gpt-4o",
+          "type": "string"
+        },
+        {
+          "name": "openai_temperature",
+          "label": "OpenAI Temperature",
+          "description": "Temperature to set on request to the model when generating data",
+          "default": 1.0,
+          "type": "double"
+        },
+        {
+          "name": "openai_frequency_penalty",
+          "label": "OpenAI Frequency Penalty",
+          "description": "Frequency Penalty to set on request to the model when generating data",
+          "default": 2.0,
+          "type": "double"
+        },
+        {
+          "name": "openai_presence_penalty",
+          "label": "OpenAI Presence Penalty",
+          "description": "Presence Penalty to set on request to the model when generating data",
+          "default": 2.0,
+          "type": "double"
+        },
+        {
+          "name": "openai_top_p",
+          "label": "OpenAI TopP",
+          "description": "Top P to set on request to the model when generating data",
+          "default": 2.0,
+          "type": "double"
+        },
+        {
+          "name": "openai_max_tokens",
+          "label": "OpenAI max Tokens",
+          "description": "Max Tokens to set on request to the model when generating data",
+          "default": 256,
+          "type": "long"
+        },
+        {
+          "name": "local_llm_temperature",
+          "label": "Local LLM Temperature",
+          "description": "Temperature to set on request to the model when generating data",
+          "default": 1.0,
+          "type": "double"
+        },
+        {
+          "name": "local_llm_frequence_penalty",
+          "label": "Local LLM Frequency Penalty",
+          "description": "Frequency Penalty to set on request to the model when generating data",
+          "default": 2.0,
+          "type": "double"
+        },
+        {
+          "name": "local_llm_presence_penalty",
+          "label": "Local LLM Presence Penalty",
+          "description": "Presence Penalty to set on request to the model when generating data",
+          "default": 2.0,
+          "type": "double"
+        },
+        {
+          "name": "local_llm_top_p",
+          "label": "Local LLM TopP",
+          "description": "Top P to set on request to the model when generating data",
+          "default": 2.0,
+          "type": "double"
+        },
+        {
+          "name": "local_llm_max_tokens",
+          "label": "Local LLM max Tokens",
+          "description": "Max Tokens to set on request to the model when generating data",
+          "default": 256,
+          "type": "long"
         }
       ]
     }

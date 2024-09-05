@@ -11,7 +11,7 @@ import org.apache.avro.io.DatumWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 @Slf4j
@@ -76,38 +76,32 @@ public class AvroUtils {
       String colName = c.name();
       switch (c.schema().getType()) {
       case BOOLEAN:
-        f = new BooleanField(colName, Collections.emptyList(),
-            new LinkedHashMap<>());
+        f = new BooleanField(colName,
+            new HashMap<>());
         break;
       case DOUBLE:
       case FLOAT:
-        f = new FloatField(colName, Collections.emptyList(),
-            new LinkedHashMap<>(), null, null);
+        f = new FloatField(colName, new HashMap<>(), null, null);
         break;
       case INT:
-        f = new IntegerField(colName, Collections.emptyList(),
-            new LinkedHashMap<>(), null, null);
+        f = new IntegerField(colName, new HashMap<>(), null, null);
         break;
       case LONG:
-        f = new LongField(colName, Collections.emptyList(),
-            new LinkedHashMap<>(), null, null);
+        f = new LongField(colName, new HashMap<>(), null, null);
         break;
       case FIXED:
       case BYTES:
-        f = new BytesField(colName, null, Collections.emptyList());
+        f = new BytesField(colName, null, new HashMap<>());
         break;
       case STRING:
       case ENUM:
-        f = new StringField(colName, null, Collections.emptyList(),
-            new LinkedHashMap<>());
+        f = new StringField(colName, null, new HashMap<>());
         break;
       case NULL:
-        f = new StringField(colName, null, Collections.singletonList("NULL"),
-            new LinkedHashMap<>());
+        f = new StringField(colName, null, new HashMap<>());
         break;
       default:
-        f = new StringField(colName, null, Collections.emptyList(),
-            new LinkedHashMap<>());
+        f = new StringField(colName, null, new HashMap<>());
       }
       fields.put(colName, f);
     });

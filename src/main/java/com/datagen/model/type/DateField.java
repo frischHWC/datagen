@@ -17,6 +17,7 @@
  */
 package com.datagen.model.type;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -31,36 +32,43 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Slf4j
 public class DateField extends Field<LocalDateTime> {
 
   DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
+  @Getter
   private final boolean useNow;
 
-  public DateField(String name, List<String> possibleValues,
-                   String min, String max, boolean useNow) {
+  public DateField(String name, HashMap<String, Long> possible_values_weighted,
+                   LocalDateTime min, LocalDateTime max, boolean useNow) {
     // For reference on how to specify an input date as possible values or min/max,
     // see: https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html
     this.name = name;
     this.useNow = useNow;
-    this.possibleValues = possibleValues.stream()
-        .map(p -> LocalDateTime.parse(p, formatter))
-        .collect(Collectors.toList());
+
+    this.possibleValuesProvided = new ArrayList<>();
+    if (possible_values_weighted != null &&
+        !possible_values_weighted.isEmpty()) {
+      possible_values_weighted.forEach((value, probability) -> {
+        for (long i = 0; i < probability; i++) {
+          this.possibleValuesProvided.add(LocalDateTime.parse(value, formatter));
+        }
+      });
+    }
+    this.possibleValueSize = this.possibleValuesProvided.size();
 
     if (min == null) {
       this.min = 0L;
     } else {
-      String minFormatted = min.substring(0,11) + "T" + min.substring(12) + "Z";
-      this.min = LocalDateTime.parse(minFormatted, formatter).toEpochSecond(ZoneOffset.UTC);
+      this.min = min.toEpochSecond(ZoneOffset.UTC);
     }
     if (max == null) {
-      this.max = LocalDateTime.MAX.toEpochSecond(ZoneOffset.UTC);
+      this.max = LocalDateTime.of(9999,12,31, 23,59,59).toEpochSecond(ZoneOffset.UTC);
     } else {
-        String maxFormatted = max.substring(0,11) + "T" + max.substring(12) + "Z";
-      this.max = LocalDateTime.parse(maxFormatted, formatter).toEpochSecond(ZoneOffset.UTC);
+      this.max = max.toEpochSecond(ZoneOffset.UTC);
     }
   }
 
@@ -72,11 +80,11 @@ public class DateField extends Field<LocalDateTime> {
   public LocalDateTime generateRandomValue() {
     if(useNow) {
       return LocalDateTime.now();
-    } else if (possibleValues.isEmpty()) {
-      Long randomDate = random.longs(1, min, max + 1).findFirst().orElse(0L);
+    } else if (possibleValuesProvided.isEmpty()) {
+      long randomDate = random.longs(1, min, max + 1).findFirst().orElse(0L);
       return LocalDateTime.ofEpochSecond(randomDate, 0, ZoneOffset.UTC);
     } else {
-      return possibleValues.get(random.nextInt(possibleValues.size()));
+      return possibleValuesProvided.get(random.nextInt(possibleValuesProvided.size()));
     }
   }
 

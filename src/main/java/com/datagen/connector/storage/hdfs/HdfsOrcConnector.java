@@ -176,7 +176,7 @@ public class HdfsOrcConnector extends HdfsUtils implements ConnectorInterface {
       log.warn("Could not create reader to ORC local file due to error:", e);
     }
 
-    return new Model(fields, primaryKeys, tableNames, options, null);
+    return new Model("",fields, primaryKeys, tableNames, options, null);
   }
 
 }

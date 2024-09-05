@@ -14,7 +14,7 @@ import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 @Slf4j
@@ -108,33 +108,27 @@ public class ParquetUtils {
 
           switch (c.getPrimitiveType().getPrimitiveTypeName()) {
           case INT32:
-            f = new IntegerField(colName, Collections.emptyList(),
-                new LinkedHashMap<>(), null, null);
+            f = new IntegerField(colName, new HashMap<>(), null, null);
             break;
           case INT64:
-            f = new LongField(colName, Collections.emptyList(),
-                new LinkedHashMap<>(), null, null);
+            f = new LongField(colName, new HashMap<>(), null, null);
             break;
           case INT96:
           case BINARY:
-            f = new StringField(colName, null, Collections.emptyList(),
-                new LinkedHashMap<>());
+            f = new StringField(colName, null, new HashMap<>());
             break;
           case FIXED_LEN_BYTE_ARRAY:
-            f = new BytesField(colName, null, Collections.emptyList());
+            f = new BytesField(colName, null, new HashMap<>());
             break;
           case DOUBLE:
           case FLOAT:
-            f = new FloatField(colName, Collections.emptyList(),
-                new LinkedHashMap<>(), null, null);
+            f = new FloatField(colName, new HashMap<>(), null, null);
             break;
           case BOOLEAN:
-            f = new BooleanField(colName, Collections.emptyList(),
-                new LinkedHashMap<>());
+            f = new BooleanField(colName, new HashMap<>());
             break;
           default:
-            f = new StringField(colName, null, Collections.emptyList(),
-                new LinkedHashMap<>());
+            f = new StringField(colName, null, new HashMap<>());
           }
           fields.put(colName, f);
         });

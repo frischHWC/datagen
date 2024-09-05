@@ -28,27 +28,37 @@ import org.apache.kudu.client.PartialRow;
 import org.apache.orc.TypeDescription;
 
 import java.sql.SQLException;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 @Slf4j
 public class StringAZField extends Field<String> {
 
   public StringAZField(String name, Integer length,
-                       List<String> possibleValues) {
+                       HashMap<String, Long> possible_values_weighted) {
     this.name = name;
     if (length == null || length < 1) {
       this.length = 20;
     } else {
       this.length = length;
     }
-    this.possibleValues = possibleValues;
+    this.possibleValuesProvided = new ArrayList<>();
+    if (possible_values_weighted != null &&
+        !possible_values_weighted.isEmpty()) {
+      possible_values_weighted.forEach((value, probability) -> {
+        for (long i = 0; i < probability; i++) {
+          this.possibleValuesProvided.add(value);
+        }
+      });
+    }
+    this.possibleValueSize = this.possibleValuesProvided.size();
   }
 
   public String generateRandomValue() {
-    return possibleValues.isEmpty() ?
+    return possibleValuesProvided.isEmpty() ?
         getAlphaString(this.length, random) :
-        possibleValues.get(random.nextInt(possibleValues.size()));
+        possibleValuesProvided.get(random.nextInt(possibleValuesProvided.size()));
   }
 
   /**

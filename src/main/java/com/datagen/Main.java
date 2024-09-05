@@ -17,6 +17,8 @@
  */
 package com.datagen;
 
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.theme.Theme;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -28,7 +30,8 @@ import org.springframework.stereotype.Component;
 @SuppressWarnings("unchecked")
 @EnableScheduling
 @SpringBootApplication
-public class Main {
+@Theme(value = "datagen")
+public class Main implements AppShellConfigurator {
 
     @Autowired
     private ApplicationContext appContext;

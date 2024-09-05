@@ -159,7 +159,7 @@ public class ParquetConnector implements ConnectorInterface {
           this.directoryName, e);
     }
 
-    return new Model(fields, primaryKeys, tableNames, options, null);
+    return new Model("",fields, primaryKeys, tableNames, options, null);
   }
 
 }

@@ -49,14 +49,16 @@ public class KuduConnector implements ConnectorInterface {
   private final Model model;
   private Boolean useKerberos;
 
+  // TODO: Cannot invoke "com.datagen.model.type.Field.getPossibleValuesProvided()" because "field" is null
 
   public KuduConnector(Model model,
                        Map<ApplicationConfigs, String> properties) {
     this.tableName = (String) model.getTableNames()
         .get(OptionsConverter.TableNames.KUDU_TABLE_NAME);
     this.model = model;
-    this.useKerberos = Boolean.parseBoolean(
-        properties.get(ApplicationConfigs.KUDU_AUTH_KERBEROS));
+    this.useKerberos = model.getTableNames().get(OptionsConverter.TableNames.KUDU_USE_KERBEROS)==null ?
+        Boolean.parseBoolean(properties.get(ApplicationConfigs.KUDU_AUTH_KERBEROS)) :
+        Boolean.parseBoolean(model.getTableNames().get(OptionsConverter.TableNames.KUDU_USE_KERBEROS).toString());
 
     try {
 
@@ -67,9 +69,12 @@ public class KuduConnector implements ConnectorInterface {
 
       if (useKerberos) {
         KerberosUtils.loginUserWithKerberos(
-            properties.get(ApplicationConfigs.KUDU_SECURITY_USER),
-            properties.get(
-                ApplicationConfigs.KUDU_SECURITY_KEYTAB),
+            model.getTableNames().get(OptionsConverter.TableNames.KUDU_USER)==null ?
+                properties.get(ApplicationConfigs.KUDU_SECURITY_USER) :
+                model.getTableNames().get(OptionsConverter.TableNames.KUDU_USER).toString(),
+            model.getTableNames().get(OptionsConverter.TableNames.KUDU_KEYTAB)==null ?
+                properties.get(ApplicationConfigs.KUDU_SECURITY_KEYTAB) :
+                model.getTableNames().get(OptionsConverter.TableNames.KUDU_KEYTAB).toString(),
             new Configuration());
 
         UserGroupInformation.getLoginUser().doAs(
@@ -114,8 +119,6 @@ public class KuduConnector implements ConnectorInterface {
         // We should then set primary keys columns as first
         model.reorderColumnsWithKeyCols(model.getKuduPrimaryKeys());
 
-        createTableIfNotExists();
-
         switch ((String) model.getOptionsOrDefault(
             OptionsConverter.Options.KUDU_FLUSH)) {
         case "AUTO_FLUSH_SYNC":
@@ -139,6 +142,8 @@ public class KuduConnector implements ConnectorInterface {
             OptionsConverter.Options.DELETE_PREVIOUS)) {
           client.deleteTable(tableName);
         }
+
+        createTableIfNotExists();
 
         this.table = client.openTable(tableName);
 
@@ -187,7 +192,7 @@ public class KuduConnector implements ConnectorInterface {
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
     // TODO : Implement logic to create a model with at least names, pk, options and column names/types
-    return new Model(fields, primaryKeys, tableNames, options, null);
+    return new Model("",fields, primaryKeys, tableNames, options, null);
   }
 
   private void createTableIfNotExists() {
@@ -202,14 +207,15 @@ public class KuduConnector implements ConnectorInterface {
       model.getKuduRangeKeys().forEach(colname -> {
         Field field = model.getFieldFromName((String) colname);
 
-        if (field.getPossibleValues() != null &&
-            !field.getPossibleValues().isEmpty()) {
+        if (field!=null &&
+            field.getPossibleValuesProvided() != null &&
+            !field.getPossibleValuesProvided().isEmpty()) {
           log.info(
               "For column: {}, found non-empty possible_values to use for range partitions",
               (String) colname);
           createPartitionsFromListOfValues((String) colname,
-              field.getPossibleValues(), cto);
-        } else if (field.getMin() != null && field.getMax() != null) {
+              field.getPossibleValuesProvided(), cto);
+        } else if (field!=null && field.getMin() != null && field.getMax() != null) {
           log.info("For column: {}, will use minimum and maximum",
               (String) colname);
           createPartitionsFromMinAndMax((String) colname, field.getMin(),
@@ -228,7 +234,11 @@ public class KuduConnector implements ConnectorInterface {
     }
 
     try {
-      client.createTable(tableName, model.getKuduSchema(), cto);
+      if(!client.getTablesList(tableName).getTablesList().contains(tableName)) {
+        client.createTable(tableName, model.getKuduSchema(), cto);
+      } else {
+        log.info("Table {} already exists so not creating it", tableName);
+      }
     } catch (KuduException e) {
       if (e.getMessage().contains("already exists")) {
         log.info("Table Kudu : " + tableName +

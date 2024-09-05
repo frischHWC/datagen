@@ -1,4 +1,5 @@
 {
+  "model_name": "example-ai",
   "Fields": [
     {
       "name": "name",

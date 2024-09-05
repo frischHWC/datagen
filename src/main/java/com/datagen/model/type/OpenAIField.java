@@ -19,6 +19,7 @@ package com.datagen.model.type;
 
 import com.datagen.model.Row;
 import com.datagen.utils.ParsingUtils;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -40,17 +41,25 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Slf4j
+@Getter
 public class OpenAIField extends Field<String> {
 
+  private final String rawRequest;
+  private final String context;
   private final String url;
   private final String user;
   private final String password;
+  private final Float temperature;
+  private final Float frequencyPenalty;
+  private final Float presencePenalty;
+  private final Float topP;
+  private final Integer maxTokens;
 
   private final LinkedList<ParsingUtils.StringFragment> requestToInject;
   private final OpenAiApi openAiApi;
   private final OpenAiChatClient openAiChatClient;
   private final OpenAiChatOptions openAiChatOptions;
-  private final String modelId;
+  private final String modelType;
   private final SystemMessage systemMessage;
 
   public OpenAIField(String name, String url, String user, String password,
@@ -60,19 +69,27 @@ public class OpenAIField extends Field<String> {
     this.url = url;
     this.user = user;
     this.password = password;
+    this.rawRequest = request;
+    this.context = context;
     this.requestToInject = ParsingUtils.parseStringWithVars(request);
 
     // See model Ids available at:
-    this.modelId = modelType == null ? "gpt-4-32k" : modelType;
+    this.modelType = modelType == null ? "gpt-4-32k" : modelType;
+
+    this.temperature = temperature == null ? 1.0f : temperature;
+    this.frequencyPenalty = frequencyPenalty == null ? 1.0f : frequencyPenalty;
+    this.presencePenalty = presencePenalty == null ? 1.0f : presencePenalty;
+    this.topP = topP == null ? 1.0f : topP;
+    this.maxTokens = maxTokens == null ? 256 : maxTokens;
 
     this.openAiApi = new OpenAiApi(this.password);
     this.openAiChatOptions = OpenAiChatOptions.builder()
-        .withModel(this.modelId)
-        .withTemperature(temperature == null ? 1.0f : temperature)
-        .withFrequencyPenalty(frequencyPenalty == null ? 1.0f : frequencyPenalty)
-        .withPresencePenalty(presencePenalty == null ? 1.0f : presencePenalty)
-        .withMaxTokens(maxTokens == null ? 256 : maxTokens)
-        .withTopP(topP == null ? 1.0f : topP)
+        .withModel(this.modelType)
+        .withTemperature(this.temperature)
+        .withFrequencyPenalty(this.frequencyPenalty)
+        .withPresencePenalty(this.presencePenalty)
+        .withMaxTokens(this.maxTokens)
+        .withTopP(this.topP)
         .build();
     this.openAiChatClient = new OpenAiChatClient(openAiApi, openAiChatOptions);
 

@@ -173,7 +173,7 @@ public class HdfsAvroConnector extends HdfsUtils implements ConnectorInterface {
           this.directoryName, e);
     }
 
-    return new Model(fields, primaryKeys, tableNames, options, null);
+    return new Model("",fields, primaryKeys, tableNames, options, null);
   }
 
 }

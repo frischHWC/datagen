@@ -42,23 +42,25 @@ import java.util.stream.Collectors;
 public class CsvField extends Field<Map<String, String>> {
 
   // We suppose that each row of the CSV read will fit in a map of string to string (everything is converted to a string)
-  private String file;
-  private String separator;
   @Getter
-  private String mainField;
-  private LinkedList<String> columnNames;
+  private final String file;
+  @Getter
+  private final String separator;
+  @Getter
+  private final String mainField;
+  private final LinkedList<String> columnNames;
 
 
-  public CsvField(String name, Integer length, List<String> filters,
+  public CsvField(String name, List<String> filters,
                   String file,
                   String separator, String mainField) {
     this.name = name;
-    this.length = length;
     this.file = file;
     this.separator = separator;
     this.mainField = mainField;
+    this.filters = filters;
     this.columnNames = new LinkedList<>();
-    this.possibleValues = loadDico(filters);
+    this.possibleValuesProvided = loadDico(filters);
   }
 
   // Load the CSV with filters applied if needed
@@ -86,7 +88,7 @@ public class CsvField extends Field<Map<String, String>> {
             if (filters != null && !filters.isEmpty()) {
               for (String filter : filters) {
                 String[] splittedFilter = filter.split("=");
-                if (!row.get(splittedFilter[0]).toString()
+                if (!row.get(splittedFilter[0])
                     .equalsIgnoreCase(splittedFilter[1])) {
                   toKeep = false;
                 }
@@ -108,7 +110,7 @@ public class CsvField extends Field<Map<String, String>> {
   }
 
   public Map<String, String> generateRandomValue() {
-    return possibleValues.get(random.nextInt(possibleValues.size()));
+    return possibleValuesProvided.get(random.nextInt(possibleValuesProvided.size()));
   }
 
   @Override

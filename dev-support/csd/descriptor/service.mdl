@@ -1,10 +1,10 @@
 {
-  "version": "0.5.1",
+  "version": "0.8.0",
   "name": "DATAGEN",
   "nameForCrossEntityAggregateMetrics": "datagen",
   "compatibility": {
     "cdhVersion": {
-      "min": "7.1.7",
+      "min": "7.1.9",
       "max": "8.0.0"
     }
   },

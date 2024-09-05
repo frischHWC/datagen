@@ -54,6 +54,8 @@ public class KafkaConnector implements ConnectorInterface {
   private Producer<String, String> producerString;
   private AdminClient kafkaAdminClient;
   private Properties props;
+  private final String user;
+  private final String keytab;
   private final String topic;
   private final int partitions;
   private final short replicationFactor;
@@ -75,6 +77,14 @@ public class KafkaConnector implements ConnectorInterface {
             OptionsConverter.Options.KAFKA_MESSAGE_TYPE));
     this.useKerberos = Boolean.FALSE;
 
+    this.user = model.getTableNames().get(OptionsConverter.TableNames.KAFKA_USER)==null ?
+        properties.get(ApplicationConfigs.KAFKA_AUTH_KERBEROS_USER) :
+        model.getTableNames().get(OptionsConverter.TableNames.KAFKA_USER).toString();
+    this.keytab = model.getTableNames().get(OptionsConverter.TableNames.KAFKA_KEYTAB)==null ?
+        properties.get(ApplicationConfigs.KAFKA_AUTH_KERBEROS_KEYTAB) :
+        model.getTableNames().get(OptionsConverter.TableNames.KAFKA_KEYTAB).toString();
+
+
     props = new Properties();
     props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
         properties.get(ApplicationConfigs.KAFKA_BROKERS));
@@ -91,15 +101,25 @@ public class KafkaConnector implements ConnectorInterface {
       if (Boolean.parseBoolean(properties.get(
           ApplicationConfigs.SCHEMA_REGISTRY_TLS_ENABLED))) {
         System.setProperty("javax.net.ssl.trustStore",
-            properties.get(
-                ApplicationConfigs.KAFKA_TRUSTSTORE_LOCATION));
+            model.getTableNames().get(OptionsConverter.TableNames.KAFKA_TRUSTSTORE_LOCATION)==null ?
+                properties.get(ApplicationConfigs.KAFKA_TRUSTSTORE_LOCATION):
+                model.getTableNames().get(OptionsConverter.TableNames.KAFKA_TRUSTSTORE_LOCATION).toString()
+            );
         System.setProperty("javax.net.ssl.trustStorePassword",
-            properties.get(
-                ApplicationConfigs.KAFKA_TRUSTSTORE_PASSWORD));
+            model.getTableNames().get(OptionsConverter.TableNames.KAFKA_TRUSTSTORE_PASSWORD)==null ?
+                properties.get(ApplicationConfigs.KAFKA_TRUSTSTORE_PASSWORD):
+                model.getTableNames().get(OptionsConverter.TableNames.KAFKA_TRUSTSTORE_PASSWORD).toString()
+            );
         System.setProperty("javax.net.ssl.keyStore",
-            properties.get(ApplicationConfigs.KAFKA_KEYSTORE_LOCATION));
+            model.getTableNames().get(OptionsConverter.TableNames.KAFKA_KEYSTORE_LOCATION)==null ?
+                properties.get(ApplicationConfigs.KAFKA_KEYSTORE_LOCATION):
+                model.getTableNames().get(OptionsConverter.TableNames.KAFKA_KEYSTORE_LOCATION).toString()
+            );
         System.setProperty("javax.net.ssl.keyStorePassword",
-            properties.get(ApplicationConfigs.KAFKA_KEYSTORE_PASSWORD));
+            model.getTableNames().get(OptionsConverter.TableNames.KAFKA_KEYSTORE_PASSWORD)==null ?
+                properties.get(ApplicationConfigs.KAFKA_KEYSTORE_PASSWORD):
+                model.getTableNames().get(OptionsConverter.TableNames.KAFKA_KEYSTORE_PASSWORD).toString()
+            );
         schemaRegistryProtocol = "https";
       }
 
@@ -129,12 +149,12 @@ public class KafkaConnector implements ConnectorInterface {
       String jaasFilePath = (String) model.getOptionsOrDefault(
           OptionsConverter.Options.KAFKA_JAAS_FILE_PATH);
       KerberosUtils.createJaasConfigFile(jaasFilePath, "KafkaClient",
-          properties.get(ApplicationConfigs.KAFKA_AUTH_KERBEROS_KEYTAB),
-          properties.get(ApplicationConfigs.KAFKA_AUTH_KERBEROS_USER),
+          this.keytab,
+          this.user,
           true, true, false);
       KerberosUtils.createJaasConfigFile(jaasFilePath, "RegistryClient",
-          properties.get(ApplicationConfigs.KAFKA_AUTH_KERBEROS_KEYTAB),
-          properties.get(ApplicationConfigs.KAFKA_AUTH_KERBEROS_USER),
+          this.keytab,
+          this.user,
           true, true, true);
       System.setProperty("java.security.auth.login.config", jaasFilePath);
 
@@ -146,14 +166,12 @@ public class KafkaConnector implements ConnectorInterface {
           "com.sun.security.auth.module.Krb5LoginModule required " +
               "useKeyTab=true " +
               "storeKey=true " +
-              "keyTab=\"" + properties.get(
-              ApplicationConfigs.KAFKA_AUTH_KERBEROS_KEYTAB) + "\" " +
-              "principal=\"" + properties.get(
-              ApplicationConfigs.KAFKA_AUTH_KERBEROS_USER) + "\";");
+              "keyTab=\"" + this.keytab + "\" " +
+              "principal=\"" + this.user + "\";");
 
       KerberosUtils.loginUserWithKerberos(
-          properties.get(ApplicationConfigs.KAFKA_AUTH_KERBEROS_USER),
-          properties.get(ApplicationConfigs.KAFKA_AUTH_KERBEROS_KEYTAB),
+          this.user,
+          this.keytab,
           new Configuration());
     }
 
@@ -161,15 +179,30 @@ public class KafkaConnector implements ConnectorInterface {
     if (securityProtocol.equalsIgnoreCase("SASL_SSL") ||
         securityProtocol.equalsIgnoreCase("SSL")) {
       props.put(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG,
-          properties.get(ApplicationConfigs.KAFKA_KEYSTORE_LOCATION));
+          model.getTableNames().get(OptionsConverter.TableNames.KAFKA_KEYSTORE_LOCATION)==null ?
+              properties.get(ApplicationConfigs.KAFKA_KEYSTORE_LOCATION):
+              model.getTableNames().get(OptionsConverter.TableNames.KAFKA_KEYSTORE_LOCATION).toString()
+          );
       props.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG,
-          properties.get(ApplicationConfigs.KAFKA_TRUSTSTORE_LOCATION));
+          model.getTableNames().get(OptionsConverter.TableNames.KAFKA_TRUSTSTORE_LOCATION)==null ?
+              properties.get(ApplicationConfigs.KAFKA_TRUSTSTORE_LOCATION):
+              model.getTableNames().get(OptionsConverter.TableNames.KAFKA_TRUSTSTORE_LOCATION).toString()
+          );
       props.put(SslConfigs.SSL_KEY_PASSWORD_CONFIG,
-          properties.get(ApplicationConfigs.KAFKA_KEYSTORE_PASSWORD));
+          model.getTableNames().get(OptionsConverter.TableNames.KAFKA_KEYSTORE_PASSWORD)==null ?
+              properties.get(ApplicationConfigs.KAFKA_KEYSTORE_PASSWORD):
+              model.getTableNames().get(OptionsConverter.TableNames.KAFKA_KEYSTORE_PASSWORD).toString()
+      );
       props.put(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG,
-          properties.get(ApplicationConfigs.KAFKA_KEYSTORE_KEY_PASSWORD));
+          model.getTableNames().get(OptionsConverter.TableNames.KAFKA_KEYSTORE_KEY_PASSWORD)==null ?
+              properties.get(ApplicationConfigs.KAFKA_KEYSTORE_KEY_PASSWORD):
+              model.getTableNames().get(OptionsConverter.TableNames.KAFKA_KEYSTORE_KEY_PASSWORD).toString()
+          );
       props.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG,
-          properties.get(ApplicationConfigs.KAFKA_TRUSTSTORE_PASSWORD));
+          model.getTableNames().get(OptionsConverter.TableNames.KAFKA_TRUSTSTORE_PASSWORD)==null ?
+              properties.get(ApplicationConfigs.KAFKA_TRUSTSTORE_PASSWORD):
+              model.getTableNames().get(OptionsConverter.TableNames.KAFKA_TRUSTSTORE_PASSWORD).toString()
+          );
     }
   }
 
@@ -258,7 +291,7 @@ public class KafkaConnector implements ConnectorInterface {
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
     // TODO : Implement logic to create a model with at least names, pk, options and column names/types
-    return new Model(fields, primaryKeys, tableNames, options, null);
+    return new Model("",fields, primaryKeys, tableNames, options, null);
   }
 
   /**

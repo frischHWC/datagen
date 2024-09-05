@@ -17,17 +17,20 @@
 # under the License.
 #
 #!/usr/bin/env bash
+export DEST_DIR="/home/datagen/deploy"
+cd ${DEST_DIR}
+
 echo "Launching jar via java command"
 
-    #export JAVA_HOME=/usr/lib/jvm/java-11/
+    export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-17.0.11.0.9-2.el8.x86_64
 
     ${JAVA_HOME}/bin/java \
-    -Dnashorn.args=--no-deprecation-warning --add-opens java.base/jdk.internal.ref=ALL-UNNAMED \
+    -Dnashorn.args=--no-deprecation-warning --add-opens java.base/jdk.internal.ref=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED \
     -Xmx2G -Xms1G \
     -Dserver.port=4242 \
-    -Dlogging.config=file:$(pwd)/logback-spring.xml \
+    -Dlogging.config=file:logback-spring.xml \
     -Dspring.profiles.active=standalone \
-    -jar datagen.jar --spring.config.location=file:$(pwd)/application-standalone.properties
+    -jar datagen.jar --spring.config.location=file:application-standalone.properties
 
     sleep 5
 

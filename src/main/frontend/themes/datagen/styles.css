@@ -1,0 +1,49 @@
+@import url('./main-layout.css');
+
+/* Center the text inside the textarea */
+span.rounded-textarea {
+    border-radius: 15px; /* Adjust the value for more or less rounded corners */
+    text-align: center; /* Center the text horizontally */
+    display: flex;
+    align-items: center; /* Center the text vertically */
+    justify-content: center;
+    padding: 20px; /* Adjust padding as needed */
+    box-sizing: border-box;
+
+    text-shadow: 1px 1px 2px RoyalBlue ;
+    color: MidnightBlue ;
+    font-size: xxx-large;
+
+}
+
+vaadin-grid.styling::part(finished) {
+    background-color: var(--lumo-success-color-10pct);
+}
+
+vaadin-grid.styling::part(failed) {
+    background-color: var(--lumo-error-color-10pct);
+}
+
+
+/* To customize colors for text and buttons*/
+/*
+html {
+  --lumo-header-text-color: MidnightBlue ;
+  --lumo-body-text-color: MidnightBlue ;
+  --lumo-secondary-text-color: RoyalBlue ;
+  --lumo-tertiary-text-color: RoyalBlue ;
+  --lumo-disabled-text-color: RoyalBlue ;
+
+  --lumo-primary-color: MidnightBlue  ;
+  --lumo-primary-color-10pct: RoyalBlue ;
+  --lumo-primary-color-50pct: MidnightBlue ;
+} */
+
+html {
+  --lumo-font-family: 'Trebuchet MS';
+}
+
+/* This is a workaround to center text vertically in a textarea */
+span.rounded-textarea::placeholder {
+    text-align: center;
+}

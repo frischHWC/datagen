@@ -21,7 +21,6 @@ package com.datagen.model.type;
 import com.datagen.config.ApplicationConfigs;
 import com.datagen.model.Row;
 import com.datagen.model.conditions.ConditionalEvaluator;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -36,13 +35,12 @@ import org.apache.solr.common.SolrInputDocument;
 
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
  * This abstract class describes a field with three characteristics: Name, Type, Length (which is optional)
  * Goal is also to describe how a field is rendered according to its type
- * Every new type added should extends this abstract class in a new Java Class (and override generateRandomValue())
+ * Every new type added should extend this abstract class in a new Java Class (and override generateRandomValue())
  */
 @Slf4j
 public abstract class Field<T> {
@@ -55,13 +53,16 @@ public abstract class Field<T> {
   public Boolean computed = false;
   @Getter
   @Setter
-  public List<T> possibleValues;
+  public List<T> possibleValuesInternal;
+  @Getter
+  @Setter
+  public List<T> possibleValuesProvided;
   @Getter
   @Setter
   public Integer possibleValueSize;
   @Getter
   @Setter
-  public List<T> filters;
+  public List<String> filters;
   @Getter
   @Setter
   public String file;
@@ -105,287 +106,235 @@ public abstract class Field<T> {
     return sb.toString();
   }
 
+
   /**
-   * Create the right instance of a field (i.e. String, password etc..) according to its type
-   *
-   * @param name            of the field that will be created
-   * @param type            of the field, which is used to instantiate the right field
-   * @param length          of the field, in could be null or -1, in this case, it will be ignored and default field length will be used
-   * @param columnQualifier Hbase column qualifier if there is one
-   * @return Field instantiated or null if type has not been recognized
+   *  Create the right instance of a field (i.e. String, password etc..) according to its type
+   * @param properties
+   * @param f
+   * @return
    */
-  public static Field instantiateField(
-      Map<ApplicationConfigs, String> properties,
-      String name,
-      String type,
-      Integer length,
-      String min,
-      String max,
-      String columnQualifier,
-      List<JsonNode> possibleValues,
-      LinkedHashMap<String, Long> possible_values_weighted,
-      List<JsonNode> filters,
-      LinkedHashMap<String, String> conditionals,
-      String file,
-      String separator,
-      String pattern,
-      Boolean useNow,
-      String regex,
-      String request,
-      Boolean ghost,
-      String mainField,
-      String formula,
-      String injection,
-      String link,
-      String url,
-      String user,
-      String password,
-      String modelType,
-      Float temperature,
-      Float frequencyPenalty,
-      Float presencePenalty,
-      Integer maxTokens,
-      Float topP,
-      String context
-      ) {
-    if (name == null || name.isEmpty()) {
+  public static Field instantiateField(Map<ApplicationConfigs, String> properties, FieldRepresentation f) {
+    if (f.name == null || f.name.isEmpty()) {
       throw new IllegalStateException(
-          "Name can not be null or empty for field: " + name);
+          "Name can not be null or empty for field: " + f.name);
     }
-    if (type == null || type.isEmpty()) {
+    if (f.type == null) {
       throw new IllegalStateException(
-          "Type can not be null or empty for field: " + name);
+          "Type can not be null or empty for field: " + f.name);
     }
 
     // If length is not accurate, it should be let as is (default is -1) and let each type handles it
-    if (length == null || length < 1) {
-      length = -1;
+    if (f.length == null || f.length < 1) {
+      f.length = -1;
     }
 
-    Field field = switch (type.toUpperCase()) {
-      case "STRING":
-        yield new StringField(name, length,
-            possibleValues.stream().map(JsonNode::asText)
-                .collect(Collectors.toList()), possible_values_weighted);
+    HashMap<String, Long> possibleValuesWeighted = f.possibleValuesWeighted !=null?f.possibleValuesWeighted:new HashMap<>();
 
-      case "STRINGAZ":
-        yield new StringAZField(name, length,
-            possibleValues.stream().map(JsonNode::asText)
-                .collect(Collectors.toList()));
+    Field field = switch (f.type) {
+      case STRING:
+        yield new StringField(f.name, f.length, possibleValuesWeighted);
 
-      case "INTEGER":
-        yield new IntegerField(name,
-            possibleValues.stream().map(JsonNode::asInt)
-                .collect(Collectors.toList()), possible_values_weighted, min,
-            max);
+      case STRING_AZ:
+        yield new StringAZField(f.name, f.length, possibleValuesWeighted);
 
-      case "INCREMENT_INTEGER":
-        yield new IncrementIntegerField(name, min);
+      case INTEGER:
+        yield new IntegerField(f.name, possibleValuesWeighted, f.min, f.max);
 
-      case "BOOLEAN":
-        yield new BooleanField(name,
-            possibleValues.stream().map(JsonNode::asBoolean)
-                .collect(Collectors.toList()), possible_values_weighted);
+      case INCREMENT_INTEGER:
+        yield new IncrementIntegerField(f.name, f.min);
 
-      case "FLOAT":
-        yield new FloatField(name,
-            possibleValues.stream().map(j -> (float) j.asDouble())
-                .collect(Collectors.toList()), possible_values_weighted, min,
-            max);
+      case BOOLEAN:
+        yield new BooleanField(f.name, possibleValuesWeighted);
 
-      case "LONG":
-        yield new LongField(name,
-            possibleValues.stream().map(JsonNode::asLong)
-                .collect(Collectors.toList()), possible_values_weighted, min,
-            max);
+      case FLOAT:
+        yield new FloatField(f.name,
+            possibleValuesWeighted, f.min,
+            f.max);
 
-      case "INCREMENT_LONG":
-        yield new IncrementLongField(name, min);
+      case LONG:
+        yield new LongField(f.name,
+            possibleValuesWeighted, f.min,
+            f.max);
 
-      case "TIMESTAMP":
-        yield new TimestampField(name,
-            possibleValues.stream().map(JsonNode::asLong)
-                .collect(Collectors.toList()));
+      case INCREMENT_LONG:
+        yield new IncrementLongField(f.name, f.min);
 
-      case "BYTES":
-        yield new BytesField(name, length,
-            possibleValues.stream().map(j -> j.asText().getBytes())
-                .collect(Collectors.toList()));
+      case TIMESTAMP:
+        yield new TimestampField(f.name, possibleValuesWeighted);
 
-      case "HASHMD5":
-        yield new HashMd5Field(name, length,
-            possibleValues.stream().map(j -> j.asText().getBytes())
-                .collect(Collectors.toList()));
+      case BYTES:
+        yield new BytesField(f.name, f.length, possibleValuesWeighted);
 
-      case "BIRTHDATE":
-        yield new BirthdateField(name, length,
-            possibleValues.stream().map(JsonNode::asText)
-                .collect(Collectors.toList()), min, max);
+      case HASH_MD5:
+        yield new HashMd5Field(f.name, f.length, possibleValuesWeighted);
 
-      case "NAME":
-        yield new NameField(name, length,
-            filters.stream().map(JsonNode::asText)
-                .collect(Collectors.toList()));
+      case BIRTHDATE:
+        yield new BirthdateField(f.name, possibleValuesWeighted, f.minDate, f.maxDate);
 
-      case "COUNTRY":
-        yield new CountryField(name, length,
-            possibleValues.stream().map(JsonNode::asText)
-                .collect(Collectors.toList()));
+      case NAME:
+        yield new NameField(f.name, f.filters);
 
-      case "CITY":
-        yield new CityField(name,
-            filters.stream().map(JsonNode::asText)
-                .collect(Collectors.toList()));
+      case COUNTRY:
+        yield new CountryField(f.name, possibleValuesWeighted);
 
-      case "BLOB":
-        yield new BlobField(name, length,
-            possibleValues.stream().map(j -> j.asText().getBytes())
-                .collect(Collectors.toList()));
+      case CITY:
+        yield new CityField(f.name, f.filters);
 
-      case "EMAIL":
-        yield new EmailField(name,
-            possibleValues.stream().map(JsonNode::asText)
-                .collect(Collectors.toList()),
-            filters.stream().map(JsonNode::asText)
-                .collect(Collectors.toList()));
+      case BLOB:
+        yield new BlobField(f.name, f.length, possibleValuesWeighted);
 
-      case "IP":
-        yield new IpField(name);
+      case EMAIL:
+        yield new EmailField(f.name,
+            possibleValuesWeighted,
+            f.filters);
 
-      case "LINK":
-        yield new LinkField(name, length,
-            possibleValues.stream().map(JsonNode::asText)
-                .collect(Collectors.toList()));
+      case IP:
+        yield new IpField(f.name);
 
-      case "CSV":
-        yield new CsvField(name, length,
-            filters.stream().map(JsonNode::asText).collect(Collectors.toList()),
-            file, separator, mainField);
+      case LINK:
+        yield new LinkField(f.name);
 
-      case "PHONE":
-        yield new PhoneField(name, length,
-            filters.stream().map(JsonNode::asText)
-                .collect(Collectors.toList()));
+      case CSV:
+        yield new CsvField(f.name, f.filters, f.file, f.separator, f.mainField);
 
-      case "UUID":
-        yield new UuidField(name);
+      case PHONE:
+        yield new PhoneField(f.name, f.length, f.filters);
 
-      case "DATE":
-        yield new DateField(name, possibleValues.stream().map(JsonNode::asText)
-            .collect(Collectors.toList()), min, max, useNow);
+      case UUID:
+        yield new UuidField(f.name);
 
-      case "DATE_AS_STRING":
-        yield new DateAsStringField(name,
-            possibleValues.stream().map(JsonNode::asText)
-                .collect(Collectors.toList()), min, max, useNow, pattern);
+      case DATE:
+        yield new DateField(f.name, possibleValuesWeighted, f.minDateTime, f.maxDateTime, f.useNow);
 
-      case "STRING_REGEX":
-        yield new StringRegexField(name, regex);
+      case DATE_AS_STRING:
+        yield new DateAsStringField(f.name, possibleValuesWeighted, f.minDateTime, f.maxDateTime, f.useNow, f.pattern);
 
-      case "OLLAMA":
-        yield new OllamaField(name,
-            url,
-            user, password, request,
-            modelType == null ?
-                properties.get(ApplicationConfigs.OLLAMA_MODEL_DEFAULT) :
-                modelType,
-            temperature == null ? Float.valueOf(
-                properties.get(ApplicationConfigs.OLLAMA_TEMPERATURE_DEFAULT)) :
-                temperature,
-            frequencyPenalty == null ? Float.valueOf(properties.get(
-                ApplicationConfigs.OLLAMA_FREQUENCY_PENALTY_DEFAULT)) : frequencyPenalty,
-            presencePenalty == null ? Float.valueOf(properties.get(
-                ApplicationConfigs.OLLAMA_PRESENCE_PENALTY_DEFAULT)) : presencePenalty,
-            topP == null ? Float.valueOf(properties.get(
-                ApplicationConfigs.OLLAMA_TOP_P_DEFAULT)) : topP,
-            context
+      case STRING_REGEX:
+        yield new StringRegexField(f.name, f.regex);
+
+      case LOCAL_LLM:
+        yield new LocalLLMField(f.name,
+            f.file,  f.request,
+            f.temperature == null ? Float.valueOf(
+                properties.get(ApplicationConfigs.LOCAL_LLM_TEMPERATURE_DEFAULT)) :
+                f.temperature,
+            f.frequencyPenalty == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.LOCAL_LLM_FREQUENCY_PENALTY_DEFAULT)) : f.frequencyPenalty,
+            f.presencePenalty == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.LOCAL_LLM_PRESENCE_PENALTY_DEFAULT)) : f.presencePenalty,
+            f.topP == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.LOCAL_LLM_TOP_P_DEFAULT)) : f.topP,
+            f.maxTokens == null ? Integer.valueOf(properties.get(
+                ApplicationConfigs.LOCAL_LLM_MAX_TOKENS_DEFAULT)) : f.maxTokens,
+            f.context
         );
 
-      case "BEDROCK":
-        yield new BedrockField(name, url,
-            user == null ?
-                properties.get(ApplicationConfigs.BEDROCK_ACCESS_KEY_ID) : user,
-            password == null ?
+      case OLLAMA:
+        yield new OllamaField(f.name,
+            f.url,
+            f.user, f.password, f.request,
+            f.modelType == null ?
+                properties.get(ApplicationConfigs.OLLAMA_MODEL_DEFAULT) :
+                f.modelType,
+            f.temperature == null ? Float.valueOf(
+                properties.get(ApplicationConfigs.OLLAMA_TEMPERATURE_DEFAULT)) :
+                f.temperature,
+            f.frequencyPenalty == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.OLLAMA_FREQUENCY_PENALTY_DEFAULT)) : f.frequencyPenalty,
+            f.presencePenalty == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.OLLAMA_PRESENCE_PENALTY_DEFAULT)) : f.presencePenalty,
+            f.topP == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.OLLAMA_TOP_P_DEFAULT)) : f.topP,
+            f.context
+        );
+
+      case BEDROCK:
+        yield new BedrockField(f.name, f.url,
+            f.user == null ?
+                properties.get(ApplicationConfigs.BEDROCK_ACCESS_KEY_ID) : f.user,
+            f.password == null ?
                 properties.get(ApplicationConfigs.BEDROCK_ACCESS_KEY_SECRET) :
-                password,
-            request,
-            modelType == null ?
+                f.password,
+            f.request,
+            f.modelType == null ?
                 properties.get(ApplicationConfigs.BEDROCK_MODEL_DEFAULT) :
-                modelType,
-            temperature == null ? Float.valueOf(properties.get(
-                ApplicationConfigs.BEDROCK_TEMPERATURE_DEFAULT)) : temperature,
+                f.modelType,
+            f.temperature == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.BEDROCK_TEMPERATURE_DEFAULT)) : f.temperature,
             properties.get(ApplicationConfigs.BEDROCK_REGION),
-            maxTokens == null ? Integer.valueOf(properties.get(
-                ApplicationConfigs.BEDROCK_MAX_TOKENS_DEFAULT)) : maxTokens,
-            context
+            f.maxTokens == null ? Integer.valueOf(properties.get(
+                ApplicationConfigs.BEDROCK_MAX_TOKENS_DEFAULT)) : f.maxTokens,
+            f.context
             );
 
-      case "OPENAI":
-        yield new OpenAIField(name, url,
-            user,
-            password == null ?
+      case OPEN_AI:
+        yield new OpenAIField(f.name, f.url,
+            f.user,
+            f.password == null ?
                 properties.get(ApplicationConfigs.OPENAI_API_KEY) :
-                password,
-            request,
-            modelType == null ?
+                f.password,
+            f.request,
+            f.modelType == null ?
                 properties.get(ApplicationConfigs.OPENAI_MODEL_DEFAULT) :
-                modelType,
-            temperature == null ? Float.valueOf(properties.get(
-                ApplicationConfigs.OPENAI_TEMPERATURE_DEFAULT)) : temperature,
-            frequencyPenalty == null ? Float.valueOf(properties.get(
-                ApplicationConfigs.OPENAI_FREQUENCY_PENALTY_DEFAULT)) : frequencyPenalty,
-            presencePenalty == null ? Float.valueOf(properties.get(
-                ApplicationConfigs.OPENAI_PRESENCE_PENALTY_DEFAULT)) : presencePenalty,
-            maxTokens == null ? Integer.valueOf(properties.get(
-                ApplicationConfigs.OPENAI_MAX_TOKENS_DEFAULT)) : maxTokens,
-            topP == null ? Float.valueOf(properties.get(
-                ApplicationConfigs.OPENAI_TOP_P_DEFAULT)) : topP,
-            context
+                f.modelType,
+            f.temperature == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.OPENAI_TEMPERATURE_DEFAULT)) : f.temperature,
+            f.frequencyPenalty == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.OPENAI_FREQUENCY_PENALTY_DEFAULT)) : f.frequencyPenalty,
+            f.presencePenalty == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.OPENAI_PRESENCE_PENALTY_DEFAULT)) : f.presencePenalty,
+            f.maxTokens == null ? Integer.valueOf(properties.get(
+                ApplicationConfigs.OPENAI_MAX_TOKENS_DEFAULT)) : f.maxTokens,
+            f.topP == null ? Float.valueOf(properties.get(
+                ApplicationConfigs.OPENAI_TOP_P_DEFAULT)) : f.topP,
+            f.context
         );
 
       default:
-        log.warn("Type : " + type +
+        log.warn("Type : " + f.type +
             " has not been recognized and hence will be ignored");
         yield null;
     };
 
     // If hbase column qualifier is not accurate, it should be let as is (default is "cq")
-    if (columnQualifier != null && !columnQualifier.isEmpty()) {
-      field.setHbaseColumnQualifier(columnQualifier);
+    if (f.columnQualifier != null && !f.columnQualifier.isEmpty()) {
+      field.setHbaseColumnQualifier(f.columnQualifier);
     }
 
-    field.setGhost(ghost);
+    if(f.ghost!=null) {
+      field.setGhost(f.ghost);
+    }
 
     // If there are some conditions, we consider this field as computed (meaning it requires other fields' values to get its value)
     // and same thing for request if it contains a '$'
-    if ((conditionals != null && !conditionals.isEmpty())
-        || (request != null && request.contains("$"))
-        || (formula != null)
-        || (injection != null)
-        || (link != null)) {
+    if ((f.conditionals != null && !f.conditionals.isEmpty())
+        || (f.request != null && f.request.contains("$"))
+        || (f.formula != null && !f.formula.isEmpty())
+        || (f.injection != null && !f.injection.isEmpty())
+        || (f.link != null && !f.link.isEmpty() )) {
       log.debug("Field {} has been marked as computed: ", field);
       field.setComputed(true);
     }
 
     // Set conditionals or formula or injections for the field if there are
-    if ((conditionals != null && !conditionals.isEmpty())) {
-      field.setConditional(new ConditionalEvaluator(conditionals));
-    } else if (formula != null) {
+    if ((f.conditionals != null && !f.conditionals.isEmpty())) {
+      field.setConditional(new ConditionalEvaluator(f.conditionals));
+    } else if (f.formula != null && !f.formula.isEmpty()) {
       LinkedHashMap<String, String> lm = new LinkedHashMap<>();
-      lm.put("formula", formula);
+      lm.put("formula", f.formula);
       field.setConditional(new ConditionalEvaluator(lm));
-    } else if (injection != null) {
+    } else if (f.injection != null && !f.injection.isEmpty()) {
       LinkedHashMap<String, String> lm = new LinkedHashMap<>();
-      lm.put("injection", injection);
+      lm.put("injection", f.injection);
       field.setConditional(new ConditionalEvaluator(lm));
-    } else if (link != null) {
+    } else if (f.link != null && !f.link.isEmpty()) {
       LinkedHashMap<String, String> lm = new LinkedHashMap<>();
-      lm.put("link", link);
+      lm.put("link", f.link);
       field.setConditional(new ConditionalEvaluator(lm));
     }
 
     if (log.isDebugEnabled()) {
-      log.debug("Field has been created: " + field);
+      log.debug("Field has been created: {}", field);
     }
 
     return field;
@@ -396,6 +345,7 @@ public abstract class Field<T> {
     StringBuilder sb = new StringBuilder();
     sb.append("Class Type is " + this.getClass().getSimpleName() + " ; ");
     sb.append("name : " + name + " ; ");
+    sb.append("IsGhost : " + ghost + " ; ");
     sb.append("hbase Column Qualifier : " + hbaseColumnQualifier + " ; ");
     sb.append("Length : " + length + " ; ");
     if (min != null) {
@@ -404,8 +354,30 @@ public abstract class Field<T> {
     if (max != null) {
       sb.append("Max : " + max + " ; ");
     }
+    if(possibleValuesProvided != null) {
+      sb.append("Possible Values: ");
+      possibleValuesProvided.forEach(p -> {
+        sb.append(p);
+        sb.append(",");
+      });
+      sb.append(" ; ");
+    }
+    if(filters != null) {
+      sb.append("Filters: ");
+      filters.forEach(p -> {
+        sb.append(p);
+        sb.append(",");
+      });
+      sb.append(" ; ");
+    }
     return sb.toString();
   }
+
+  // To init a field when starting generation (for connections etc...)
+  public void initField() {}
+
+  // To close a field when starting generation (for connections etc...)
+  public void closeField() {}
 
   public abstract T generateRandomValue();
 
@@ -423,6 +395,8 @@ public abstract class Field<T> {
       return "BOOLEAN";
     case "bytesfield":
       return "BYTES";
+    case "countryfield":
+      return "COUNTRY";
     case "cityfield":
       return "CITY";
     case "csvfield":
@@ -467,6 +441,10 @@ public abstract class Field<T> {
       return "OLLAMA";
     case "bedrockfield":
       return "BEDROCK";
+    case "openaifield":
+      return "OPEN_AI";
+    case "localllmfield":
+      return "LOCAL_LLM";
     default:
       return "STRING";
     }

@@ -1,4 +1,5 @@
 {
+  "model_name": "incident",
   "Fields": [
     {
       "name": "city",
@@ -8,16 +9,12 @@
     {
       "name": "lat",
       "type": "LINK",
-      "conditionals": {
-        "link": "$city.lat"
-      }
+      "link": "$city.lat"
     },
     {
       "name": "long",
       "type": "LINK",
-      "conditionals": {
-        "link": "$city.long"
-      }
+      "link": "$city.long"
     },
     {
       "name": "reporting_timestamp",

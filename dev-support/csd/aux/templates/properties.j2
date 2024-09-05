@@ -1,6 +1,13 @@
-# WARNING: These two properties are required to make the spring boot work with all dependencies
+# WARNING: required property to start the server
 server.tomcat.additional-tld-skip-patterns=*.jar
-spring.mvc.pathmatch.matching-strategy=ANT_PATH_MATCHER
+
+# Vaadin
+logging.level.org.atmosphere=warn
+spring.mustache.check-template-location=false
+vaadin.allowed-packages=com.vaadin,org.vaadin,dev.hilla,com.datagen
+vaadin.exclude-urls=/swagger-ui/**,/api/v1/**
+spring.jpa.defer-datasource-initialization=true
+vaadin.productionMode=true
 
 # When deployed to CDP, should be set to 'cdp'
 spring.profiles.active=cdp
@@ -19,9 +26,12 @@ datagen.home.directory={{ globals['datagen_home_dir'] }}
 datagen.model.path=${DATAGEN_MODELS_DIR}
 datagen.model.received.path={{ globals['data_model_received'] }}
 datagen.model.generated.path={{ globals['data_model_generated'] }}
-datagen.model.default={{ globals['data_model'] }}
-datagen.custom.model={{ globals['custom_model_path'] }}
+datagen.model.store.path={{ globals['data_model_store'] }}
+datagen.credentials.path={{ globals['credentials_file_path'] }}
+datagen.analysis.path={{ globals['analysis_file_path'] }}
 datagen.scheduler.file.path={{ globals['scheduler_file_path'] }}
+datagen.commands.path={{ globals['commands_file_path'] }}
+datagen.load.default.models={{ globals['load_default_models'] }}
 
 {% if globals['tls_enabled'] == 'true' %}
 # Spring internal TLS settings
@@ -88,8 +98,8 @@ hbase.zookeeper.port={{ globals['hbase_zk_quorum_port'] }}
 hbase.zookeeper.znode={{ globals['hbase_znode_parent'] }}
 hbase.auth.kerberos=#{kerberos.enabled}
 # It is not needed to fill below configuration if KERBEROS is not activated
-hbase.security.user=#{kerberos.user}
-hbase.security.keytab=#{kerberos.keytab}
+hbase.auth.kerberos.user=#{kerberos.user}
+hbase.auth.kerberos.keytab=#{kerberos.keytab}
 
 
 # OZONE
@@ -143,7 +153,7 @@ kafka.auth.kerberos.user=#{kerberos.user}
 
 
 # KUDU
-kudu.master.server={{ globals['kudu_url'] }}
+kudu.url={{ globals['kudu_url'] }}
 kudu.auth.kerberos=#{kerberos.enabled}
 # It is not needed to fill below configuration if KERBEROS is not activated
 kudu.security.user=#{kerberos.user}
@@ -165,4 +175,41 @@ adls.sas.token={{ globals['adls_sas_token'] }}
 # GCS
 gcs.project.id={{ globals['gcs_project_id'] }}
 # Only if using a service account key, otherwise use any other ADC login
-gcs.accountkey.path={{ globals['gcs_account_key'] }}
+gcs.account.key.path={{ globals['gcs_account_key'] }}
+gcs.region={{ globals['gcs_region'] }}
+
+# OLLAMA
+spring.ai.ollama.base-url={{ globals['ollama_base_url'] }}
+spring.ai.ollama.chat.enabled=true
+spring.ai.ollama.chat.options.format=json
+ollama.model.default={{ globals['ollama_model'] }}
+ollama.temperature.default={{ globals['ollama_temperature'] }}
+ollama.frequency_penalty.default={{ globals['ollama_frequency_penalty'] }}
+ollama.presence_penalty.default={{ globals['ollama_presence_penalty'] }}
+ollama.top_p.default={{ globals['ollama_top_p'] }}
+
+# BEDROCK
+bedrock.region={{ globals['bedrock_region'] }}
+bedrock.model.default={{ globals['bedrock_model'] }}
+bedrock.temperature.default={{ globals['bedrock_temperature'] }}
+bedrock.max_tokens.default={{ globals['bedrock_max_tokens'] }}
+bedrock.access_key.id={{ globals['bedrock_access_key_id'] }}
+bedrock.access_key.secret={{ globals['bedrock_access_key_secret'] }}
+
+# OPEN AI
+# Let the api key here to 'test' (avoid auto-configuration of client not working)
+spring.ai.openai.api-key={{ globals['openai_key_name'] }}
+openai.api.key={{ globals['openai_key'] }}
+openai.model.default={{ globals['openai_model'] }}
+openai.temperature.default={{ globals['openai_temperature'] }}
+openai.frequency_penalty.default={{ globals['openai_frequency_penalty'] }}
+openai.presence_penalty.default={{ globals['openai_presence_penalty'] }}
+openai.max_tokens.default={{ globals['openai_max_tokens'] }}
+openai.top_p.default={{ globals['openai_top_p'] }}
+
+#Local LLM
+local.llm.temperature.default={{ globals['local_llm_temperature'] }}
+local.llm.frequency_penalty.default={{ globals['local_llm_frequence_penalty'] }}
+local.llm.presence_penalty.default={{ globals['local_llm_presence_penalty'] }}
+local.llm.max_tokens.default={{ globals['local_llm_max_tokens'] }}
+local.llm.top_p.default={{ globals['local_llm_top_p'] }}

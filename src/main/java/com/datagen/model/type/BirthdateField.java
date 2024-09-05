@@ -30,37 +30,37 @@ import org.apache.orc.TypeDescription;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Slf4j
 public class BirthdateField extends Field<LocalDate> {
 
   DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-  public BirthdateField(String name, Integer length, List<String> possibleValues,
-                 String min, String max) {
+  public BirthdateField(String name, HashMap<String, Long> possible_values_weighted,
+                 LocalDate min, LocalDate max) {
     this.name = name;
-    this.length = length;
-    this.possibleValues =
-        possibleValues.stream().map(p -> LocalDate.parse(p, formatter))
-            .collect(Collectors.toList());
+    this.possibleValuesProvided = new ArrayList<>();
+    if (possible_values_weighted != null &&
+        !possible_values_weighted.isEmpty()) {
+      possible_values_weighted.forEach((value, probability) -> {
+        for (long i = 0; i < probability; i++) {
+          this.possibleValuesProvided.add(LocalDate.parse(value, formatter));
+        }
+      });
+    }
+    this.possibleValueSize = this.possibleValuesProvided.size();
 
     if (min == null) {
       this.min = LocalDate.of(1920, 1, 1).toEpochDay();
     } else {
-      String[] minSplit = min.split("[/]");
-      this.min = LocalDate.of(Integer.parseInt(minSplit[2]),
-              Integer.parseInt(minSplit[1]), Integer.parseInt(minSplit[0]))
-          .toEpochDay();
+      this.min = min.toEpochDay();
     }
     if (max == null) {
       this.max = LocalDate.of(2024, 1, 1).toEpochDay();
     } else {
-      String[] maxSplit = max.split("[/]");
-      this.max = LocalDate.of(Integer.parseInt(maxSplit[2]),
-              Integer.parseInt(maxSplit[1]), Integer.parseInt(maxSplit[0]))
-          .toEpochDay();
+      this.max = max.toEpochDay();
     }
   }
 
@@ -69,11 +69,11 @@ public class BirthdateField extends Field<LocalDate> {
    * @return
    */
   public LocalDate generateRandomValue() {
-    if (possibleValues.isEmpty()) {
+    if (possibleValuesProvided.isEmpty()) {
       Long randomDay = random.longs(1, min, max + 1).findFirst().orElse(0L);
       return LocalDate.ofEpochDay(randomDay);
     } else {
-      return possibleValues.get(random.nextInt(possibleValues.size()));
+      return possibleValuesProvided.get(random.nextInt(possibleValuesProvided.size()));
     }
   }
 

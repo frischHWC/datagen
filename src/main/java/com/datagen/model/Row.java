@@ -91,13 +91,35 @@ public class Row<T extends Field> {
     StringBuilder sb = new StringBuilder();
     sb.append("{ ");
     // Use of Model LinkedList of fields to keep order of fields
-    this.model.getFieldsToPrint().forEach((name, fieldtype) -> sb.append(
+    this.model.getFieldsToPrint()
+        .forEach((name, fieldtype) -> sb.append(
             model.getFieldFromName(
                 name.toString()).toJSONString(values.get(name.toString()))
         )
     );
     sb.deleteCharAt(sb.length() - 2);
     sb.deleteCharAt(sb.length() - 1);
+    sb.append(" }");
+    return sb.toString();
+  }
+
+  public String toPrettyJSONAllFields() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("{ ");
+    sb.append(System.lineSeparator());
+    // Use of Model LinkedList of fields to keep order of fields
+    this.model.getFields()
+        .forEach((name, fieldtype) -> {
+              var f = model.getFieldFromName(name.toString());
+              sb.append(f.toJSONString(values.get(name.toString())));
+              if(f.isGhost()) sb.append("\"ghost\": true, ");
+              sb.append(System.lineSeparator());
+            }
+        );
+    sb.deleteCharAt(sb.length() - 3);
+    sb.deleteCharAt(sb.length() - 2);
+    sb.deleteCharAt(sb.length() - 1);
+    sb.append(System.lineSeparator());
     sb.append(" }");
     return sb.toString();
   }
@@ -140,9 +162,14 @@ public class Row<T extends Field> {
 
   public SolrInputDocument toSolRDoc() {
     SolrInputDocument doc = new SolrInputDocument();
-    this.model.getFieldsToPrint().forEach((name, fieldtype) ->
-        model.getFieldFromName(name.toString())
-            .toSolrDoc(values.get(name.toString()), doc)
+    this.model.getFieldsToPrint().forEach((name, fieldtype) -> {
+          var field = model.getFieldFromName(name.toString());
+          if(field!=null) {
+            field.toSolrDoc(values.get(name.toString()), doc);
+          } else {
+            log.warn("Field with name: {} is not existing, so skipping it", name);
+          }
+        }
     );
     return doc;
   }

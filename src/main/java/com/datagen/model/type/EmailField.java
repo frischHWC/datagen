@@ -34,10 +34,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -79,13 +76,22 @@ public class EmailField extends Field<String> {
   private List<String> nameDicoasString;
   private List<Name> nameDico;
 
-  public EmailField(String name, List<String> possibleValues,
+  public EmailField(String name, HashMap<String, Long> possible_values_weighted,
                     List<String> filters) {
     this.name = name;
-    this.possibleValues = possibleValues;
+    this.possibleValuesProvided = new ArrayList<>();
+    if (possible_values_weighted != null &&
+        !possible_values_weighted.isEmpty()) {
+      possible_values_weighted.forEach((value, probability) -> {
+        for (long i = 0; i < probability; i++) {
+          this.possibleValuesProvided.add(value);
+        }
+      });
+    }
+    this.possibleValueSize = this.possibleValuesProvided.size();
     this.nameDico = loadNameDico();
 
-    if (possibleValues.isEmpty()) {
+    if (possibleValuesProvided.isEmpty()) {
       this.nameDicoasString = new ArrayList<>();
 
       if (!filters.isEmpty()) {
@@ -94,21 +100,21 @@ public class EmailField extends Field<String> {
               nameDico.stream().filter(
                       n -> n.country.equalsIgnoreCase(filterOnCountry))
                   .map(n -> n.first_name)
-                  .collect(Collectors.toList()));
+                  .toList());
         });
       }
     }
   }
 
   public String generateRandomValue() {
-    if (possibleValues.isEmpty()) {
+    if (possibleValuesProvided.isEmpty()) {
       String prefix =
           random.nextBoolean() ? Utils.getAlphaNumericString(1, random) :
               nameDico.get(random.nextInt(nameDico.size())).first_name + ".";
       return prefix + nameDico.get(random.nextInt(nameDico.size())).first_name +
           "@" + emailSupplier();
     } else {
-      return possibleValues.get(random.nextInt(possibleValues.size()));
+      return possibleValuesProvided.get(random.nextInt(possibleValuesProvided.size()));
     }
   }
 

@@ -22,6 +22,7 @@ import com.datagen.config.ApplicationConfigs;
 import com.datagen.model.conditions.ConditionalEvaluator;
 import com.datagen.model.type.Field;
 import com.datagen.parsers.JsonUnparser;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,6 +51,11 @@ import java.util.stream.Collectors;
 @Setter
 @SuppressWarnings("unchecked")
 public class Model<T extends Field> {
+
+  @Getter
+  @Setter
+  @JsonAlias
+  private String name;
 
   // This is to keep right order of fields
   @Getter
@@ -81,6 +87,19 @@ public class Model<T extends Field> {
   @JsonIgnore
   private Map<ApplicationConfigs, String> properties;
 
+  /**
+   * Funcion to make a copy of a model (useful for avoid changing a model stored when adding credentials or extra-properties)
+   */
+  public Model(Model modelToCopy) {
+    this.name = (modelToCopy.getName());
+    this.fields = new LinkedHashMap<>(modelToCopy.getFields());
+    this.fieldsToPrint = new LinkedHashMap<>(modelToCopy.getFieldsToPrint());
+    this.fieldsRandomName = new ArrayList<>(modelToCopy.getFieldsRandomName());
+    this.fieldsComputedName = new ArrayList<>(modelToCopy.getFieldsComputedName());
+    this.tableNames = new HashMap<>(modelToCopy.getTableNames());
+    this.options = new HashMap<>(modelToCopy.getOptions());
+    this.properties = new HashMap<>(modelToCopy.getProperties());
+  }
 
   /**
    * Constructor that initializes the model and populates it completely
@@ -91,9 +110,11 @@ public class Model<T extends Field> {
    * @param tableNames  map of options of Table names to their names
    * @param options     map of other options as String, String
    */
-  public Model(LinkedHashMap<String, T> fields,
+  public Model(String modelName,
+               LinkedHashMap<String, T> fields,
                Map<String, List<String>> primaryKeys,
-               Map<String, String> tableNames, Map<String, String> options,
+               Map<String, String> tableNames,
+               Map<String, String> options,
                Map<ApplicationConfigs, String> properties) {
     this.fields = fields;
     this.fieldsRandomName =
@@ -109,9 +130,13 @@ public class Model<T extends Field> {
         fieldsToPrint.put(name, field);
       }
     });
-
-    this.tableNames = convertTableNames(tableNames);
-    this.options = convertOptions(options);
+    if(modelName!=null && !modelName.isEmpty()) {
+      this.name = modelName;
+    } else {
+      this.name = "__UNNAMED-"+System.currentTimeMillis();
+    }
+    this.tableNames = tableNames==null?new HashMap<>():convertTableNames(tableNames);
+    this.options = options==null?new HashMap<>():convertOptions(options);
     this.properties = properties==null?new HashMap<>(): properties;
 
 
@@ -154,6 +179,9 @@ public class Model<T extends Field> {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
+    sb.append("Name:");
+    sb.append(this.name);
+    sb.append(System.lineSeparator());
     sb.append(fields.toString());
 
     sb.append("Table Names : [");
@@ -161,18 +189,20 @@ public class Model<T extends Field> {
       sb.append(tb);
       sb.append(" : ");
       sb.append(value);
-      sb.append(System.getProperty("line.separator"));
+      sb.append(System.lineSeparator());
     });
-    sb.append(System.getProperty("line.separator"));
+    sb.append(System.lineSeparator());
 
     sb.append("Options : [");
     options.forEach((op, value) -> {
-      sb.append(op);
-      sb.append(" : ");
-      sb.append(value.toString());
-      sb.append(System.getProperty("line.separator"));
+      if(value!=null) {
+        sb.append(op);
+        sb.append(" : ");
+        sb.append(value.toString());
+        sb.append(System.lineSeparator());
+      }
     });
-    sb.append(System.getProperty("line.separator"));
+    sb.append(System.lineSeparator());
 
     return sb.toString();
   }
@@ -183,6 +213,16 @@ public class Model<T extends Field> {
    */
   public String toJsonSchema(String pathToWriteModel) {
     String json = new JsonUnparser().renderFileFromModel(this, pathToWriteModel);
+    log.debug("JSON schema for model is: {}", json);
+    return json;
+  }
+
+  /**
+   * Create a JSON Schema from the model, being able to pass it to any other Datagen Service
+   * @return json schema as a string
+   */
+  public String toJsonSchema() {
+    String json = new JsonUnparser().renderJsonFromModel(this);
     log.debug("JSON schema for model is: {}", json);
     return json;
   }
@@ -199,6 +239,17 @@ public class Model<T extends Field> {
     long numberPerThread = number / threads;
     long restOfRowsToCreate = number % threads;
     LinkedList<RowGeneratorThread> threadsStarted = new LinkedList<>();
+
+    // Init of each field if necessary
+    var fields = getFields();
+    Collection<T> fieldsAsfield = fields.values();
+    fieldsAsfield.forEach(f -> {
+      try {
+        f.initField();
+      } catch (ClassCastException e) {
+        log.debug("Could not cast field: {}", f);
+      }
+    });
 
     for (int i = 0; i < threads; i++) {
       long numberOfRowsToGenerate = numberPerThread;
@@ -221,6 +272,15 @@ public class Model<T extends Field> {
       } catch (InterruptedException e) {
         log.warn("A thread was interrupted, its results will not be processed",
             e);
+      }
+    });
+
+    // Terminate all fields if required
+    fieldsAsfield.forEach(f -> {
+      try {
+        ((Field<?>) f).closeField();
+      } catch (ClassCastException e) {
+        log.debug("Could not cast field: {}", f);
       }
     });
 
@@ -262,476 +322,523 @@ public class Model<T extends Field> {
     ops.forEach((k, v) -> {
       OptionsConverter.Options op = OptionsConverter.convertOptionToOption(k);
       if (op != null) {
-        if (op == OptionsConverter.Options.HBASE_COLUMN_FAMILIES_MAPPING) {
-          optionsFormatted.put(op, convertHbaseColFamilyOption(v));
-        } else if (op == OptionsConverter.Options.SOLR_REPLICAS ||
-            op == OptionsConverter.Options.SOLR_SHARDS
-            || op == OptionsConverter.Options.KUDU_REPLICAS ||
-            op == OptionsConverter.Options.HIVE_THREAD_NUMBER
-            || op == OptionsConverter.Options.PARQUET_PAGE_SIZE ||
-            op == OptionsConverter.Options.PARQUET_DICTIONARY_PAGE_SIZE
-            || op == OptionsConverter.Options.PARQUET_ROW_GROUP_SIZE ||
-            op == OptionsConverter.Options.KAFKA_RETRIES_CONFIG
-            || op == OptionsConverter.Options.OZONE_REPLICATION_FACTOR ||
-            op == OptionsConverter.Options.KUDU_BUCKETS
-            || op == OptionsConverter.Options.KUDU_BUFFER ||
-            op == OptionsConverter.Options.KAFKA_PARTITIONS_NUMBER) {
-          optionsFormatted.put(op, Integer.valueOf(v));
-        } else if (op == OptionsConverter.Options.ONE_FILE_PER_ITERATION ||
-            op == OptionsConverter.Options.HIVE_ON_HDFS
-            || op == OptionsConverter.Options.CSV_HEADER ||
-            op == OptionsConverter.Options.PARQUET_DICTIONARY_ENCODING
-            || op == OptionsConverter.Options.DELETE_PREVIOUS) {
-          optionsFormatted.put(op, Boolean.valueOf(v));
-        } else if (op == OptionsConverter.Options.HDFS_REPLICATION_FACTOR ||
-            op == OptionsConverter.Options.KAFKA_REPLICATION_FACTOR) {
-          optionsFormatted.put(op, Short.valueOf(v));
-        } else {
-          optionsFormatted.put(op, v);
-        }
-      }
-    });
+        var opValue = switch (op) {
+          case HBASE_COLUMN_FAMILIES_MAPPING:
+            yield v==null || v.isEmpty() ? v : convertHbaseColFamilyOption(v);
+          case SOLR_REPLICAS:
+          case SOLR_SHARDS:
+          case KUDU_REPLICAS:
+          case HIVE_THREAD_NUMBER:
+          case PARQUET_PAGE_SIZE:
+          case PARQUET_DICTIONARY_PAGE_SIZE:
+          case PARQUET_ROW_GROUP_SIZE:
+          case KAFKA_RETRIES_CONFIG:
+          case OZONE_REPLICATION_FACTOR:
+          case KUDU_BUCKETS:
+          case KUDU_BUFFER:
+          case KAFKA_PARTITIONS_NUMBER:
+            yield v==null || v.isEmpty() ? v : Integer.valueOf(v);
+          case ONE_FILE_PER_ITERATION:
+          case HIVE_ON_HDFS:
+          case CSV_HEADER:
+          case PARQUET_DICTIONARY_ENCODING:
+          case DELETE_PREVIOUS:
+            yield v==null || v.isEmpty() ? v : Boolean.valueOf(v);
+          case HDFS_REPLICATION_FACTOR:
+          case KAFKA_REPLICATION_FACTOR:
+            yield v==null || v.isEmpty() ? v : Short.valueOf(v);
+          default:
+            yield v;
+        };
+
+      optionsFormatted.put(op, opValue);
+    }
+  });
     return optionsFormatted;
-  }
+}
 
-  /**
-   * Calls to get Options values should go through this method instead of getting the map in order to provide default values in case options is not set
-   * Except for hbase column families mapping which is particurlaly handle by a function below
-   * @param option
-   * @return
-   */
-  public Object getOptionsOrDefault(OptionsConverter.Options option) {
-    Object optionResult = this.options.get(option);
-    // Handle default result here
-    if (optionResult == null) {
-      switch (option) {
-      case SOLR_SHARDS:
-      case SOLR_REPLICAS:
-      case KUDU_REPLICAS:
-      case HIVE_THREAD_NUMBER:
-        optionResult = 1;
-        break;
-      case CSV_HEADER:
-      case PARQUET_DICTIONARY_ENCODING:
-      case HIVE_ON_HDFS:
-      case ONE_FILE_PER_ITERATION:
-        optionResult = true;
-        break;
-      case KAFKA_ACKS_CONFIG:
-        optionResult = "all";
-        break;
-      case KAFKA_MESSAGE_TYPE:
-        optionResult = "json";
-        break;
-      case KAFKA_JAAS_FILE_PATH:
-        optionResult = "/home/datagen/jaas/kafka.jaas";
-        break;
-      case SOLR_JAAS_FILE_PATH:
-        optionResult = "/home/datagen/jaas/solr.jaas";
-        break;
-      case HIVE_TEZ_QUEUE_NAME:
-        optionResult = "root.default";
-        break;
-      case HIVE_TABLE_TYPE:
-        optionResult = "external";
-        break;
-      case HIVE_TABLE_FORMAT:
-        optionResult = "orc";
-        break;
-      case HIVE_TABLE_BUCKETS_COLS:
-      case HIVE_TABLE_PARTITIONS_COLS:
-        optionResult = "";
-        break;
-      case DELETE_PREVIOUS:
-        optionResult = false;
-        break;
-      case PARQUET_PAGE_SIZE:
-      case PARQUET_DICTIONARY_PAGE_SIZE:
-        optionResult = 1048576;
-        break;
-      case PARQUET_ROW_GROUP_SIZE:
-        optionResult = 134217728;
-        break;
-      case KAFKA_RETRIES_CONFIG:
-      case KAFKA_PARTITIONS_NUMBER:
-      case OZONE_REPLICATION_FACTOR:
-        optionResult = 3;
-        break;
-      case HDFS_REPLICATION_FACTOR:
-        optionResult = (short) 3;
-        break;
-      case HIVE_TABLE_BUCKETS_NUMBER:
-      case KUDU_BUCKETS:
-        optionResult = 32;
-        break;
-      case KUDU_BUFFER:
-        optionResult = 100001;
-        break;
-      case KUDU_FLUSH:
-        optionResult = "MANUAL_FLUSH";
-        break;
-      case KAFKA_REPLICATION_FACTOR:
-        optionResult = (short) 1;
-        break;
-      case ADLS_BLOCK_SIZE:
-        optionResult = "8388608";
-        break;
-      case ADLS_MAX_CONCURRENCY:
-        optionResult = "2";
-        break;
-      case ADLS_MAX_UPLOAD_SIZE:
-        optionResult = "4194304";
-        break;
-      default:
-        break;
-      }
-    }
-    return optionResult;
-  }
-
-  /**
-   * Format for HBase column family should be :
-   * columnQualifier:ListOfColsSeparatedByAcomma;columnQualifier:ListOfColsSeparatedByAcomma ...
-   * Goal is to Convert this option into a map of field to hbase column qualifier
-   *
-   * @param ops
-   * @return
-   */
-  Map<T, String> convertHbaseColFamilyOption(String ops) {
-    Map<T, String> hbaseFamilyColsMap = new HashMap<>();
-    for (String s : ops.split(";")) {
-      String cq = s.split(":")[0];
-      for (String c : s.split(":")[1].split(",")) {
-        T field = fieldsToPrint.get(c);
-        if (field != null) {
-          hbaseFamilyColsMap.put(field, cq);
-        }
-      }
-    }
-    return hbaseFamilyColsMap;
-  }
-
-  public Set<String> getHBaseColumnFamilyList() {
-    Map<T, String> colFamiliesMap = (Map<T, String>) options.get(
-        OptionsConverter.Options.HBASE_COLUMN_FAMILIES_MAPPING);
-    return new HashSet<>(colFamiliesMap.values());
-  }
-
-  private void setupFieldHbaseColQualifier(Map<T, String> fieldHbaseColMap) {
-    if (fieldHbaseColMap != null && !fieldHbaseColMap.isEmpty()) {
-      fieldHbaseColMap.forEach(Field::setHbaseColumnQualifier);
+/**
+ * Calls to get Options values should go through this method instead of getting the map in order to provide default values in case options is not set
+ * Except for hbase column families mapping which is particurlaly handle by a function below
+ * @param option
+ * @return
+ */
+public Object getOptionsOrDefault(OptionsConverter.Options option) {
+  Object optionResult = this.options.get(option);
+  // Handle default result here
+  if (optionResult == null || optionResult.toString().isBlank()) {
+    switch (option) {
+    case SOLR_SHARDS:
+    case SOLR_REPLICAS:
+    case KUDU_REPLICAS:
+    case HIVE_THREAD_NUMBER:
+      optionResult = 1;
+      break;
+    case CSV_HEADER:
+    case PARQUET_DICTIONARY_ENCODING:
+    case HIVE_ON_HDFS:
+    case ONE_FILE_PER_ITERATION:
+      optionResult = true;
+      break;
+    case KAFKA_ACKS_CONFIG:
+      optionResult = "all";
+      break;
+    case KAFKA_MESSAGE_TYPE:
+      optionResult = "json";
+      break;
+    case KAFKA_JAAS_FILE_PATH:
+      optionResult = "/home/datagen/jaas/kafka.jaas";
+      break;
+    case SOLR_JAAS_FILE_PATH:
+      optionResult = "/home/datagen/jaas/solr.jaas";
+      break;
+    case HIVE_TEZ_QUEUE_NAME:
+      optionResult = "root.default";
+      break;
+    case HIVE_TABLE_TYPE:
+      optionResult = "external";
+      break;
+    case HIVE_TABLE_FORMAT:
+      optionResult = "orc";
+      break;
+    case HIVE_TABLE_BUCKETS_COLS:
+    case HIVE_TABLE_PARTITIONS_COLS:
+      optionResult = "";
+      break;
+    case DELETE_PREVIOUS:
+      optionResult = false;
+      break;
+    case PARQUET_PAGE_SIZE:
+    case PARQUET_DICTIONARY_PAGE_SIZE:
+      optionResult = 1048576;
+      break;
+    case PARQUET_ROW_GROUP_SIZE:
+      optionResult = 134217728;
+      break;
+    case KAFKA_RETRIES_CONFIG:
+    case KAFKA_PARTITIONS_NUMBER:
+    case OZONE_REPLICATION_FACTOR:
+      optionResult = 3;
+      break;
+    case HDFS_REPLICATION_FACTOR:
+      optionResult = (short) 3;
+      break;
+    case HIVE_TABLE_BUCKETS_NUMBER:
+    case KUDU_BUCKETS:
+      optionResult = 32;
+      break;
+    case KUDU_BUFFER:
+      optionResult = 100001;
+      break;
+    case KUDU_FLUSH:
+      optionResult = "MANUAL_FLUSH";
+      break;
+    case KAFKA_REPLICATION_FACTOR:
+      optionResult = (short) 1;
+      break;
+    case ADLS_BLOCK_SIZE:
+      optionResult = "8388608";
+      break;
+    case ADLS_MAX_CONCURRENCY:
+      optionResult = "2";
+      break;
+    case ADLS_MAX_UPLOAD_SIZE:
+      optionResult = "4194304";
+      break;
+    default:
+      break;
     }
   }
+  return optionResult;
+}
 
-  public Schema getKuduSchema() {
-    List<ColumnSchema> columns = new LinkedList<>();
-    fieldsToPrint.forEach((name, f) -> {
-      boolean isaPK = false;
-      for (String k : getKuduPrimaryKeys()) {
-        if (k.equalsIgnoreCase(name)) {
-          isaPK = true;
-        }
+/**
+ * Format for HBase column family should be :
+ * columnQualifier:ListOfColsSeparatedByAcomma;columnQualifier:ListOfColsSeparatedByAcomma ...
+ * Goal is to Convert this option into a map of field to hbase column qualifier
+ *
+ * @param ops
+ * @return
+ */
+Map<T, String> convertHbaseColFamilyOption(String ops) {
+  Map<T, String> hbaseFamilyColsMap = new HashMap<>();
+  for (String s : ops.split(";")) {
+    String cq = s.split(":")[0];
+    for (String c : s.split(":")[1].split(",")) {
+      T field = fieldsToPrint.get(c);
+      if (field != null) {
+        hbaseFamilyColsMap.put(field, cq);
       }
-      if (isaPK) {
-        columns.add(new ColumnSchema.ColumnSchemaBuilder(name, f.getKuduType())
-            .key(true)
-            .build());
+    }
+  }
+  return hbaseFamilyColsMap;
+}
+
+/**
+ * Format for HBase column family should be :
+ * columnQualifier:ListOfColsSeparatedByAcomma;columnQualifier:ListOfColsSeparatedByAcomma ...
+ * Goal is to Convert this map of field into back a string format (as above)
+ *
+ * @param colFamHbase
+ * @return
+ */
+public String reConvertHbaseColFamilyOption(Map<T, String> colFamHbase) {
+  var hbaseStringFormat = new StringBuilder();
+  // Grouped fields by column families
+  var hbaseColsGroupedByColFam = new HashMap<String, List<String>>();
+  if(colFamHbase!=null && !colFamHbase.isEmpty()) {
+    colFamHbase.forEach((f, cq) -> {
+      log.debug("got field: {} associated with column family: {}",
+          f.getName(), cq);
+      if (hbaseColsGroupedByColFam.get(cq) == null) {
+        var newList = new ArrayList<String>();
+        newList.add(f.getName());
+        hbaseColsGroupedByColFam.put(cq, newList);
       } else {
-        columns.add(new ColumnSchema.ColumnSchemaBuilder(name, f.getKuduType())
-            .build());
+        hbaseColsGroupedByColFam.get(cq)
+            .add(
+                f.getName());
       }
     });
-
-    return new Schema(columns);
-  }
-
-  public LinkedList<String> getKuduPrimaryKeys() {
-    String pkString = (String) options.get(OptionsConverter.Options.KUDU_PRIMARY_KEYS);
-    return Arrays.stream(pkString.split(",")).collect(Collectors.toCollection(LinkedList::new));
-  }
-
-  public LinkedList<String> getKuduRangeKeys() {
-    String rangeString = (String) options.get(OptionsConverter.Options.KUDU_RANGE_KEYS);
-    return Arrays.stream(rangeString.split(",")).collect(Collectors.toCollection(LinkedList::new));
-  }
-
-  public LinkedList<String> getKuduHashKeys() {
-    String hashString = (String) options.get(OptionsConverter.Options.KUDU_HASH_KEYS);
-    return Arrays.stream(hashString.split(",")).collect(Collectors.toCollection(LinkedList::new));
-  }
-
-  /**
-   * This is a dangerous but needed operation to make Hive works well with partitions
-   * Partition columns should be generated at the end, hence the linkedHashMap order should be changed
-   * This could mess up with other connectors if they initialize before this function is made
-   * @param partCols
-   */
-  public void reorderColumnsWithPartCols(LinkedList<String> partCols) {
-    synchronized (fieldsToPrint) {
-      LinkedHashMap<String, T> partColsFields = new LinkedHashMap<>();
-      partCols.forEach(p -> {
-        partColsFields.put(p, fieldsToPrint.get(p));
-        fieldsToPrint.remove(p);
+    // Write the mapping back
+    hbaseColsGroupedByColFam.forEach((cq, fl) -> {
+      hbaseStringFormat.append(cq);
+      hbaseStringFormat.append(":");
+      fl.forEach(f -> {
+        hbaseStringFormat.append(f);
+        hbaseStringFormat.append(",");
       });
-      fieldsToPrint.putAll(partColsFields);
-    }
+      hbaseStringFormat.deleteCharAt(hbaseStringFormat.length() - 1);
+      hbaseStringFormat.append(";");
+    });
+    hbaseStringFormat.deleteCharAt(hbaseStringFormat.length() - 1);
+  }
+  return hbaseStringFormat.toString();
+}
 
-    synchronized (fields) {
-      LinkedHashMap<String, T> partColsFields = new LinkedHashMap<>();
-      partCols.forEach(p -> {
-        partColsFields.put(p, fields.get(p));
-        fields.remove(p);
-      });
-      fields.putAll(partColsFields);
+public Set<String> getHBaseColumnFamilyList() {
+  Map<T, String> colFamiliesMap = (Map<T, String>) options.get(
+      OptionsConverter.Options.HBASE_COLUMN_FAMILIES_MAPPING);
+  return new HashSet<>(colFamiliesMap.values());
+}
+
+private void setupFieldHbaseColQualifier(Map<T, String> fieldHbaseColMap) {
+  if (fieldHbaseColMap != null && !fieldHbaseColMap.isEmpty()) {
+    fieldHbaseColMap.forEach(Field::setHbaseColumnQualifier);
+  }
+}
+
+public Schema getKuduSchema() {
+  List<ColumnSchema> columns = new LinkedList<>();
+  fieldsToPrint.forEach((name, f) -> {
+    boolean isaPK = false;
+    for (String k : getKuduPrimaryKeys()) {
+      if (k.equalsIgnoreCase(name)) {
+        isaPK = true;
+      }
     }
+    if (isaPK) {
+      columns.add(new ColumnSchema.ColumnSchemaBuilder(name, f.getKuduType())
+          .key(true)
+          .build());
+    } else {
+      columns.add(new ColumnSchema.ColumnSchemaBuilder(name, f.getKuduType())
+          .build());
+    }
+  });
+
+  return new Schema(columns);
+}
+
+public LinkedList<String> getKuduPrimaryKeys() {
+  String pkString = (String) options.get(OptionsConverter.Options.KUDU_PRIMARY_KEYS);
+  return Arrays.stream(pkString.split(",")).filter(s -> !s.isEmpty() && !s.isBlank()).collect(Collectors.toCollection(LinkedList::new));
+}
+
+public LinkedList<String> getKuduRangeKeys() {
+  String rangeString = (String) options.get(OptionsConverter.Options.KUDU_RANGE_KEYS);
+  return Arrays.stream(rangeString.split(",")).filter(s -> !s.isEmpty() && !s.isBlank()).collect(Collectors.toCollection(LinkedList::new));
+}
+
+public LinkedList<String> getKuduHashKeys() {
+  String hashString = (String) options.get(OptionsConverter.Options.KUDU_HASH_KEYS);
+  return Arrays.stream(hashString.split(",")).filter(s -> !s.isEmpty() && !s.isBlank()).collect(Collectors.toCollection(LinkedList::new));
+}
+
+/**
+ * This is a dangerous but needed operation to make Hive works well with partitions
+ * Partition columns should be generated at the end, hence the linkedHashMap order should be changed
+ * This could mess up with other connectors if they initialize before this function is made
+ * @param partCols
+ */
+public void reorderColumnsWithPartCols(LinkedList<String> partCols) {
+  synchronized (fieldsToPrint) {
+    LinkedHashMap<String, T> partColsFields = new LinkedHashMap<>();
+    partCols.forEach(p -> {
+      partColsFields.put(p, fieldsToPrint.get(p));
+      fieldsToPrint.remove(p);
+    });
+    fieldsToPrint.putAll(partColsFields);
   }
 
-  /**
-   * This is a dangerous but needed operation to make Kudu works well with partitions
-   * Partition columns should be generated at first hence the linkedHashMap order should be changed
-   * This could mess up with other connectors if they initialize before this function is made
-   * @param keyCols
-   */
-  public void reorderColumnsWithKeyCols(LinkedList<String> keyCols) {
-    synchronized (fieldsToPrint) {
-      LinkedHashMap<String, T> fieldToPrintClone =
-          (LinkedHashMap<String, T>) fieldsToPrint.clone();
-      fieldsToPrint.clear();
-      keyCols.forEach(p -> {
-        fieldsToPrint.put(p, fieldToPrintClone.get(p));
-        fieldToPrintClone.remove(p);
-      });
-      fieldsToPrint.putAll(fieldToPrintClone);
-    }
+  synchronized (fields) {
+    LinkedHashMap<String, T> partColsFields = new LinkedHashMap<>();
+    partCols.forEach(p -> {
+      partColsFields.put(p, fields.get(p));
+      fields.remove(p);
+    });
+    fields.putAll(partColsFields);
+  }
+}
 
-    synchronized (fields) {
-      LinkedHashMap<String, T> fieldToPrintClone =
-          (LinkedHashMap<String, T>) fieldsToPrint.clone();
-      fields.clear();
-      keyCols.forEach(p -> {
-        fields.put(p, fieldToPrintClone.get(p));
-        fieldToPrintClone.remove(p);
-      });
-      fields.putAll(fieldToPrintClone);
-    }
+/**
+ * This is a dangerous but needed operation to make Kudu works well with partitions
+ * Partition columns should be generated at first hence the linkedHashMap order should be changed
+ * This could mess up with other connectors if they initialize before this function is made
+ * @param keyCols
+ */
+public void reorderColumnsWithKeyCols(LinkedList<String> keyCols) {
+  synchronized (fieldsToPrint) {
+    LinkedHashMap<String, T> fieldToPrintClone =
+        (LinkedHashMap<String, T>) fieldsToPrint.clone();
+    fieldsToPrint.clear();
+    keyCols.forEach(p -> {
+      fieldsToPrint.put(p, fieldToPrintClone.get(p));
+      fieldToPrintClone.remove(p);
+    });
+    fieldsToPrint.putAll(fieldToPrintClone);
   }
 
-  /**
-   * SQL Schema for Hive should not include partition columns
-   * @param partCols
-   * @return
-   */
-  public String getSQLSchema(LinkedList<String> partCols) {
-    StringBuilder sb = new StringBuilder();
-    sb.append(" ( ");
-    fieldsToPrint.forEach((name, f) -> {
-      boolean colToskip = false;
-      if (partCols != null) {
-        for (String colname : partCols) {
-          if (name.equalsIgnoreCase(colname)) {
-            colToskip = true;
-          }
+  synchronized (fields) {
+    LinkedHashMap<String, T> fieldToPrintClone =
+        (LinkedHashMap<String, T>) fieldsToPrint.clone();
+    fields.clear();
+    keyCols.forEach(p -> {
+      fields.put(p, fieldToPrintClone.get(p));
+      fieldToPrintClone.remove(p);
+    });
+    fields.putAll(fieldToPrintClone);
+  }
+}
+
+/**
+ * SQL Schema for Hive should not include partition columns
+ * @param partCols
+ * @return
+ */
+public String getSQLSchema(LinkedList<String> partCols) {
+  StringBuilder sb = new StringBuilder();
+  sb.append(" ( ");
+  fieldsToPrint.forEach((name, f) -> {
+    boolean colToskip = false;
+    if (partCols != null) {
+      for (String colname : partCols) {
+        if (name.equalsIgnoreCase(colname)) {
+          colToskip = true;
         }
       }
-      if (!colToskip) {
-        sb.append(name);
-        sb.append(" ");
-        sb.append(f.getHiveType());
-        sb.append(", ");
-      }
-    });
-    sb.deleteCharAt(sb.length() - 2);
-    sb.append(") ");
-    log.debug("Schema is : " + sb.toString());
-    return sb.toString();
-  }
-
-  public String getSQLPartBucketCreate(LinkedList<String> partCols,
-                                       LinkedList<String> bucketCols,
-                                       int bucketNumber) {
-    StringBuilder sb = new StringBuilder();
-
-    if (!partCols.isEmpty()) {
-      sb.append(" PARTITIONED BY ( ");
-      partCols.forEach(name -> {
-        sb.append(name);
-        sb.append(" ");
-        sb.append(getFieldFromName(name).getHiveType());
-        sb.append(", ");
-      });
-      sb.deleteCharAt(sb.length() - 2);
-      sb.append(") ");
     }
-
-    if (!bucketCols.isEmpty()) {
-      sb.append(" CLUSTERED BY ( ");
-      bucketCols.forEach(name -> {
-        sb.append(name);
-        sb.append(" ");
-        sb.append(", ");
-      });
-      sb.deleteCharAt(sb.length() - 2);
-      sb.append(") ");
-      sb.append(" INTO ");
-      sb.append(bucketNumber);
-      sb.append(" BUCKETS ");
-    }
-
-    log.debug("Extra Create is : " + sb.toString());
-    return sb.toString();
-  }
-
-  public String getSQLPartBucketInsert(LinkedList<String> partCols,
-                                       LinkedList<String> bucketCols,
-                                       int bucketNumber) {
-    StringBuilder sb = new StringBuilder();
-
-    if (!partCols.isEmpty()) {
-      sb.append(" PARTITION ( ");
-      partCols.forEach(name -> {
-        sb.append(name);
-        sb.append(" ");
-        sb.append(", ");
-      });
-      sb.deleteCharAt(sb.length() - 2);
-      sb.append(") ");
-    }
-
-    log.debug("Extra Create is : " + sb.toString());
-    return sb.toString();
-  }
-
-  public String getInsertSQLStatement() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(" ( ");
-    fieldsToPrint.forEach((name, f) -> {
+    if (!colToskip) {
+      sb.append("`");
       sb.append(name);
+      sb.append("` ");
+      sb.append(f.getHiveType());
+      sb.append(", ");
+    }
+  });
+  sb.deleteCharAt(sb.length() - 2);
+  sb.append(") ");
+  log.debug("Schema is : " + sb.toString());
+  return sb.toString();
+}
+
+public String getSQLPartBucketCreate(LinkedList<String> partCols,
+                                     LinkedList<String> bucketCols,
+                                     int bucketNumber) {
+  StringBuilder sb = new StringBuilder();
+
+  if (!partCols.isEmpty()) {
+    sb.append(" PARTITIONED BY ( ");
+    partCols.forEach(name -> {
+      sb.append(name);
+      sb.append(" ");
+      sb.append(getFieldFromName(name).getHiveType());
       sb.append(", ");
     });
     sb.deleteCharAt(sb.length() - 2);
-    sb.append(") VALUES ( ");
-    fields.forEach((name, f) -> sb.append("?, "));
-    sb.deleteCharAt(sb.length() - 2);
-    sb.append(" ) ");
-    log.debug("Insert is : " + sb.toString());
-    return sb.toString();
+    sb.append(") ");
   }
 
-  public String getCsvHeader() {
-    StringBuilder sb = new StringBuilder();
-    fieldsToPrint.forEach((name, f) -> {
+  if (!bucketCols.isEmpty()) {
+    sb.append(" CLUSTERED BY ( ");
+    bucketCols.forEach(name -> {
       sb.append(name);
-      sb.append(",");
+      sb.append(" ");
+      sb.append(", ");
     });
-    sb.deleteCharAt(sb.length() - 1);
-    return sb.toString();
+    sb.deleteCharAt(sb.length() - 2);
+    sb.append(") ");
+    sb.append(" INTO ");
+    sb.append(bucketNumber);
+    sb.append(" BUCKETS ");
   }
 
-  public org.apache.avro.Schema getAvroSchema() {
-    String avroName = tableNames.get(OptionsConverter.TableNames.AVRO_NAME).isEmpty() ? 
-        "default_avro_record_name" : tableNames.get(OptionsConverter.TableNames.AVRO_NAME);
-    SchemaBuilder.FieldAssembler<org.apache.avro.Schema> schemaBuilder =
-        SchemaBuilder
-            .record(avroName)
-            .namespace("org.apache.avro.ipc")
-            .fields();
+  log.debug("Extra Create is : " + sb.toString());
+  return sb.toString();
+}
 
-    for (T field : fieldsToPrint.values()) {
-      schemaBuilder =
-          schemaBuilder.name(field.name).type(field.getGenericRecordType())
-              .noDefault();
-    }
+public String getSQLPartBucketInsert(LinkedList<String> partCols,
+                                     LinkedList<String> bucketCols,
+                                     int bucketNumber) {
+  StringBuilder sb = new StringBuilder();
 
-    return schemaBuilder.endRecord();
+  if (!partCols.isEmpty()) {
+    sb.append(" PARTITION ( ");
+    partCols.forEach(name -> {
+      sb.append(name);
+      sb.append(" ");
+      sb.append(", ");
+    });
+    sb.deleteCharAt(sb.length() - 2);
+    sb.append(") ");
   }
 
-  public TypeDescription getOrcSchema() {
-    TypeDescription typeDescription = TypeDescription.createStruct();
-    fieldsToPrint.forEach(
-        (name, f) -> typeDescription.addField(name, f.getTypeDescriptionOrc()));
-    return typeDescription;
+  log.debug("Extra Create is : " + sb.toString());
+  return sb.toString();
+}
+
+public String getInsertSQLStatement() {
+  StringBuilder sb = new StringBuilder();
+  sb.append(" ( ");
+  fieldsToPrint.forEach((name, f) -> {
+    sb.append("`");
+    sb.append(name);
+    sb.append("` , ");
+  });
+  sb.deleteCharAt(sb.length() - 2);
+  sb.append(") VALUES ( ");
+  fields.forEach((name, f) -> sb.append("?, "));
+  sb.deleteCharAt(sb.length() - 2);
+  sb.append(" ) ");
+  log.debug("Insert is : " + sb.toString());
+  return sb.toString();
+}
+
+public String getCsvHeader() {
+  StringBuilder sb = new StringBuilder();
+  fieldsToPrint.forEach((name, f) -> {
+    sb.append(name);
+    sb.append(",");
+  });
+  sb.deleteCharAt(sb.length() - 1);
+  return sb.toString();
+}
+
+public org.apache.avro.Schema getAvroSchema() {
+  String avroName = tableNames.get(OptionsConverter.TableNames.AVRO_NAME)==null || tableNames.get(OptionsConverter.TableNames.AVRO_NAME).isEmpty() ?
+      "default_avro_record_name" : tableNames.get(OptionsConverter.TableNames.AVRO_NAME);
+  SchemaBuilder.FieldAssembler<org.apache.avro.Schema> schemaBuilder =
+      SchemaBuilder
+          .record(avroName)
+          .namespace("org.apache.avro.ipc")
+          .fields();
+
+  for (T field : fieldsToPrint.values()) {
+    schemaBuilder =
+        schemaBuilder.name(field.name).type(field.getGenericRecordType())
+            .noDefault();
   }
 
-  public Map<String, ColumnVector> createOrcVectors(VectorizedRowBatch batch) {
-    LinkedHashMap<String, ColumnVector> hashMap = new LinkedHashMap<>();
-    int cols = 0;
-    for (T field : fieldsToPrint.values()) {
-      hashMap.put(field.getName(), field.getOrcColumnVector(batch, cols));
-      cols++;
-    }
-    return hashMap;
-  }
+  return schemaBuilder.endRecord();
+}
 
-  public enum HiveTableType {
-    EXTERNAL,
-    MANAGED,
-    ICEBERG
-  }
+public TypeDescription getOrcSchema() {
+  TypeDescription typeDescription = TypeDescription.createStruct();
+  fieldsToPrint.forEach(
+      (name, f) -> typeDescription.addField(name, f.getTypeDescriptionOrc()));
+  return typeDescription;
+}
 
-  public HiveTableType getHiveTableType() {
-    switch (this.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_TYPE)
-        .toString().toLowerCase(Locale.ROOT)) {
-    case "iceberg":
-      return HiveTableType.ICEBERG;
-    case "managed":
-      return HiveTableType.MANAGED;
-    default:
-      return HiveTableType.EXTERNAL;
-    }
+public Map<String, ColumnVector> createOrcVectors(VectorizedRowBatch batch) {
+  LinkedHashMap<String, ColumnVector> hashMap = new LinkedHashMap<>();
+  int cols = 0;
+  for (T field : fieldsToPrint.values()) {
+    hashMap.put(field.getName(), field.getOrcColumnVector(batch, cols));
+    cols++;
   }
+  return hashMap;
+}
 
-  public enum HiveTableFormat {
-    PARQUET,
-    ORC,
-    AVRO,
-    JSON,
-    CSV
-  }
+public enum HiveTableType {
+  EXTERNAL,
+  MANAGED,
+  ICEBERG
+}
 
-  public HiveTableFormat getHiveTableFormat() {
-    switch (this.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_FORMAT)
-        .toString().toLowerCase(Locale.ROOT)) {
-    case "parquet":
-      return HiveTableFormat.PARQUET;
-    case "avro":
-      return HiveTableFormat.AVRO;
-    case "json":
-      return HiveTableFormat.JSON;
-    default:
-      return HiveTableFormat.ORC;
-    }
+public HiveTableType getHiveTableType() {
+  switch (this.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_TYPE)
+      .toString().toLowerCase(Locale.ROOT)) {
+  case "iceberg":
+    return HiveTableType.ICEBERG;
+  case "managed":
+    return HiveTableType.MANAGED;
+  default:
+    return HiveTableType.EXTERNAL;
   }
+}
 
-  public String HiveTFtoString(HiveTableFormat hiveTableFormat) {
-    switch (hiveTableFormat) {
-    case PARQUET:
-      return " STORED AS PARQUET ";
-    case AVRO:
-      return " STORED AS AVRO ";
-    case JSON:
-      return " STORED AS JSONFILE ";
-    case CSV:
-      return " ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE ";
-    default:
-      return " STORED AS ORC ";
-    }
-  }
+public enum HiveTableFormat {
+  PARQUET,
+  ORC,
+  AVRO,
+  JSON,
+  CSV
+}
 
-  // TODO: Implement verifications on the model before starting (not two same names of field, primary keys defined)
-  // Each field should have a unique name
-  // Each field should have a know type
-  // Some Fields cannot have length or possible values
-  // Some Fields cannot have min/max
-  // Possible values must be of same type than field
-  // Depending on on what connector is launched, primary keys must be defined on existing columns
-  // Ozone bucket and volume should be string between 3-63 characters (No upper case)
-  // Kafka topic should not have special characters or "-"
-  // Column comparison in conditionals made should be on same column type
-  // Conditionals should be made on existing columns
-  // Conditionals should not have "nested" conditions (meaning relying on a computed column)
-  // Primary Keys fields should not be ghost fields
-  // If hive and kudu are set, make sure part cols are the same as there is a re-order of columns
-  public void verifyModel() {
+public HiveTableFormat getHiveTableFormat() {
+  switch (this.getOptionsOrDefault(OptionsConverter.Options.HIVE_TABLE_FORMAT)
+      .toString().toLowerCase(Locale.ROOT)) {
+  case "parquet":
+    return HiveTableFormat.PARQUET;
+  case "avro":
+    return HiveTableFormat.AVRO;
+  case "json":
+    return HiveTableFormat.JSON;
+  default:
+    return HiveTableFormat.ORC;
   }
+}
+
+public String HiveTFtoString(HiveTableFormat hiveTableFormat) {
+  switch (hiveTableFormat) {
+  case PARQUET:
+    return " STORED AS PARQUET ";
+  case AVRO:
+    return " STORED AS AVRO ";
+  case JSON:
+    return " STORED AS JSONFILE ";
+  case CSV:
+    return " ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE ";
+  default:
+    return " STORED AS ORC ";
+  }
+}
+
+// TODO: Implement verifications on the model before starting (not two same names of field, primary keys defined)
+// Each field should have a unique name
+// Each field should have a know type
+// Some Fields cannot have length or possible values
+// Some Fields cannot have min/max
+// Possible values must be of same type than field
+// Depending on on what connector is launched, primary keys must be defined on existing columns
+// Ozone bucket and volume should be string between 3-63 characters (No upper case)
+// Kafka topic should not have special characters or "-"
+// Column comparison in conditionals made should be on same column type
+// Conditionals should be made on existing columns
+// Conditionals should not have "nested" conditions (meaning relying on a computed column)
+// Primary Keys fields should not be ghost fields
+// If hive and kudu are set, make sure part cols are the same as there is a re-order of columns
+public void verifyModel() {
+}
 
 }

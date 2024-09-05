@@ -1,4 +1,5 @@
 {
+  "model_name": "plant",
   "Fields": [
     {
       "name": "plant_id",
@@ -50,6 +51,18 @@
     "KUDU_TABLE_NAME":  "datagen.industry_plant",
     "LOCAL_FILE_PATH":  "/home/datagen/industry/plant/",
     "LOCAL_FILE_NAME":  "plant",
+    "S3_BUCKET": "datagen-test-fri",
+    "S3_DIRECTORY": "datagen/plant",
+    "S3_KEY_NAME": "full-key",
+    "S3_LOCAL_FILE_PATH":  "/tmp/datagen/plant/",
+    "ADLS_CONTAINER": "dgtest",
+    "ADLS_DIRECTORY": "datagen/plant",
+    "ADLS_FILE_NAME": "plant",
+    "ADLS_LOCAL_FILE_PATH": "/tmp/datagen/plant/",
+    "GCS_BUCKET": "datagenfri",
+    "GCS_DIRECTORY": "datagen/plant",
+    "GCS_OBJECT_NAME": "plant",
+    "GCS_LOCAL_FILE_PATH": "/tmp/datagen/plant/",
     "AVRO_NAME":  "datagenindustryplant"
   },
   "Options": {

@@ -171,7 +171,7 @@ public class AdlsAvroConnector extends AdlsUtils implements ConnectorInterface  
           e);
     }
 
-    return new Model(fields, primaryKeys, tableNames, options, null);
+    return new Model("",fields, primaryKeys, tableNames, options, null);
   }
 
 

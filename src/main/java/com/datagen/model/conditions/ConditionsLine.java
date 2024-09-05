@@ -39,21 +39,26 @@ public class ConditionsLine {
 
   @Getter
   @Setter
-  private LinkedList<ConditionOperators> listOfConditionsOperators;
+  private LinkedList<Condition.ConditionOperators> listOfConditionsOperators;
 
 
   // To indicate if there are multiple conditions on this line or only one
   private boolean combinedCondition = false;
 
-  private boolean defaultValue = false;
   @Getter
   private String valueToReturn;
+  @Getter
+  private String rawValueToReturn;
+  @Getter
+  private final String rawOperatorValue;
 
   @Getter
   private Link linkToEvaluate;
   @Getter
   private boolean link = false;
+  @Getter
   private boolean formula = false;
+  @Getter
   private boolean injection = false;
 
   private LinkedList<ParsingUtils.StringFragment> stringFragments;
@@ -61,6 +66,8 @@ public class ConditionsLine {
 
   public ConditionsLine(String conditionLine, String valueToReturn) {
     this.valueToReturn = valueToReturn;
+    this.rawValueToReturn = valueToReturn;
+    this.rawOperatorValue = conditionLine;
     this.listOfConditionsOperators = new LinkedList<>();
     this.listOfConditions = new LinkedList<>();
 
@@ -88,7 +95,7 @@ public class ConditionsLine {
       return;
     } else if (conditionSplitted[0].equalsIgnoreCase("default")) {
       log.debug("Found a default, No evaluation needed");
-      this.defaultValue = true;
+      boolean defaultValue = true;
       return;
     }
 
@@ -107,12 +114,12 @@ public class ConditionsLine {
 
   }
 
-  private ConditionOperators createOperatorFromExpression(
+  private Condition.ConditionOperators createOperatorFromExpression(
       String operatorExpression) {
     if (operatorExpression.trim().equalsIgnoreCase("|")) {
-      return ConditionOperators.OR;
+      return Condition.ConditionOperators.OR;
     } else {
-      return ConditionOperators.AND;
+      return Condition.ConditionOperators.AND;
     }
   }
 
@@ -157,11 +164,11 @@ public class ConditionsLine {
         );
         return true;
       } else if (this.link) {
-        // Formula case
+        // Link case
         this.valueToReturn = linkToEvaluate.evaluateLink(row);
         return true;
       } else if (this.injection) {
-        // Formula case
+        // Injection case
         this.valueToReturn = ParsingUtils.injectRowValuesToAString(row, this.stringFragments);
         return true;
       } else {
@@ -178,7 +185,7 @@ public class ConditionsLine {
 
       for (int i = 1; i < listOfConditions.size(); i++) {
 
-        if (listOfConditionsOperators.get(i - 1) == ConditionOperators.AND) {
+        if (listOfConditionsOperators.get(i - 1) == Condition.ConditionOperators.AND) {
           log.debug(
               "The operator between previous condition and this one is AND");
           if (previousResult) {

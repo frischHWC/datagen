@@ -17,7 +17,7 @@
  */
 package com.datagen.config;
 
-import com.datagen.service.CmApiService;
+import com.datagen.service.api.CmApiService;
 import com.datagen.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,8 +79,11 @@ public class PropertiesLoader {
     propertiesAsProperties.forEach((propertyKey, propertyValue) -> {
       // Keys starting with spring or server are considered as internal spring-boot used and should not be taken
       if (!propertyKey.toString().startsWith("spring.")
+          && !propertyKey.toString().startsWith("springdoc.")
           && !propertyKey.toString().startsWith("server.")
-          && !propertyKey.toString().startsWith("security.")) {
+          && !propertyKey.toString().startsWith("security.")
+          && !propertyKey.toString().startsWith("vaadin.")
+          && !propertyKey.toString().startsWith("logging.")) {
         ApplicationConfigs propAsAppConfig =
             ApplicationConfigMapper.getApplicationConfigFromProperty(
                 propertyKey.toString());
@@ -138,7 +141,7 @@ public class PropertiesLoader {
 
   /*
   - If properties for a service are not set (ex: hdfs.uri) => Look for config file's location property
-  - If this is empty or file does not exists => WARNING: You should provide info on API call to use this connector
+  - If this is empty or file does not exist => WARNING: You should provide info on API call to use this connector
   - Otherwise, load the file and set the required property (hdfs.uri for example)
    */
   private void autoDiscover() {
@@ -246,10 +249,10 @@ public class PropertiesLoader {
               properties.get(ApplicationConfigs.SOLR_ENV_PATH)));
     }
 
-    if (properties.get(ApplicationConfigs.SOLR_ZOOKEEPER_NODE) == null
+    if (properties.get(ApplicationConfigs.SOLR_ZOOKEEPER_ZNODE) == null
         && properties.get(ApplicationConfigs.SOLR_ENV_PATH) != null) {
       log.info("Going to auto-discover solr.zookeeper.znode");
-      properties.put(ApplicationConfigs.SOLR_ZOOKEEPER_NODE,
+      properties.put(ApplicationConfigs.SOLR_ZOOKEEPER_ZNODE,
           Utils.getSolrZKznodeFromEnvsh(
               properties.get(ApplicationConfigs.SOLR_ENV_PATH)));
     }
@@ -482,14 +485,14 @@ public class PropertiesLoader {
 
       }
 
-      if (properties.get(ApplicationConfigs.SOLR_ZOOKEEPER_NODE) == null) {
+      if (properties.get(ApplicationConfigs.SOLR_ZOOKEEPER_ZNODE) == null) {
         log.info(
             "Going to auto-discover solr.zookeeper.znode with CM API");
 
         String solrZnode =
             cmApiService.getSolRZnode(servicesExisting.get("SOLR"));
         if (!solrZnode.isEmpty()) {
-          properties.put(ApplicationConfigs.SOLR_ZOOKEEPER_NODE, solrZnode);
+          properties.put(ApplicationConfigs.SOLR_ZOOKEEPER_ZNODE, solrZnode);
         }
 
       }

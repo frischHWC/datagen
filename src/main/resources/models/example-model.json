@@ -1,4 +1,5 @@
 {
+  "model_name": "My_Example_model",
   "Fields": [
     {
       "name": "name",

@@ -27,14 +27,12 @@ import com.datagen.utils.KerberosUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.HttpClientUtil;
 import org.apache.solr.client.solrj.impl.Krb5HttpClientBuilder;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 
-import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -52,30 +50,39 @@ public class SolRConnector implements ConnectorInterface {
   private final Model model;
   private final Boolean useKerberos;
 
-
   public SolRConnector(Model model,
                        Map<ApplicationConfigs, String> properties) {
     this.collection = (String) model.getTableNames()
         .get(OptionsConverter.TableNames.SOLR_COLLECTION);
     this.model = model;
-    this.useKerberos = Boolean.parseBoolean(
-        properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS));
+    this.useKerberos = model.getTableNames().get(OptionsConverter.TableNames.SOLR_USE_KERBEROS)==null ?
+        Boolean.parseBoolean(properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS)) :
+        Boolean.parseBoolean(model.getTableNames().get(OptionsConverter.TableNames.SOLR_USE_KERBEROS).toString());
 
     List<String> zkHosts = Arrays.stream(
             properties.get(ApplicationConfigs.SOLR_ZOOKEEPER_QUORUM).split(","))
         .collect(Collectors.toList());
-    String znode = properties.get(ApplicationConfigs.SOLR_ZOOKEEPER_NODE);
+    String znode = properties.get(ApplicationConfigs.SOLR_ZOOKEEPER_ZNODE);
 
     if (Boolean.parseBoolean(
         properties.get(ApplicationConfigs.SOLR_TLS_ENABLED))) {
       System.setProperty("javax.net.ssl.keyStore",
-          properties.get(ApplicationConfigs.SOLR_KEYSTORE_LOCATION));
+          model.getTableNames().get(OptionsConverter.TableNames.SOLR_KEYSTORE_LOCATION)==null ?
+          properties.get(ApplicationConfigs.SOLR_KEYSTORE_LOCATION) :
+              model.getTableNames().get(OptionsConverter.TableNames.SOLR_KEYSTORE_LOCATION).toString());
       System.setProperty("javax.net.ssl.keyStorePassword",
-          properties.get(ApplicationConfigs.SOLR_KEYSTORE_PASSWORD));
+          model.getTableNames().get(OptionsConverter.TableNames.SOLR_KEYSTORE_PASSWORD)==null ?
+              properties.get(ApplicationConfigs.SOLR_KEYSTORE_PASSWORD) :
+              model.getTableNames().get(OptionsConverter.TableNames.SOLR_KEYSTORE_PASSWORD).toString()
+          );
       System.setProperty("javax.net.ssl.trustStore",
-          properties.get(ApplicationConfigs.SOLR_TRUSTSTORE_LOCATION));
+          model.getTableNames().get(OptionsConverter.TableNames.SOLR_TRUSTSTORE_LOCATION)==null ?
+              properties.get(ApplicationConfigs.SOLR_TRUSTSTORE_LOCATION) :
+              model.getTableNames().get(OptionsConverter.TableNames.SOLR_TRUSTSTORE_LOCATION).toString());
       System.setProperty("javax.net.ssl.trustStorePassword",
-          properties.get(ApplicationConfigs.SOLR_TRUSTSTORE_PASSWORD));
+          model.getTableNames().get(OptionsConverter.TableNames.SOLR_TRUSTSTORE_PASSWORD)==null ?
+              properties.get(ApplicationConfigs.SOLR_TRUSTSTORE_PASSWORD) :
+              model.getTableNames().get(OptionsConverter.TableNames.SOLR_TRUSTSTORE_PASSWORD).toString());
     }
 
 
@@ -84,12 +91,20 @@ public class SolRConnector implements ConnectorInterface {
         String jaasFilePath = (String) model.getOptionsOrDefault(
             OptionsConverter.Options.SOLR_JAAS_FILE_PATH);
         KerberosUtils.createJaasConfigFile(jaasFilePath, "SolrJClient",
-            properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_KEYTAB),
-            properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_USER),
+            model.getTableNames().get(OptionsConverter.TableNames.SOLR_KEYTAB)==null ?
+                properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_KEYTAB) :
+                model.getTableNames().get(OptionsConverter.TableNames.SOLR_KEYTAB).toString(),
+            model.getTableNames().get(OptionsConverter.TableNames.SOLR_USER)==null ?
+                properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_USER) :
+                model.getTableNames().get(OptionsConverter.TableNames.SOLR_USER).toString(),
             true, true, false);
         KerberosUtils.createJaasConfigFile(jaasFilePath, "Client",
-            properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_KEYTAB),
-            properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_USER),
+            model.getTableNames().get(OptionsConverter.TableNames.SOLR_KEYTAB)==null ?
+                properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_KEYTAB) :
+                model.getTableNames().get(OptionsConverter.TableNames.SOLR_KEYTAB).toString(),
+            model.getTableNames().get(OptionsConverter.TableNames.SOLR_USER)==null ?
+                properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_USER) :
+                model.getTableNames().get(OptionsConverter.TableNames.SOLR_USER).toString(),
             true, true, true);
         System.setProperty("java.security.auth.login.config", jaasFilePath);
         System.setProperty("solr.kerberos.jaas.appname", "SolrJClient");
@@ -100,8 +115,12 @@ public class SolRConnector implements ConnectorInterface {
         HttpClientUtil.setHttpClientBuilder(krb5HttpClientBuilder.getBuilder());
 
         KerberosUtils.loginUserWithKerberos(
-            properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_USER),
-            properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_KEYTAB),
+            model.getTableNames().get(OptionsConverter.TableNames.SOLR_USER)==null ?
+                properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_USER) :
+                model.getTableNames().get(OptionsConverter.TableNames.SOLR_USER).toString(),
+            model.getTableNames().get(OptionsConverter.TableNames.SOLR_KEYTAB)==null ?
+                properties.get(ApplicationConfigs.SOLR_AUTH_KERBEROS_KEYTAB) :
+                model.getTableNames().get(OptionsConverter.TableNames.SOLR_KEYTAB).toString(),
             new Configuration());
 
         UserGroupInformation.getLoginUser().doAs(
@@ -172,7 +191,7 @@ public class SolRConnector implements ConnectorInterface {
     Map<String, String> tableNames = new HashMap<>();
     Map<String, String> options = new HashMap<>();
     // TODO : Implement logic to create a model with at least names, pk, options and column names/types
-    return new Model(fields, primaryKeys, tableNames, options, null);
+    return new Model("",fields, primaryKeys, tableNames, options, null);
   }
 
   private void createSolRCollectionIfNotExists() {
@@ -203,9 +222,8 @@ public class SolRConnector implements ConnectorInterface {
     try {
       cloudSolrClient.request(
           CollectionAdminRequest.deleteCollection(collection));
-    } catch (SolrServerException | IOException e) {
-      log.error("Could not delete previous collection: " + collection +
-          " due to error: ", e);
+    } catch (Exception e) {
+      log.warn("Could not delete previous collection: {} due to error: ", collection, e);
     }
   }
 }

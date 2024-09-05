@@ -1,4 +1,5 @@
 {
+  "model_name": "sensor",
   "Fields": [
     {
       "name": "sensor_id",
@@ -38,7 +39,6 @@
     "AVRO_NAME":  "datagenindustrysensor"
   },
   "Options": {
-    "HBASE_COLUMN_FAMILIES_MAPPING": "parties:sender_id,receiver_id;details:amount,execution_date,currency",
     "DELETE_PREVIOUS":  "true",
     "HIVE_TABLE_TYPE":  "MANAGED"
   }

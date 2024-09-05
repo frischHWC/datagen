@@ -80,35 +80,34 @@ public class CityField extends Field<CityField.City> {
   public CityField(String name, List<String> filters) {
     this.name = name;
     this.cityDico = loadCityDico();
+    this.filters = filters;
 
     List<City> possibleCities = new ArrayList<>();
     filters.forEach(filterOnCountry -> {
           possibleCities.addAll(
               this.cityDico.stream()
                   .filter(c -> c.country.equalsIgnoreCase(filterOnCountry))
-                  .collect(Collectors.toList()));
+                  .toList());
         }
     );
-    List<City> possibleCitiesAfterLambda = possibleCities;
+    this.possibleValuesInternal = new ArrayList<>();
     if (possibleCities.isEmpty()) {
-      this.possibleValues.addAll(this.cityDico);
+      this.possibleValuesInternal.addAll(this.cityDico);
     } else {
-
-      this.possibleValues = new ArrayList<>();
-      City minPop = possibleCitiesAfterLambda.stream()
+      City minPop = possibleCities.stream()
           .min((c1, c2) -> (int) (c1.population - c2.population))
           .orElse(new City("", "", "", "", 1L));
 
-      possibleCitiesAfterLambda.forEach(city -> {
+      possibleCities.forEach(city -> {
         long occurencesToCreate = city.population / minPop.population;
         for (long i = 0; i <= occurencesToCreate; i++) {
-          this.possibleValues.add(city);
+          this.possibleValuesInternal.add(city);
         }
       });
 
     }
 
-    this.possibleValueSize = this.possibleValues.size();
+    this.possibleValueSize = this.possibleValuesInternal.size();
 
   }
 
@@ -134,7 +133,7 @@ public class CityField extends Field<CityField.City> {
   }
 
   public City generateRandomValue() {
-    return this.possibleValues.get(random.nextInt(this.possibleValueSize));
+    return this.possibleValuesInternal.get(random.nextInt(this.possibleValueSize));
   }
 
   @Override
@@ -233,5 +232,247 @@ public class CityField extends Field<CityField.City> {
     return TypeDescription.createString();
   }
 
+  public static final List<String> listOfAvailableCountries =
+      List.of(
+          "Afghanistan",
+          "Albania",
+          "Algeria",
+          "American Samoa",
+          "Andorra",
+          "Angola",
+          "Anguilla",
+          "Antigua And Barbuda",
+          "Argentina",
+          "Armenia",
+          "Aruba",
+          "Australia",
+          "Austria",
+          "Azerbaijan",
+          "Bahrain",
+          "Bangladesh",
+          "Barbados",
+          "Belarus",
+          "Belgium",
+          "Belize",
+          "Benin",
+          "Bermuda",
+          "Bhutan",
+          "Bolivia",
+          "Bosnia And Herzegovina",
+          "Botswana",
+          "Brazil",
+          "British Virgin Islands",
+          "Brunei",
+          "Bulgaria",
+          "Burkina Faso",
+          "Burundi",
+          "Cabo Verde",
+          "Cambodia",
+          "Cameroon",
+          "Canada",
+          "Cayman Islands",
+          "Central African Republic",
+          "Chad",
+          "Chile",
+          "China",
+          "Christmas Island",
+          "Colombia",
+          "Comoros",
+          "Congo (Brazzaville)",
+          "Congo (Kinshasa)",
+          "Cook Islands",
+          "Costa Rica",
+          "Croatia",
+          "Cuba",
+          "Curaçao",
+          "Cyprus",
+          "Czechia",
+          "Côte d'Ivoire",
+          "Denmark",
+          "Djibouti",
+          "Dominica",
+          "Dominican Republic",
+          "Ecuador",
+          "Egypt",
+          "El Salvador",
+          "Equatorial Guinea",
+          "Eritrea",
+          "Estonia",
+          "Ethiopia",
+          "Falkland Islands (Islas Malvinas)",
+          "Faroe Islands",
+          "Federated States of Micronesia",
+          "Fiji",
+          "Finland",
+          "France",
+          "French Guiana",
+          "French Polynesia",
+          "Gabon",
+          "Gaza Strip",
+          "Georgia",
+          "Germany",
+          "Ghana",
+          "Gibraltar",
+          "Greece",
+          "Greenland",
+          "Grenada",
+          "Guadeloupe",
+          "Guam",
+          "Guatemala",
+          "Guinea",
+          "Guinea-Bissau",
+          "Guyana",
+          "Haiti",
+          "Honduras",
+          "Hong Kong",
+          "Hungary",
+          "Iceland",
+          "India",
+          "Indonesia",
+          "Iran",
+          "Iraq",
+          "Ireland",
+          "Isle Of Man",
+          "Israel",
+          "Italy",
+          "Jamaica",
+          "Japan",
+          "Jersey",
+          "Jordan",
+          "Kazakhstan",
+          "Kenya",
+          "Kiribati",
+          "Kosovo",
+          "Kuwait",
+          "Kyrgyzstan",
+          "Laos",
+          "Latvia",
+          "Lebanon",
+          "Lesotho",
+          "Liberia",
+          "Libya",
+          "Liechtenstein",
+          "Lithuania",
+          "Luxembourg",
+          "Macau",
+          "Macedonia",
+          "Madagascar",
+          "Malawi",
+          "Malaysia",
+          "Maldives",
+          "Mali",
+          "Malta",
+          "Marshall Islands",
+          "Martinique",
+          "Mauritania",
+          "Mauritius",
+          "Mayotte",
+          "Mexico",
+          "Moldova",
+          "Monaco",
+          "Mongolia",
+          "Montenegro",
+          "Montserrat",
+          "Morocco",
+          "Mozambique",
+          "Myanmar",
+          "Namibia",
+          "Nauru",
+          "Nepal",
+          "Netherlands",
+          "New Caledonia",
+          "New Zealand",
+          "Nicaragua",
+          "Niger",
+          "Nigeria",
+          "Niue",
+          "Norfolk Island",
+          "North Korea",
+          "Northern Mariana Islands",
+          "Norway",
+          "Oman",
+          "Pakistan",
+          "Palau",
+          "Panama",
+          "Papua New Guinea",
+          "Paraguay",
+          "Peru",
+          "Philippines",
+          "Pitcairn Islands",
+          "Poland",
+          "Portugal",
+          "Puerto Rico",
+          "Qatar",
+          "Reunion",
+          "Romania",
+          "Russia",
+          "Rwanda",
+          "Saint Barthelemy",
+          "Saint Helena  Ascension  And Tristan Da Cunha",
+          "Saint Kitts And Nevis",
+          "Saint Lucia",
+          "Saint Martin",
+          "Saint Pierre And Miquelon",
+          "Saint Vincent And The Grenadines",
+          "Samoa",
+          "San Marino",
+          "Sao Tome And Principe",
+          "Saudi Arabia",
+          "Senegal",
+          "Serbia",
+          "Seychelles",
+          "Sierra Leone",
+          "Singapore",
+          "Sint Maarten",
+          "Slovakia",
+          "Slovenia",
+          "Solomon Islands",
+          "Somalia",
+          "South Africa",
+          "South Georgia And South Sandwich Islands",
+          "South Korea",
+          "South Sudan",
+          "Spain",
+          "Sri Lanka",
+          "Sudan",
+          "Suriname",
+          "Svalbard",
+          "Swaziland",
+          "Sweden",
+          "Switzerland",
+          "Syria",
+          "Taiwan",
+          "Tajikistan",
+          "Tanzania",
+          "Thailand",
+          "The Bahamas",
+          "The Gambia",
+          "Timor-Leste",
+          "Togo",
+          "Tonga",
+          "Trinidad And Tobago",
+          "Tunisia",
+          "Turkey",
+          "Turkmenistan",
+          "Turks And Caicos Islands",
+          "Tuvalu",
+          "U.S. Virgin Islands",
+          "UK",
+          "USA",
+          "Uganda",
+          "Ukraine",
+          "United Arab Emirates",
+          "Uruguay",
+          "Uzbekistan",
+          "Vanuatu",
+          "Vatican City",
+          "Venezuela",
+          "Vietnam",
+          "Wallis And Futuna",
+          "West Bank",
+          "Yemen",
+          "Zambia",
+          "Zimbabwe"
+      );
 
 }

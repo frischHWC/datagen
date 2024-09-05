@@ -28,7 +28,6 @@ import org.apache.kudu.client.PartialRow;
 import org.apache.orc.TypeDescription;
 
 import java.sql.SQLException;
-import java.util.List;
 
 /**
  * This field represents a computed field that is linked to an attribute of another field (link is found in its conditional evaluator)
@@ -36,10 +35,8 @@ import java.util.List;
 @Slf4j
 public class LinkField extends Field<String> {
 
-  public LinkField(String name, Integer length, List<String> possibleValues) {
+  public LinkField(String name) {
     this.name = name;
-    this.length = length;
-    this.possibleValues = possibleValues;
   }
 
   public String generateRandomValue() {

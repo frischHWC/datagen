@@ -45,10 +45,8 @@ import java.util.List;
 import java.util.Map;
 
 
-// TODO: Refactor to use one abstract class
 @Slf4j
 public class OzoneAvroConnector extends OzoneUtils implements ConnectorInterface {
-
 
   private Schema schema;
   private DataFileWriter<GenericRecord> dataFileWriter;
@@ -197,7 +195,7 @@ public class OzoneAvroConnector extends OzoneUtils implements ConnectorInterface
     }
 
 
-    return new Model(fields, primaryKeys, tableNames, options, null);
+    return new Model("",fields, primaryKeys, tableNames, options, null);
   }
 
 

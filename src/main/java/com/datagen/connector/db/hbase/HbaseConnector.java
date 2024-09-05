@@ -64,8 +64,9 @@ public class HbaseConnector implements ConnectorInterface {
             model.getTableNames()
                 .get(OptionsConverter.TableNames.HBASE_TABLE_NAME);
         this.tableName = TableName.valueOf(fullTableName);
-        this.useKerberos = Boolean.parseBoolean(
-            properties.get(ApplicationConfigs.HBASE_AUTH_KERBEROS));
+        this.useKerberos = model.getTableNames().get(OptionsConverter.TableNames.HBASE_USE_KERBEROS)==null ?
+            Boolean.parseBoolean(properties.get(ApplicationConfigs.HBASE_AUTH_KERBEROS)) :
+            Boolean.parseBoolean(model.getTableNames().get(OptionsConverter.TableNames.HBASE_USE_KERBEROS).toString());
 
         Configuration config = HBaseConfiguration.create();
         config.set("hbase.zookeeper.quorum",
@@ -79,8 +80,12 @@ public class HbaseConnector implements ConnectorInterface {
         // Setup Kerberos auth if needed
         if (useKerberos) {
             KerberosUtils.loginUserWithKerberos(
-                properties.get(ApplicationConfigs.HBASE_AUTH_KERBEROS_USER),
-                properties.get(ApplicationConfigs.HBASE_AUTH_KERBEROS_KEYTAB),
+                model.getTableNames().get(OptionsConverter.TableNames.HBASE_USER)==null ?
+                    properties.get(ApplicationConfigs.HBASE_AUTH_KERBEROS_USER):
+                    model.getTableNames().get(OptionsConverter.TableNames.HBASE_USER).toString(),
+                model.getTableNames().get(OptionsConverter.TableNames.HBASE_KEYTAB)==null ?
+                    properties.get(ApplicationConfigs.HBASE_AUTH_KERBEROS_KEYTAB) :
+                    model.getTableNames().get(OptionsConverter.TableNames.HBASE_KEYTAB).toString(),
                 config);
             config.set("hbase.security.authentication", "kerberos");
         }
@@ -100,6 +105,9 @@ public class HbaseConnector implements ConnectorInterface {
                 if (admin.tableExists(tableName) &&
                     (Boolean) model.getOptionsOrDefault(
                         OptionsConverter.Options.DELETE_PREVIOUS)) {
+                    if(admin.isTableEnabled(tableName)) {
+                        admin.disableTable(tableName);
+                    }
                     admin.deleteTable(tableName);
                 }
 
@@ -162,7 +170,7 @@ public class HbaseConnector implements ConnectorInterface {
         Map<String, String> tableNames = new HashMap<>();
         Map<String, String> options = new HashMap<>();
         // TODO : Implement logic to create a model with at least names, pk, options and column names/types
-        return new Model(fields, primaryKeys, tableNames, options, null);
+        return new Model("",fields, primaryKeys, tableNames, options, null);
     }
 
     private void createNamespaceIfNotExists(String namespace) {

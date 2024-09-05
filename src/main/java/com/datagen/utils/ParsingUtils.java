@@ -21,7 +21,7 @@ public class ParsingUtils {
     Boolean isAVariableToReplace;
   }
 
-  private static final Pattern patternToIdentifyInjections = Pattern.compile("(\\$\\{)([a-zA-Z]*)(\\})");
+  private static final Pattern patternToIdentifyInjections = Pattern.compile("(\\$\\{)([a-zA-Z_-]*)(\\})");
 
   /**
    * Parse a String containing column references to other fields

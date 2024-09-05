@@ -1,4 +1,5 @@
 {
+  "model_name": "transaction",
   "Fields": [
     {
       "name": "sender_id",

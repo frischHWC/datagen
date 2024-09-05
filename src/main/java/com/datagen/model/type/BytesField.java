@@ -30,28 +30,38 @@ import org.apache.orc.TypeDescription;
 import javax.xml.bind.DatatypeConverter;
 import java.nio.ByteBuffer;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Slf4j
 public class BytesField extends Field<byte[]> {
 
-  public BytesField(String name, Integer length, List<byte[]> possibleValues) {
+  public BytesField(String name, Integer length, HashMap<String, Long> possible_values_weighted) {
     this.name = name;
     if (length == null || length < 1) {
       this.length = 20;
     } else {
       this.length = length;
     }
-    this.possibleValues = possibleValues;
+    this.possibleValuesProvided = new ArrayList<>();
+    if (possible_values_weighted != null &&
+        !possible_values_weighted.isEmpty()) {
+      possible_values_weighted.forEach((value, probability) -> {
+        for (long i = 0; i < probability; i++) {
+          this.possibleValuesProvided.add(value.getBytes());
+        }
+      });
+    }
+    this.possibleValueSize = this.possibleValuesProvided.size();
   }
 
   public byte[] generateRandomValue() {
-    if (possibleValues.isEmpty()) {
+    if (possibleValuesProvided.isEmpty()) {
       byte[] bytesArray = new byte[length];
       random.nextBytes(bytesArray);
       return bytesArray;
     } else {
-      return possibleValues.get(random.nextInt(possibleValues.size()));
+      return possibleValuesProvided.get(random.nextInt(possibleValuesProvided.size()));
     }
   }
 

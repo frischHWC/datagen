@@ -156,15 +156,15 @@ public class AdlsCSVConnector extends AdlsUtils implements ConnectorInterface  {
         String csvHeader = new BufferedReader(new FileReader(file)).readLine();
         Arrays.stream(csvHeader.split(","))
             .forEach(f -> fields.put(f,
-                new StringField(f, null, Collections.emptyList(),
-                    new LinkedHashMap<>())));
+                new StringField(f, null,
+                    new HashMap<>())));
       }
     } catch (IOException e) {
       log.error("Tried to read file : {} with no success :", this.localDirectory,
           e);
     }
 
-    return new Model(fields, primaryKeys, tableNames, options, null);
+    return new Model("",fields, primaryKeys, tableNames, options, null);
   }
 
 

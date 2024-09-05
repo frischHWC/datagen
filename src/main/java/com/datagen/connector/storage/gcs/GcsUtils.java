@@ -4,15 +4,17 @@ import com.datagen.config.ApplicationConfigs;
 import com.datagen.model.Model;
 import com.datagen.model.OptionsConverter;
 import com.google.api.gax.paging.Page;
+import com.google.auth.oauth2.AccessToken;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.*;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.Locale;
 import java.util.Map;
 
 import static com.datagen.config.ApplicationConfigs.DATAGEN_HOME_DIRECTORY;
@@ -31,7 +33,8 @@ public abstract class GcsUtils {
   protected final String localDirectory;
   protected final String localFilePathForModelGeneration;
 
-  protected final String serviceAccountKeyPath;
+  protected final String jsonKeyPath;
+  protected final String accessToken;
 
   protected final Storage storage;
   protected final String region;
@@ -39,11 +42,20 @@ public abstract class GcsUtils {
 
   GcsUtils(Model model,
            Map<ApplicationConfigs, String> properties) {
-    this.projectId = properties.get(ApplicationConfigs.GCS_PROJECT_ID);
-    this.serviceAccountKeyPath =
-        properties.get(ApplicationConfigs.GCS_ACCOUNT_KEY_PATH);
-    this.region = properties.get(ApplicationConfigs.GCS_REGION).toUpperCase(
-        Locale.ROOT);
+    // For credentials, first try to get them from model if they exist, otherwise default to application's one
+    this.projectId = model.getTableNames().get(OptionsConverter.TableNames.GCS_PROJECT_ID)==null?
+        properties.get(ApplicationConfigs.GCS_PROJECT_ID):
+        model.getTableNames().get(OptionsConverter.TableNames.GCS_PROJECT_ID).toString();
+    this.jsonKeyPath = model.getTableNames().get(OptionsConverter.TableNames.GCS_ACCOUNT_KEY_PATH)==null?
+        properties.get(ApplicationConfigs.GCS_ACCOUNT_KEY_PATH):
+        model.getTableNames().get(OptionsConverter.TableNames.GCS_ACCOUNT_KEY_PATH).toString();
+    this.accessToken = model.getTableNames().get(OptionsConverter.TableNames.GCS_ACCOUNT_ACCESS_TOKEN)==null?
+        null:
+        model.getTableNames().get(OptionsConverter.TableNames.GCS_ACCOUNT_ACCESS_TOKEN).toString();
+    this.region = model.getTableNames().get(OptionsConverter.TableNames.GCS_REGION)==null?
+        properties.get(ApplicationConfigs.GCS_REGION).toUpperCase():
+        model.getTableNames().get(OptionsConverter.TableNames.GCS_REGION).toString().toUpperCase();
+
     this.bucketName = (String) model.getTableNames()
         .get(OptionsConverter.TableNames.GCS_BUCKET);
     this.objectNamePrefix = (String) model.getTableNames()
@@ -63,14 +75,25 @@ public abstract class GcsUtils {
     this.localFilePathForModelGeneration =
         properties.get(DATAGEN_HOME_DIRECTORY) + "/model-gen/GCS/";
 
-    if (serviceAccountKeyPath != null && !serviceAccountKeyPath.isBlank()) {
-      System.setProperty("GOOGLE_APPLICATION_CREDENTIALS",
-          serviceAccountKeyPath);
+    GoogleCredentials credentials = null;
+
+    if (jsonKeyPath != null && !jsonKeyPath.isBlank()) {
+      try {
+        credentials = GoogleCredentials.fromStream(new FileInputStream(
+            jsonKeyPath));
+      } catch (IOException e) {
+        log.warn("Cannot read service account credentials file: {}",
+            jsonKeyPath);
+      }
+    } else if(accessToken != null && !accessToken.isBlank()) {
+      credentials = GoogleCredentials.create(AccessToken.newBuilder().setTokenValue(accessToken).build());
     }
 
-    this.storage = StorageOptions.newBuilder().setProjectId(projectId).build()
-        .getService();
-
+    this.storage = credentials==null ?
+        StorageOptions.newBuilder().setProjectId(projectId).build()
+            .getService() :
+        StorageOptions.newBuilder().setCredentials(credentials).setProjectId(projectId).build()
+            .getService();
   }
 
   /**
@@ -81,6 +104,10 @@ public abstract class GcsUtils {
       this.storage.close();
     } catch (Exception e) {
       log.error(" Unable to close GCS connection with error :", e);
+    }
+    // Reset GCS credentials once done
+    if (jsonKeyPath != null && !jsonKeyPath.isBlank()) {
+      System.setProperty("GOOGLE_APPLICATION_CREDENTIALS", "");
     }
 
   }

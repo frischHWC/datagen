@@ -35,12 +35,12 @@ public class IncrementLongField extends Field<Long> {
   private Long counter = 0L;
 
   public IncrementLongField(String name,
-                            String min) {
+                            Long min) {
     this.name = name;
     if (min == null) {
       this.min = 0L;
     } else {
-      this.min = Long.parseLong(min);
+      this.min = min;
     }
     counter = this.min;
   }

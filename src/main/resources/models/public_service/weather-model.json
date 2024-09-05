@@ -1,4 +1,5 @@
 {
+  "model_name": "weather",
   "Fields": [
     {
       "name": "city",

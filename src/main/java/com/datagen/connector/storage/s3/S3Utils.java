@@ -73,10 +73,17 @@ public abstract class S3Utils {
         .get(OptionsConverter.TableNames.S3_KEY_NAME);
     this.localDirectoryName = (String) model.getTableNames()
         .get(OptionsConverter.TableNames.S3_LOCAL_FILE_PATH);
-    this.accesKeyId = properties.get(ApplicationConfigs.S3_ACCESS_KEY_ID);
-    this.accesKeySecret =
-        properties.get(ApplicationConfigs.S3_ACCESS_KEY_SECRET);
-    this.region = properties.get(ApplicationConfigs.S3_REGION);
+
+    // For credentials, first try to get them from model if they exist, otherwise default to application's one
+    this.accesKeyId = model.getTableNames().get(OptionsConverter.TableNames.S3_ACCESS_KEY_ID)==null?
+        properties.get(ApplicationConfigs.S3_ACCESS_KEY_ID):
+        model.getTableNames().get(OptionsConverter.TableNames.S3_ACCESS_KEY_ID).toString();
+    this.accesKeySecret = model.getTableNames().get(OptionsConverter.TableNames.S3_ACCESS_KEY_SECRET)==null?
+        properties.get(ApplicationConfigs.S3_ACCESS_KEY_SECRET):
+        model.getTableNames().get(OptionsConverter.TableNames.S3_ACCESS_KEY_SECRET).toString();
+    this.region = model.getTableNames().get(OptionsConverter.TableNames.S3_REGION)==null?
+        properties.get(ApplicationConfigs.S3_REGION):
+        model.getTableNames().get(OptionsConverter.TableNames.S3_REGION).toString();
 
     this.localFilePathForModelGeneration = properties.get(
         DATAGEN_HOME_DIRECTORY) + "/model-gen/s3/";

@@ -32,44 +32,50 @@ public class ConnectorParser {
   }
 
   public enum Connector {
-    HDFS_CSV,
-    HDFS_JSON,
-    HDFS_PARQUET,
-    HDFS_ORC,
-    HDFS_AVRO,
-    HBASE,
-    HIVE,
-    KAFKA,
-    OZONE_PARQUET,
-    OZONE_CSV,
-    OZONE_AVRO,
-    OZONE_JSON,
-    OZONE_ORC,
-    SOLR,
-    KUDU,
     CSV,
     JSON,
     AVRO,
     PARQUET,
     ORC,
+
+    HDFS_CSV,
+    HDFS_JSON,
+    HDFS_PARQUET,
+    HDFS_ORC,
+    HDFS_AVRO,
+
+    OZONE_PARQUET,
+    OZONE_CSV,
+    OZONE_AVRO,
+    OZONE_JSON,
+    OZONE_ORC,
+
     S3_PARQUET,
     S3_CSV,
     S3_AVRO,
     S3_JSON,
     S3_ORC,
+
     ADLS_PARQUET,
     ADLS_CSV,
     ADLS_AVRO,
     ADLS_JSON,
     ADLS_ORC,
+
     GCS_PARQUET,
     GCS_CSV,
     GCS_AVRO,
     GCS_JSON,
-    GCS_ORC
+    GCS_ORC,
+
+    HIVE,
+    HBASE,
+    KAFKA,
+    KUDU,
+    SOLR
     ;
 
-    public static Comparator<Connector> conenctorInitPrecedence = new Comparator<>() {
+    public static Comparator<Connector> connectorInitPrecedence = new Comparator<>() {
       @Override
       public int compare(Connector s1, Connector s2) {
         if (s1.equals(Connector.OZONE_AVRO) ||

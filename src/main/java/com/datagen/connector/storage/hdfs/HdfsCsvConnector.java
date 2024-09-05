@@ -139,8 +139,7 @@ public class HdfsCsvConnector extends HdfsUtils implements ConnectorInterface {
           new InputStreamReader(fsDataInputStream)).readLine();
       Arrays.stream(csvHeader.split(","))
           .forEach(f -> fields.put(f,
-              new StringField(f, null, Collections.emptyList(),
-                  new LinkedHashMap<>())));
+              new StringField(f, null, new HashMap<>())));
       fsDataInputStream.close();
       fileSystem.close();
     } catch (IOException e) {
@@ -148,7 +147,7 @@ public class HdfsCsvConnector extends HdfsUtils implements ConnectorInterface {
           e);
     }
 
-    return new Model(fields, primaryKeys, tableNames, options, null);
+    return new Model("",fields, primaryKeys, tableNames, options, null);
   }
 
 

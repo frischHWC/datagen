@@ -28,41 +28,41 @@ import org.apache.kudu.client.PartialRow;
 import org.apache.orc.TypeDescription;
 
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Slf4j
 public class IntegerField extends Field<Integer> {
 
-  public IntegerField(String name, List<Integer> possibleValues,
-               LinkedHashMap<String, Long> possible_values_weighted, String min,
-               String max) {
+  public IntegerField(String name,
+                      HashMap<String, Long> possible_values_weighted, Long min,
+                      Long max) {
     this.name = name;
     if (max == null) {
       this.max = Long.valueOf(Integer.MAX_VALUE);
     } else {
-      this.max = Long.parseLong(max);
+      this.max = max;
     }
     if (min == null) {
       this.min = Long.valueOf(Integer.MIN_VALUE);
     } else {
-      this.min = Long.parseLong(min);
+      this.min = min;
     }
-    this.possibleValues = possibleValues;
+    this.possibleValuesProvided = new ArrayList<>();
     if (possible_values_weighted != null &&
         !possible_values_weighted.isEmpty()) {
       possible_values_weighted.forEach((value, probability) -> {
         for (long i = 0; i < probability; i++) {
-          this.possibleValues.add(Integer.valueOf(value));
+          this.possibleValuesProvided.add(Integer.valueOf(value));
         }
       });
     }
-    this.possibleValueSize = this.possibleValues.size();
+    this.possibleValueSize = this.possibleValuesProvided.size();
   }
 
   public Integer generateRandomValue() {
-    if (!possibleValues.isEmpty()) {
-      return possibleValues.get(random.nextInt(possibleValues.size()));
+    if (!possibleValuesProvided.isEmpty()) {
+      return possibleValuesProvided.get(random.nextInt(possibleValuesProvided.size()));
     } else if (min != Integer.MIN_VALUE) {
       return random.nextInt(Math.toIntExact(max - min + 1)) +
           Math.toIntExact(min);

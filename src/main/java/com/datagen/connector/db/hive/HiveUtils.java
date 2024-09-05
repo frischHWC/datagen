@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -116,56 +116,56 @@ public class HiveUtils {
         switch (coltype.toUpperCase()) {
         case "INT":
         case "INTEGER":
-          f = new IntegerField(colName, Collections.emptyList(),
-              new LinkedHashMap<>(), null, null);
+          f = new IntegerField(colName,
+              new HashMap<>(), null, null);
           break;
         case "BIGINT":
-          f = new LongField(colName, Collections.emptyList(),
-              new LinkedHashMap<>(), null, null);
+          f = new LongField(colName,
+              new HashMap<>(), null, null);
           break;
         case "TINYINT":
-          f = new IntegerField(colName, Collections.emptyList(),
-              new LinkedHashMap<>(), "-128", "127");
+          f = new IntegerField(colName,
+              new HashMap<>(),  -128L, 127L);
           break;
         case "SMALLINT":
-          f = new IntegerField(colName, Collections.emptyList(),
-              new LinkedHashMap<>(), "-32768", "32767");
+          f = new IntegerField(colName,
+              new HashMap<>(), -32768L, 32767L);
           break;
         case "FLOAT":
         case "DOUBLE":
         case "DOUBLE PRECISION":
         case "DECIMAL":
         case "NUMERIC":
-          f = new FloatField(colName, Collections.emptyList(),
-              new LinkedHashMap<>(), null, null);
+          f = new FloatField(colName,
+              new HashMap<>(), null, null);
           break;
         case "TIMESTAMP":
-          f = new TimestampField(colName, Collections.emptyList());
+          f = new TimestampField(colName, new HashMap<>());
           break;
         case "DATE":
         case "INTERVAL":
-          f = new BirthdateField(colName, null, Collections.emptyList(), null,
+          f = new BirthdateField(colName, new HashMap<>(), null,
               null);
           break;
         case "STRING":
-          f = new StringField(colName, null, Collections.emptyList(),
-              new LinkedHashMap<>());
+          f = new StringField(colName, null,
+              new HashMap<>());
           break;
         case "VARCHAR":
-          f = new StringAZField(colName, null, Collections.emptyList());
+          f = new StringAZField(colName, null, new HashMap<>());
           break;
         case "CHAR":
-          f = new StringAZField(colName, 1, Collections.emptyList());
+          f = new StringAZField(colName, 1, new HashMap<>());
           break;
         case "BOOLEAN":
         case "BINARY":
-          f = new BooleanField(colName, Collections.emptyList(),
-              new LinkedHashMap<>());
+          f = new BooleanField(colName,
+              new HashMap<>());
           break;
 
         default:
-          f = new StringField(colName, null, Collections.emptyList(),
-              new LinkedHashMap<>());
+          f = new StringField(colName, null,
+              new HashMap<>());
           break;
         }
 

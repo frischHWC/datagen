@@ -28,42 +28,42 @@ import org.apache.kudu.client.PartialRow;
 import org.apache.orc.TypeDescription;
 
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Slf4j
 public class FloatField extends Field<Float> {
 
-  public FloatField(String name, List<Float> possibleValues,
-                    LinkedHashMap<String, Long> possible_values_weighted,
-                    String min,
-                    String max) {
+  public FloatField(String name,
+                    HashMap<String, Long> possible_values_weighted,
+                    Long min,
+                    Long max) {
     if (max == null) {
       this.max = Long.MAX_VALUE;
     } else {
-      this.max = Long.parseLong(max);
+      this.max = max;
     }
     if (min == null) {
       this.min = Long.MIN_VALUE;
     } else {
-      this.min = Long.parseLong(min);
+      this.min = min;
     }
     this.name = name;
-    this.possibleValues = possibleValues;
+    this.possibleValuesProvided = new ArrayList<>();
     if (possible_values_weighted != null &&
         !possible_values_weighted.isEmpty()) {
       possible_values_weighted.forEach((value, probability) -> {
         for (long i = 0; i < probability; i++) {
-          this.possibleValues.add(Float.valueOf(value));
+          this.possibleValuesProvided.add(Float.valueOf(value));
         }
       });
     }
-    this.possibleValueSize = this.possibleValues.size();
+    this.possibleValueSize = this.possibleValuesProvided.size();
   }
 
   public Float generateRandomValue() {
-    if (!possibleValues.isEmpty()) {
-      return possibleValues.get(random.nextInt(possibleValues.size()));
+    if (!possibleValuesProvided.isEmpty()) {
+      return possibleValuesProvided.get(random.nextInt(possibleValuesProvided.size()));
     } else {
       float randomFloat = random.nextFloat();
       while (randomFloat < min && randomFloat > max) {

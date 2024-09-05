@@ -29,35 +29,35 @@ import org.apache.kudu.client.PartialRow;
 import org.apache.orc.TypeDescription;
 
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Slf4j
 public class StringField extends Field<String> {
 
-  public StringField(String name, Integer length, List<String> possibleValues,
-                     LinkedHashMap<String, Long> possible_values_weighted) {
+  public StringField(String name, Integer length,
+                     HashMap<String, Long> possible_values_weighted) {
     this.name = name;
     if (length == null || length < 1) {
       this.length = 20;
     } else {
       this.length = length;
     }
-    this.possibleValues = possibleValues;
+    this.possibleValuesProvided = new ArrayList<>();
     if (possible_values_weighted != null &&
         !possible_values_weighted.isEmpty()) {
       possible_values_weighted.forEach((value, probability) -> {
         for (long i = 0; i < probability; i++) {
-          this.possibleValues.add(value);
+          this.possibleValuesProvided.add(value);
         }
       });
     }
-    this.possibleValueSize = this.possibleValues.size();
+    this.possibleValueSize = this.possibleValuesProvided.size();
   }
 
   public String generateRandomValue() {
-    if (!possibleValues.isEmpty()) {
-      return possibleValues.get(random.nextInt(possibleValues.size()));
+    if (!possibleValuesProvided.isEmpty()) {
+      return possibleValuesProvided.get(random.nextInt(possibleValuesProvided.size()));
     } else {
       return Utils.getAlphaNumericString(this.length, random);
     }

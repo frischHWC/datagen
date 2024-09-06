@@ -111,8 +111,7 @@ public class CredentialsView extends Composite<VerticalLayout> {
 
       // Add grid to main layout and load data
       grid.setItems(this.credentialsService.listCredentialsMeta());
-      grid.sort(
-          List.of(new GridSortOrder<>(grid.getColumns().get(0), SortDirection.ASCENDING)));
+      grid.sort(List.of(new GridSortOrder<>(grid.getColumns().get(0), SortDirection.ASCENDING)));
       getContent().add(grid);
 
       getContent().add(uploadButton(grid));
@@ -151,7 +150,7 @@ public class CredentialsView extends Composite<VerticalLayout> {
   private ComponentRenderer<Button, Credentials> deleteButton(Grid grid) {
       // Dialog
       ConfirmDialog dialog = new ConfirmDialog();
-      dialog.setText("Are you sure you want to permanently delete this model?");
+      dialog.setText("Are you sure you want to permanently delete this credential?");
       dialog.setCancelable(true);
       dialog.setConfirmText("Delete");
       dialog.setConfirmButtonTheme("error primary");
@@ -166,7 +165,7 @@ public class CredentialsView extends Composite<VerticalLayout> {
             this.credentialsService.removeCredentials(credentials.getName());
             grid.getDataProvider().refreshAll();
             grid.setItems(this.credentialsService.listCredentialsMeta());
-            Notification notification = Notification.show("Deleted Credentials:" + credentials.getName());
+            Notification notification = Notification.show("Deleted Credential:" + credentials.getName());
             notification.addThemeVariants(NotificationVariant.LUMO_PRIMARY);
           });
           dialog.open();
@@ -182,7 +181,7 @@ public class CredentialsView extends Composite<VerticalLayout> {
    */
   private Button uploadButton(Grid grid) {
 
-    Button addCredentials = new Button("Add a Credentials");
+    Button addCredentials = new Button("Add a Credential");
     addCredentials.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
     Dialog dialogUpload= new Dialog();

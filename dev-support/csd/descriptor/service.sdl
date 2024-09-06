@@ -2,7 +2,7 @@
   "name": "DATAGEN",
   "label": "Datagen",
   "description": "The service to generate Data into various services of CDP platform",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "parcel": {
     "requiredTags": [
       "datagen"

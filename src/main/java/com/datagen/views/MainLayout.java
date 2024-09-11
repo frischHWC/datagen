@@ -9,16 +9,20 @@ import com.datagen.views.models.ModelsManagementView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import lombok.extern.slf4j.Slf4j;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
 /**
  * The main view is a top-level placeholder for other views.
  */
+@Slf4j
 public class MainLayout extends AppLayout {
 
     private H1 viewTitle;
@@ -76,6 +80,18 @@ public class MainLayout extends AppLayout {
 
     private Footer createFooter() {
         Footer footer = new Footer();
+        Anchor anchor = new Anchor("https://github.com/frischHWC/datagen", "Github" );
+        anchor.getElement().setAttribute("target", "_blank");
+        Anchor anchorDoc = new Anchor("https://datagener.github.io/", "Documentation" );
+        anchorDoc.getElement().setAttribute("target", "_blank");
+        String version = "1.0.0";
+
+        var vl = new VerticalLayout();
+        vl.add("Version : " + version);
+        vl.add(new HorizontalLayout(LineAwesomeIcon.BOOK_OPEN_SOLID.create(), new Span(" "), anchorDoc));
+        vl.add(new HorizontalLayout(LineAwesomeIcon.GITHUB.create(), new Span(" "), anchor));
+
+        footer.add(vl);
         return footer;
     }
 

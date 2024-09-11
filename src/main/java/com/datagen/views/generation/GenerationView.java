@@ -10,7 +10,6 @@ import com.datagen.service.credentials.CredentialsService;
 import com.datagen.service.model.ModelStoreService;
 import com.datagen.utils.Utils;
 import com.datagen.views.MainLayout;
-import com.datagen.views.utils.FooterLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasText;
@@ -106,7 +105,6 @@ public class GenerationView extends Composite<VerticalLayout> {
         layoutColumn.add(launchButton);
 
         getContent().add(layoutColumn);
-        getContent().addAndExpand(FooterLayout.createFooterContent());
 
     }
 
@@ -217,12 +215,12 @@ public class GenerationView extends Composite<VerticalLayout> {
         progressBar.setMax(100);
         progressBar.setValue(0);
 
-        var progressBarLabel = new NativeLabel("Processing: ");
+        var progressBarLabel = new NativeLabel("Progress: ");
         progressBarLabel.setId("pblbl");
         progressBarLabel.addClassName(LumoUtility.TextColor.SECONDARY);
         progressBar.getElement().setAttribute("aria-labelledby", "pblbl");
 
-        var refreshButton = new Button("Refresh", event -> updateProgressBar(commandId, progressBar));
+        var refreshButton = new Button("Refresh", event -> updateProgressBar(commandId, progressBar, progressBarLabel));
 
         dialog.add(span);
         dialog.add(progressBarLabel, progressBar);
@@ -239,9 +237,10 @@ public class GenerationView extends Composite<VerticalLayout> {
      * @param commandId
      * @param progressBar
      */
-    private void updateProgressBar(UUID commandId, ProgressBar progressBar) {
-                var commandStatus  = this.commandRunnerService.getCommandStatusShort(commandId);
-                var progress  = commandStatus.getProgress();
+    private void updateProgressBar(UUID commandId, ProgressBar progressBar, NativeLabel progressMade) {
+        var commandStatus  = this.commandRunnerService.getCommandStatusShort(commandId);
+        var progress  = commandStatus.getProgress();
+        progressMade.setText("Progress: " + Math.round(progress) + " %");
             progressBar.setValue(progress);
                 if(commandStatus.getStatus()== Command.CommandStatus.FAILED){
                     progressBar.addThemeVariants(ProgressBarVariant.LUMO_ERROR);

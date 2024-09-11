@@ -25,7 +25,7 @@ export AWS_S3_REPO="s3.eu-west-3.amazonaws.com"
 
 # Versions
 export CDP_VERSION="7.1.9.4"
-export DATAGEN_VERSION="0.4.15"
+export DATAGEN_VERSION="1.0.0"
 
 # CSD & Parcels Directory
 export CSD_DIR="/tmp/datagen_csd"
@@ -144,12 +144,12 @@ then
     fi
 
     # Upload Standalone files
-    STANDALONE_FILES=$(ls ${STANDALONE_DIR})
-    if [ ! -z "${STANDALONE_FILES}" ]
-    then
-      echo "Upload to AWS ${AWS_S3_BUCKET}/${DATAGEN_VERSION}/CDP/${CDP_VERSION}/ files: ${STANDALONE_DIR}/${STANDALONE_FILES}"
-      aws s3 cp ${STANDALONE_DIR}/ s3://${AWS_S3_BUCKET}/${DATAGEN_VERSION}/CDP/${CDP_VERSION}/standalone/ --recursive
-    fi
+    #STANDALONE_FILES=$(ls ${STANDALONE_DIR})
+    #if [ ! -z "${STANDALONE_FILES}" ]
+    #then
+    #  echo "Upload to AWS ${AWS_S3_BUCKET}/${DATAGEN_VERSION}/CDP/${CDP_VERSION}/ files: ${STANDALONE_DIR}/${STANDALONE_FILES}"
+    #  aws s3 cp ${STANDALONE_DIR}/ s3://${AWS_S3_BUCKET}/${DATAGEN_VERSION}/CDP/${CDP_VERSION}/standalone/ --recursive
+    #fi
 
     # Upload Standalone files as MAIN Standalone Files of DATAGEN RELEASE
     STANDALONE_FILES=$(ls ${STANDALONE_DIR})
@@ -241,11 +241,11 @@ then
   create_index_file "Datagen Repository" "Datagen Versions"
   create_index_file "Datagen Repository" "Available Versions for Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/
 
-  #create_index_file "Datagen Repository" "Available CDP Versions for Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/
+  create_index_file "Datagen Repository" "Available CDP Versions for Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/
 
-  #create_index_file "Datagen Repository" "CSD & Parcels for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/
-  #create_index_file "Datagen Repository" "CSD files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/csd/
-  #create_index_file "Datagen Repository" "Parcels files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/parcels/
+  create_index_file "Datagen Repository" "CSD & Parcels for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/
+  create_index_file "Datagen Repository" "CSD files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/csd/
+  create_index_file "Datagen Repository" "Parcels files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/parcels/
 
   #create_index_file "Datagen Repository" "Standalone files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/standalone/
   #create_index_file "Datagen Repository" "Standalone model files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/standalone/models/

@@ -7,7 +7,6 @@ import com.datagen.service.command.Command;
 import com.datagen.service.command.CommandRunnerService;
 import com.datagen.utils.Utils;
 import com.datagen.views.MainLayout;
-import com.datagen.views.utils.FooterLayout;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.button.Button;
@@ -134,7 +133,6 @@ public class CommandsView extends Composite<VerticalLayout> {
         layoutColumn.add(hlrefresh);
         layoutColumn.add(grid);
         getContent().add(layoutColumn);
-        getContent().addAndExpand(FooterLayout.createFooterContent());
 
     }
 

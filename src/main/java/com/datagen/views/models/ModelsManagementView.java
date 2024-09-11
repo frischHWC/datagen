@@ -3,7 +3,6 @@ package com.datagen.views.models;
 import com.datagen.model.Row;
 import com.datagen.service.model.ModelStoreService;
 import com.datagen.views.MainLayout;
-import com.datagen.views.utils.FooterLayout;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.button.Button;
@@ -96,7 +95,6 @@ public class ModelsManagementView extends Composite<VerticalLayout> {
 
 
       getContent().add(uploadButton(grid));
-      getContent().addAndExpand(FooterLayout.createFooterContent());
 
     }
 

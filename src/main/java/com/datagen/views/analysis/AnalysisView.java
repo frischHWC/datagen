@@ -3,7 +3,6 @@ package com.datagen.views.analysis;
 import com.datagen.config.ConnectorParser;
 import com.datagen.service.model.ModelGeneratorSevice;
 import com.datagen.views.MainLayout;
-import com.datagen.views.utils.FooterLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasText;
@@ -63,7 +62,6 @@ public class AnalysisView extends Composite<VerticalLayout> {
         layoutColumn.add(launchButton);
 
         getContent().add(layoutColumn);
-        getContent().addAndExpand(FooterLayout.createFooterContent());
     }
 
     /**

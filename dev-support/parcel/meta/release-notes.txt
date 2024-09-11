@@ -1,3 +1,1 @@
-New Features:
-Add a UI
-Add Security
+UI, AI, Cloud support, Credentials, re-organization of models and commands

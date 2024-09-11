@@ -8,7 +8,6 @@ import com.datagen.model.Row;
 import com.datagen.model.type.*;
 import com.datagen.service.model.ModelStoreService;
 import com.datagen.views.MainLayout;
-import com.datagen.views.utils.FooterLayout;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -116,7 +115,6 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
     layoutColumn.add(modelHl);
 
     getContent().add(layoutColumn);
-    getContent().addAndExpand(FooterLayout.createFooterContent());
 
   }
 

@@ -17,10 +17,10 @@
 # under the License.
 #
 #!/bin/bash
-export DATAGEN_VERSION="0.5.1"
+export DATAGEN_VERSION="1.0.0"
 export CDP_VERSION="7.1.9.4"
 
-export DISTRIBUTIONS_TO_BUILD="el7 el8 sles15"
+export DISTRIBUTIONS_TO_BUILD="el7 el8 el9"
 
 export BUILD_DATAGEN_JAR="true"
 export BUILD_CSD="true"

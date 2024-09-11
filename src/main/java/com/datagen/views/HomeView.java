@@ -1,6 +1,5 @@
 package com.datagen.views;
 
-import com.datagen.views.utils.FooterLayout;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.button.Button;
@@ -72,7 +71,6 @@ public class HomeView extends Composite<VerticalLayout> {
         layoutColumn.add(hl);
 
         getContent().add(layoutColumn);
-        getContent().addAndExpand(FooterLayout.createFooterContent());
     }
 
 }

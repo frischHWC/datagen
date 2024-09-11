@@ -4,7 +4,6 @@ import com.datagen.service.credentials.Credentials;
 import com.datagen.service.credentials.CredentialsService;
 import com.datagen.service.credentials.CredentialsType;
 import com.datagen.views.MainLayout;
-import com.datagen.views.utils.FooterLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasText;
@@ -115,7 +114,6 @@ public class CredentialsView extends Composite<VerticalLayout> {
       getContent().add(grid);
 
       getContent().add(uploadButton(grid));
-      getContent().addAndExpand(FooterLayout.createFooterContent());
 
     }
 

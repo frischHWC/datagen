@@ -25,6 +25,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
+import jakarta.annotation.security.PermitAll;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.lineawesome.LineAwesomeIcon;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @PageTitle("Models")
 @Route(value = "commands", layout = MainLayout.class)
+@PermitAll
 public class CommandsView extends Composite<VerticalLayout> {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");

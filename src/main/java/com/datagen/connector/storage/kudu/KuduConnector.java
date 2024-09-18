@@ -49,8 +49,6 @@ public class KuduConnector implements ConnectorInterface {
   private final Model model;
   private Boolean useKerberos;
 
-  // TODO: Cannot invoke "com.datagen.model.type.Field.getPossibleValuesProvided()" because "field" is null
-
   public KuduConnector(Model model,
                        Map<ApplicationConfigs, String> properties) {
     this.tableName = (String) model.getTableNames()

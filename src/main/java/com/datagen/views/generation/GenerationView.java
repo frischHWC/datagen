@@ -32,6 +32,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import jakarta.annotation.security.PermitAll;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +46,7 @@ import static com.datagen.views.generation.GenerationUtils.*;
 @Slf4j
 @PageTitle("Data Generation")
 @Route(value = "generation", layout = MainLayout.class)
+@PermitAll
 public class GenerationView extends Composite<VerticalLayout> {
 
     @Autowired
@@ -136,7 +138,7 @@ public class GenerationView extends Composite<VerticalLayout> {
         comboBox.setRequired(false);
         comboBox.setHelperText("Select one or multiple credentials stored to use for data generation");
         this.binderCredentials.forField(comboBox)
-            .bind(HashSet::new, (f, m) -> f.addAll(m));
+            .bind(HashSet::new, List::addAll);
         return comboBox;
     }
 
@@ -442,7 +444,7 @@ public class GenerationView extends Composite<VerticalLayout> {
             var deletePrevious = createDeletePrevious(binderModel, optionsProps);
             var appendHeader = createCsvHeader(binderModel, optionsProps);
             var details = createOptionalConfigs(oneFilePerBatch, deletePrevious, appendHeader);
-            return List.of(bucket, directory, key, localFile, s3region, details);
+            return List.of(bucket, directory, key, localFile, s3region, new Span(), details);
         }
 
         case S3_JSON, S3_AVRO, S3_ORC -> {
@@ -455,7 +457,7 @@ public class GenerationView extends Composite<VerticalLayout> {
             var oneFilePerBatch = createOneFilePerIteration(binderModel, optionsProps);
             var deletePrevious = createDeletePrevious(binderModel, optionsProps);
             var details = createOptionalConfigs(oneFilePerBatch, deletePrevious);
-            return List.of(bucket, directory, key, localFile, s3region, details);
+            return List.of(bucket, directory, key, localFile, s3region, new Span(), details);
         }
 
         case S3_PARQUET -> {
@@ -474,7 +476,7 @@ public class GenerationView extends Composite<VerticalLayout> {
             var details = createOptionalConfigs(
                 oneFilePerBatch, deletePrevious, parquetGroupSize, parquetRowGroupSize,
                 parquetDicSize, parquetEncoding);
-            return List.of(bucket, directory, key, localFile, s3region, details);
+            return List.of(bucket, directory, key, localFile, s3region, new Span(), details);
         }
 
 
@@ -621,7 +623,7 @@ public class GenerationView extends Composite<VerticalLayout> {
             var deletePrevious = createDeletePrevious(binderModel, optionsProps);
 
             var details = createOptionalConfigs(deletePrevious);
-            return List.of(namespace, tableName, primaryKey, details);
+            return List.of(namespace, tableName, primaryKey, new Span(), details);
         }
 
         case KAFKA -> {

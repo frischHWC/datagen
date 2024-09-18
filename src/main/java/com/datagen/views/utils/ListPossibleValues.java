@@ -57,9 +57,15 @@ public class ListPossibleValues extends CustomField<HashMap<String, Long>> {
     var textField = new TextArea();
     textField.setValue(possibleValue);
     textField.setLabel("Value");
+    textField.setMinWidth("60%");
+    textField.setWidth("60%");
+    textField.setMaxWidth("60%");
     var weightField = new NumberField();
     weightField.setValue(weight.doubleValue());
     weightField.setLabel("Weight");
+    weightField.setMinWidth("30%");
+    weightField.setWidth("30%");
+    weightField.setMaxWidth("30%");
     possibleValuesFields.put(textField, weightField);
 
     Button removeButton = new Button(VaadinIcon.TRASH.create());
@@ -68,7 +74,9 @@ public class ListPossibleValues extends CustomField<HashMap<String, Long>> {
       possibleValuesFields.remove(textField);
     });
 
-    HorizontalLayout fieldLayout = new HorizontalLayout(textField, weightField, removeButton);
+    HorizontalLayout fieldLayout = new HorizontalLayout();
+    fieldLayout.addAndExpand(textField, weightField);
+    fieldLayout.add(removeButton);
     fieldLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
     layout.addComponentAtIndex(layout.getComponentCount()==0?layout.getComponentCount():layout.getComponentCount()-1, fieldLayout);
   }

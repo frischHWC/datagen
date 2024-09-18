@@ -27,6 +27,7 @@ import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.PermitAll;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +42,7 @@ import java.util.List;
 @Slf4j
 @PageTitle("Credentials")
 @Route(value = "model/credentials", layout = MainLayout.class)
+@PermitAll
 public class CredentialsView extends Composite<VerticalLayout> {
 
     private CredentialsService credentialsService;

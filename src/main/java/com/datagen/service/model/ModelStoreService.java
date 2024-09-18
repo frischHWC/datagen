@@ -56,7 +56,6 @@ public class ModelStoreService {
   private final HashMap<String, ModelStored> storedModels;
   private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy_HH-mm-ss");
 
-  // TODO: Load default models
   @Autowired
   public ModelStoreService(PropertiesLoader propertiesLoader) {
     this.properties = propertiesLoader.getPropertiesCopy();

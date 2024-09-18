@@ -22,6 +22,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
+import jakarta.annotation.security.PermitAll;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.lineawesome.LineAwesomeIcon;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @PageTitle("Models Management")
 @Route(value = "model/management", layout = MainLayout.class)
+@PermitAll
 public class ModelsManagementView extends Composite<VerticalLayout> {
 
     private ModelStoreService modelStoreService;
@@ -84,8 +86,6 @@ public class ModelsManagementView extends Composite<VerticalLayout> {
         grid.addColumn(m -> m.getModel().getFields().keySet().stream().collect(Collectors.joining(",")))
             .setHeader("Columns List")
             .setAutoWidth(true);
-
-        // TODO: Add a test button foreach model
 
       // Add grid to main layout and load data
       grid.setItems(this.modelStoreService.listModelsAsModelStored());

@@ -18,22 +18,21 @@
 package com.datagen.config;
 
 
+import com.datagen.views.login.LoginView;
+import com.vaadin.flow.spring.security.VaadinWebSecurity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.SecurityFilterChain;
-
-import static org.springframework.security.config.Customizer.withDefaults;
 
 /**
  * This security class forces https and basic authentication with only one possible user able to do requests
@@ -41,7 +40,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Slf4j
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class SecurityConfig extends VaadinWebSecurity {
 
 
   private final PropertiesLoader propertiesLoader;
@@ -51,8 +50,27 @@ public class SecurityConfig {
     this.propertiesLoader = propertiesLoader;
   }
 
+  @Override
+  protected void configure(HttpSecurity http) throws Exception {
+    http
+        .authorizeHttpRequests(auth ->
+        auth.requestMatchers("/public/**", "/api/v1/metrics/**", "/api/v1/health/status").permitAll())
+        .authorizeHttpRequests(authorize -> authorize.requestMatchers("/api/v1/**").authenticated())
+    ;
+    // TODO: Make swagger works with authentication
 
-  @Bean
+    super.configure(http);
+
+    setLoginView(http, LoginView.class);
+  }
+
+  @Override
+  public void configure(WebSecurity web) throws Exception {
+    super.configure(web);
+  }
+
+
+  /**@Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     return http
         .authorizeRequests(
@@ -63,8 +81,7 @@ public class SecurityConfig {
         .httpBasic(withDefaults())
         .csrf(AbstractHttpConfigurer::disable)
         .build();
-
-  }
+  }**/
 
   @Bean
   public UserDetailsService users() {

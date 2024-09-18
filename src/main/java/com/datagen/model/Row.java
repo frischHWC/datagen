@@ -124,6 +124,19 @@ public class Row<T extends Field> {
     return sb.toString();
   }
 
+  public String getKafkaKeyValue() {
+    var kafkaKeyValue = "";
+    try {
+      var kafkaKey = (String) model.getOptionsOrDefault(
+          OptionsConverter.Options.KAFKA_MSG_KEY);
+      if (kafkaKey != null) {
+        kafkaKeyValue = (String) values.get(kafkaKey);
+      }
+    } catch (Exception e) {
+      log.debug("Could not get kafka Key value so default to empty.");
+    }
+    return kafkaKeyValue;
+  }
 
   public Map.Entry<String, GenericRecord> toKafkaMessage(Schema schema) {
     GenericRecord genericRecordRow = new GenericData.Record(schema);
@@ -132,8 +145,7 @@ public class Row<T extends Field> {
             model.getFieldFromName(name.toString())
                 .toAvroValue(values.get(name.toString())))
     );
-    return new AbstractMap.SimpleEntry<>( (String)
-        model.getOptionsOrDefault(OptionsConverter.Options.KAFKA_MSG_KEY),
+    return new AbstractMap.SimpleEntry<>( getKafkaKeyValue(),
         genericRecordRow);
   }
 
@@ -145,8 +157,7 @@ public class Row<T extends Field> {
     } else {
       value = this.toJSON();
     }
-    return new AbstractMap.SimpleEntry<>(
-        (String) model.getOptionsOrDefault(OptionsConverter.Options.KAFKA_MSG_KEY),
+    return new AbstractMap.SimpleEntry<>(getKafkaKeyValue(),
         value);
   }
 

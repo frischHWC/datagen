@@ -69,6 +69,7 @@ public class KafkaConnector implements ConnectorInterface {
         .get(OptionsConverter.TableNames.KAFKA_TOPIC);
     this.partitions = (int) model.getOptionsOrDefault(
         OptionsConverter.Options.KAFKA_PARTITIONS_NUMBER);
+    //TODO: Maybe check if it is a short and otherwise, convert it to a short???
     this.replicationFactor = (short) model.getOptionsOrDefault(
         OptionsConverter.Options.KAFKA_REPLICATION_FACTOR);
     this.schema = model.getAvroSchema();

@@ -34,12 +34,17 @@ public class ModelsUtils {
   private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
   private static final Pattern datePatternInput = Pattern.compile("[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}");
 
+
+  public static HorizontalLayout createInfoForAParameter(Component param, String description) {
+    return createInfoForAParameter(param, description, true);
+  }
+
   /**
    * Create and set info for a given parameter
    * @param param
    * @return
    */
-  public static HorizontalLayout createInfoForAParameter(Component param, String description) {
+  public static HorizontalLayout createInfoForAParameter(Component param, String description, Boolean toExpand) {
     // Horizontal layout for a field and its info
     var hl = new HorizontalLayout();
     hl.setPadding(true);
@@ -48,14 +53,23 @@ public class ModelsUtils {
     var textArea = new Span(description);
     textArea.setWhiteSpace(HasText.WhiteSpace.PRE);
     textArea.setVisible(false);
+    textArea.setMinWidth("45%");
+    textArea.setWidth("45%");
+    textArea.setMaxWidth("45%");
     var infoButton = new Button(VaadinIcon.INFO_CIRCLE_O.create());
+    infoButton.setMinWidth("5%");
     infoButton.setWidth("5%");
     infoButton.setMaxWidth("5%");
     infoButton.setTooltipText("Helper");
     infoButton.addClickListener(clickInfo -> textArea.setVisible(!textArea.isVisible()));
 
     // Finally, add the parameters one by one
-    hl.add(param, infoButton, textArea);
+    if(toExpand) {
+      hl.addAndExpand(param);
+      hl.add(infoButton, textArea);
+    } else {
+      hl.add(param, infoButton, textArea);
+    }
     hl.setAlignItems(FlexComponent.Alignment.BASELINE);
 
     return hl;
@@ -71,6 +85,9 @@ public class ModelsUtils {
             FieldRepresentation::getGhost,
             (f, m) -> f.setGhost(m != null ? m : false)
         );
+    radioGroup.setMinWidth("50%");
+    radioGroup.setWidth("50%");
+    radioGroup.setMaxWidth("50%");
     return radioGroup;
   }
 
@@ -95,6 +112,9 @@ public class ModelsUtils {
             f -> f.getMin() != null ? f.getMin().intValue() : null,
             (f, m) -> f.setMin(m != null ? m.longValue() : null)
         );
+    intField.setMinWidth("50%");
+    intField.setWidth("50%");
+    intField.setMaxWidth("50%");
     return intField;
   }
 
@@ -118,6 +138,9 @@ public class ModelsUtils {
             f -> f.getMax() != null ? f.getMax().intValue() : null,
             (f, m) -> f.setMax(m != null ? m.longValue() : null)
         );
+    intField.setMinWidth("50%");
+    intField.setWidth("50%");
+    intField.setMaxWidth("50%");
     return intField;
   }
 
@@ -139,6 +162,9 @@ public class ModelsUtils {
             f -> f.getMin() != null ? Double.valueOf(f.getMin()) : null,
             (f, m) -> f.setMin(m != null ? m.longValue() : null)
         );
+    intField.setMinWidth("50%");
+    intField.setWidth("50%");
+    intField.setMaxWidth("50%");
     return intField;
   }
 
@@ -160,6 +186,9 @@ public class ModelsUtils {
             f -> f.getMax() != null ? Double.valueOf(f.getMax()) : null,
             (f, m) -> f.setMax(m != null ? m.longValue() : null)
         );
+    intField.setMinWidth("50%");
+    intField.setWidth("50%");
+    intField.setMaxWidth("50%");
     return intField;
   }
 
@@ -181,6 +210,9 @@ public class ModelsUtils {
             f -> f.getMin() != null ? Double.valueOf(f.getMin()) : null,
             (f, m) -> f.setMin(m != null ? m.longValue() : null)
         );
+    intField.setMinWidth("50%");
+    intField.setWidth("50%");
+    intField.setMaxWidth("50%");
     return intField;
   }
 
@@ -202,6 +234,9 @@ public class ModelsUtils {
             f -> f.getMax() != null ? Double.valueOf(f.getMax()) : null,
             (f, m) -> f.setMax(m != null ? m.longValue() : null)
         );
+    intField.setMinWidth("50%");
+    intField.setWidth("50%");
+    intField.setMaxWidth("50%");
     return intField;
   }
 
@@ -225,6 +260,9 @@ public class ModelsUtils {
             FieldRepresentation::getLength,
             FieldRepresentation::setLength
         );
+    intField.setMinWidth("50%");
+    intField.setWidth("50%");
+    intField.setMaxWidth("50%");
     return intField;
   }
 
@@ -241,6 +279,9 @@ public class ModelsUtils {
     binder.forField(possibleValues)
         .bind(FieldRepresentation::getPossibleValuesWeighted, FieldRepresentation::setPossibleValuesWeighted);
 
+    possibleValues.setMinWidth("50%");
+    possibleValues.setWidth("50%");
+    possibleValues.setMaxWidth("50%");
     return possibleValues;
   }
 
@@ -259,6 +300,9 @@ public class ModelsUtils {
             FieldRepresentation::getMinDate,
             FieldRepresentation::setMinDate
         );
+    datePicker.setMinWidth("50%");
+    datePicker.setWidth("50%");
+    datePicker.setMaxWidth("50%");
     return datePicker;
   }
 
@@ -277,6 +321,9 @@ public class ModelsUtils {
             FieldRepresentation::getMaxDate,
             FieldRepresentation::setMaxDate
         );
+    datePicker.setMinWidth("50%");
+    datePicker.setWidth("50%");
+    datePicker.setMaxWidth("50%");
     return datePicker;
   }
 
@@ -293,6 +340,9 @@ public class ModelsUtils {
     binder.forField(comboBoxCountry)
         .bind(f -> new HashSet<>(f.getFilters()), (f, m) -> f.setFilters(m.stream().toList()));
 
+    comboBoxCountry.setMinWidth("50%");
+    comboBoxCountry.setWidth("50%");
+    comboBoxCountry.setMaxWidth("50%");
     return comboBoxCountry;
   }
 
@@ -312,6 +362,9 @@ public class ModelsUtils {
             FieldRepresentation::getLink,
             FieldRepresentation::setLink
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
 
@@ -331,6 +384,9 @@ public class ModelsUtils {
             FieldRepresentation::getFile,
             FieldRepresentation::setFile
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
 
@@ -350,6 +406,9 @@ public class ModelsUtils {
             FieldRepresentation::getMainField,
             FieldRepresentation::setMainField
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
 
@@ -367,6 +426,9 @@ public class ModelsUtils {
             FieldRepresentation::getSeparator,
             FieldRepresentation::setSeparator
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
 
@@ -381,7 +443,9 @@ public class ModelsUtils {
     possibleValues.setLabel(paramLabel);
     binder.forField(possibleValues)
         .bind(FieldRepresentation::getFilters, FieldRepresentation::setFilters);
-
+    possibleValues.setMinWidth("50%");
+    possibleValues.setWidth("50%");
+    possibleValues.setMaxWidth("50%");
     return possibleValues;
   }
 
@@ -399,6 +463,9 @@ public class ModelsUtils {
             FieldRepresentation::getMinDateTime,
             FieldRepresentation::setMinDateTime
         );
+    datePicker.setMinWidth("50%");
+    datePicker.setWidth("50%");
+    datePicker.setMaxWidth("50%");
     return datePicker;
   }
 
@@ -416,6 +483,9 @@ public class ModelsUtils {
             FieldRepresentation::getMaxDateTime,
             FieldRepresentation::setMaxDateTime
         );
+    datePicker.setMinWidth("50%");
+    datePicker.setWidth("50%");
+    datePicker.setMaxWidth("50%");
     return datePicker;
   }
 
@@ -435,6 +505,9 @@ public class ModelsUtils {
             FieldRepresentation::getUseNow,
             (f, m) -> f.setUseNow(m != null ? m : false)
         );
+    radioGroup.setMinWidth("50%");
+    radioGroup.setWidth("50%");
+    radioGroup.setMaxWidth("50%");
     return radioGroup;
   }
 
@@ -453,6 +526,9 @@ public class ModelsUtils {
             FieldRepresentation::getPattern,
             FieldRepresentation::setPattern
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
 
@@ -471,6 +547,9 @@ public class ModelsUtils {
             FieldRepresentation::getRegex,
             FieldRepresentation::setRegex
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
 
@@ -488,6 +567,9 @@ public class ModelsUtils {
             FieldRepresentation::getUrl,
             FieldRepresentation::setUrl
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
 
@@ -505,6 +587,9 @@ public class ModelsUtils {
             FieldRepresentation::getUser,
             FieldRepresentation::setUser
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
 
@@ -522,6 +607,9 @@ public class ModelsUtils {
             FieldRepresentation::getPassword,
             FieldRepresentation::setPassword
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
 
@@ -540,6 +628,9 @@ public class ModelsUtils {
             FieldRepresentation::getRequest,
             FieldRepresentation::setRequest
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
 
@@ -557,6 +648,9 @@ public class ModelsUtils {
             FieldRepresentation::getContext,
             FieldRepresentation::setContext
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
 
@@ -575,6 +669,9 @@ public class ModelsUtils {
             FieldRepresentation::getModelType,
             FieldRepresentation::setModelType
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
 
@@ -593,6 +690,9 @@ public class ModelsUtils {
             f -> f.getTemperature() != null ? Double.valueOf(f.getTemperature()) : null,
             (f, m) -> f.setTemperature(m != null ? m.floatValue() : null)
         );
+    floatField.setMinWidth("50%");
+    floatField.setWidth("50%");
+    floatField.setMaxWidth("50%");
     return floatField;
   }
 
@@ -611,6 +711,9 @@ public class ModelsUtils {
             f -> f.getFrequencyPenalty() != null ? Double.valueOf(f.getFrequencyPenalty()) : null,
             (f, m) -> f.setFrequencyPenalty(m != null ? m.floatValue() : null)
         );
+    floatField.setMinWidth("50%");
+    floatField.setWidth("50%");
+    floatField.setMaxWidth("50%");
     return floatField;
   }
 
@@ -629,6 +732,9 @@ public class ModelsUtils {
             f -> f.getPresencePenalty() != null ? Double.valueOf(f.getPresencePenalty()) : null,
             (f, m) -> f.setPresencePenalty(m != null ? m.floatValue() : null)
         );
+    floatField.setMinWidth("50%");
+    floatField.setWidth("50%");
+    floatField.setMaxWidth("50%");
     return floatField;
   }
 
@@ -647,6 +753,9 @@ public class ModelsUtils {
             f -> f.getTopP() != null ? Double.valueOf(f.getTopP()) : null,
             (f, m) -> f.setTopP(m != null ? m.floatValue() : null)
         );
+    floatField.setMinWidth("50%");
+    floatField.setWidth("50%");
+    floatField.setMaxWidth("50%");
     return floatField;
   }
 
@@ -665,6 +774,9 @@ public class ModelsUtils {
             f -> f.getMaxTokens() != null ? Double.valueOf(f.getMaxTokens()) : null,
             (f, m) -> f.setMaxTokens(m != null ? m.intValue() : null)
         );
+    floatField.setMinWidth("50%");
+    floatField.setWidth("50%");
+    floatField.setMaxWidth("50%");
     return floatField;
   }
 
@@ -683,6 +795,9 @@ public class ModelsUtils {
             f -> f.getInjection()!=null&&!f.getInjection().isEmpty()?f.getInjection():null,
             (f,m) -> f.setInjection(m!=null&&!m.isEmpty()?m:null)
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
 
@@ -700,6 +815,9 @@ public class ModelsUtils {
             f -> f.getFormula()!=null&&!f.getFormula().isEmpty()?f.getFormula():null,
             (f,m) -> f.setFormula(m!=null&&!m.isEmpty()?m:null)
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
 
@@ -728,6 +846,9 @@ public class ModelsUtils {
             c -> c.get(optionName)==null?defaultValue:Boolean.valueOf(c.get(optionName).toString()),
             (c, m) -> c.put(optionName, m)
         );
+    radioGroup.setMinWidth("50%");
+    radioGroup.setWidth("50%");
+    radioGroup.setMaxWidth("50%");
     return radioGroup;
   }
 
@@ -748,6 +869,9 @@ public class ModelsUtils {
             c -> c.get(optionName)==null?defaultValue:Integer.valueOf(c.get(optionName).toString()),
             (c, m) -> { if(m!=null) { c.put(optionName, m);} }
         );
+    integerField.setMinWidth("50%");
+    integerField.setWidth("50%");
+    integerField.setMaxWidth("50%");
     return integerField;
   }
 
@@ -768,6 +892,9 @@ public class ModelsUtils {
             c -> c.get(optionName)==null?defaultValue:c.get(optionName).toString(),
             (c, m) -> { if(m!=null) { c.put(optionName, m);} }
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
 
@@ -790,6 +917,9 @@ public class ModelsUtils {
             c -> c.get(optionName)==null?defaultValue:c.get(optionName).toString(),
             (c, m) -> { if(m!=null) { c.put(optionName, m);} }
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
 
@@ -812,6 +942,9 @@ public class ModelsUtils {
             c -> c.get(optionName)==null?defaultValue:c.get(optionName).toString(),
             (c, m) -> { if(m!=null) { c.put(optionName, m);} }
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
 
@@ -832,29 +965,10 @@ public class ModelsUtils {
             c -> c.get(optionName)==null?defaultValue:c.get(optionName),
             (c, m) -> { if(m!=null) { c.put(optionName, m);} }
         );
+    textField.setMinWidth("50%");
+    textField.setWidth("50%");
+    textField.setMaxWidth("50%");
     return textField;
   }
-
-  // TODO: Make upload of file for GCS account key
-  static TextField createGenericFileUpload(
-      String label,
-      String defaultValue,
-      OptionsConverter.TableNames optionName,
-      Binder<Map<OptionsConverter.TableNames, String>> binder
-  ) {
-    TextField textField = new TextField();
-    textField.setLabel(label);
-    textField.setRequired(false);
-    if (defaultValue != null) {
-      textField.setValue(defaultValue);
-    }
-    binder.forField(textField)
-        .bind(
-            c -> c.get(optionName)==null?defaultValue:c.get(optionName),
-            (c, m) -> { if(m!=null) { c.put(optionName, m);} }
-        );
-    return textField;
-  }
-
 
 }

@@ -32,7 +32,7 @@ public class SwaggerConfiguration {
     return new OpenAPI()
         .info(new Info().title("Datagen API")
             .description("Data Generation tool to multiple services")
-            .version("0.6.0")
+            .version("1.0.0")
             .license(new License().name("Apache 2.0")))
         .externalDocs(new ExternalDocumentation()
             .description("Datagen Official Documentation")

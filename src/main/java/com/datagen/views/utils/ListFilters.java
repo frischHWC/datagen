@@ -4,6 +4,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.customfield.CustomField;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -57,9 +58,15 @@ public class ListFilters extends CustomField<List<String>> {
     var colName = new TextField();
     colName.setValue(colNameValue);
     colName.setLabel("Column Name");
+    colName.setMinWidth("40%");
+    colName.setWidth("40%");
+    colName.setMaxWidth("40%");
     var colValue = new TextField();
     colValue.setValue(colValueValue);
     colValue.setLabel("Column Value");
+    colValue.setMinWidth("40%");
+    colValue.setWidth("40%");
+    colValue.setMaxWidth("40%");
     possibleValuesFields.put(colName, colValue);
 
     Button removeButton = new Button(VaadinIcon.TRASH.create());
@@ -68,7 +75,12 @@ public class ListFilters extends CustomField<List<String>> {
       possibleValuesFields.remove(colName);
     });
 
-    HorizontalLayout fieldLayout = new HorizontalLayout(colName, new Span("="), colValue, removeButton);
+    HorizontalLayout fieldLayout = new HorizontalLayout();
+    fieldLayout.addAndExpand(colName);
+    fieldLayout.add(new Span("="));
+    fieldLayout.addAndExpand(colValue);
+    fieldLayout.add(removeButton);
+    fieldLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
     layout.addComponentAtIndex(layout.getComponentCount()==0?layout.getComponentCount():layout.getComponentCount()-1, fieldLayout);
   }
 

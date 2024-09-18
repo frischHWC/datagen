@@ -6,17 +6,19 @@ Built originally for Cloudera Data Platform, it works with S3, ADLS, GCS, local 
 
 == What is it ?
 
-Datagen is launching a Web Server with a UI and a sets of APIs (with a swagger) to interact with.
+Datagen is a Web Server with a UI and a sets of APIs (with a swagger) to interact with.
 
 Datagen is able to:
 
 - Push Data to multiple systems (HDFS, S3, ADLS, GCS, Kafka, Hive, HBase etc...)
 - Handle multiple formats (Avro, Parquet, ORC, JSON, CSV)
 - Generate structured data of different types (string, integer, timestamp, uuid etc...)
+- Provide pre-defined data filterable (countries, 40K+ cities, 35K+ names, phone pattern etc... )
 - Make data respecting rules (min, max, repartition, pattern, regex etc...)
-- Add relations between data generated (one column value depends on other's values)
+- Add relations between data generated (one column value depends on other's values with possible complex evaluation)
 - Generate unstructured data leveraging AI (OpenAI, Bedrock, Ollama, and even any model locally embedded)
-
+- Schedule generation of data
+- Analyze existing data to mimic it (currently in alpha version)
 
 == Public Documentation
 
@@ -46,18 +48,19 @@ Datagen can be run in two ways:
 - As a standalone web server, anywhere, but you'll need to provide configurations manually
 - Fully integrated into CDP using a parcel, a CSD and available as service through Cloudera Manager (configuration is automatic)
 
+
 === Standalone Web Server
 
 To make a fast and easy deployment, here is a procedure:
 
 TODO: Add Procedure
 
-By default, TLS is activated and a user/password is required (admin/admin by default).
+By default, TLS is activated and a user/password is required (**admin/admin** by default).
 
 
 === On CDP
 
 Refer to this detailed procedure available on link:https://datagener.github.io/datagen/1-installation/2-CDP/1-installation-csd-parcel.html[Datagen's Documentation]
 
-By default, TLS is activated and a user/password is required (admin/admin by default).
+By default, TLS is activated and a user/password is required (**admin/admin** by default).
 

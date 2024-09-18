@@ -31,6 +31,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
+import jakarta.annotation.security.PermitAll;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.lineawesome.LineAwesomeIcon;
@@ -47,6 +48,7 @@ import static com.datagen.views.models.ModelsUtils.*;
 @Slf4j
 @PageTitle("Models Creation")
 @Route(value = "model/creation", layout = MainLayout.class)
+@PermitAll
 public class ModelsCreationView extends Composite<VerticalLayout> {
 
   @Autowired
@@ -74,6 +76,12 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
     // Name for the model
     var headerLayout = new HorizontalLayout();
     var modelName = new TextField("Model Name:");
+    modelName.setHelperText("Provide a meaningful and unique name to your model");
+    modelName.setRequired(true);
+    modelName.setClearButtonVisible(true);
+    modelName.setMaxWidth("50%");
+    modelName.setWidth("50%");
+    modelName.setMinWidth("50%");
 
     // Model buttons
     var modelHl = new HorizontalLayout();
@@ -98,7 +106,7 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
       layoutColumn.remove(plusButton);
       layoutColumn.remove(connectorDetails);
       layoutColumn.remove(modelHl);
-      layoutColumn.add(createFormForAField(layoutColumn, null));
+      layoutColumn.addAndExpand(createFormForAField(layoutColumn, null));
       layoutColumn.add(plusButton);
       layoutColumn.add(connectorDetails);
       layoutColumn.add(modelHl);
@@ -107,7 +115,8 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
     // Add header
     var importModel = importModelButton(layoutColumn, modelName, plusButton, modelHl);
     headerLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
-    headerLayout.add(modelName, importModel);
+    headerLayout.addAndExpand(modelName);
+    headerLayout.add(importModel);
 
     layoutColumn.add(headerLayout);
     layoutColumn.add(plusButton);
@@ -292,6 +301,7 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
     var loadButton = new Button("Load Model", LineAwesomeIcon.UPLOAD_SOLID.create());
     loadButton.addThemeVariants(ButtonVariant.LUMO_ICON);
     loadButton.setAriaLabel("Load a Model");
+    loadButton.setMaxWidth("20%");
 
     // Load a model button
     loadButton.addClickListener(e -> {
@@ -402,7 +412,7 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
   private Details createFormForAField(VerticalLayout parentLayout, FieldRepresentation fieldRepresentation) {
     // Wrap the form in a Details
     HorizontalLayout summary = new HorizontalLayout();
-    summary.setSpacing(false);
+    summary.setSpacing(true);
     summary.add(fieldRepresentation!=null?new Text(fieldRepresentation.getName()):new Text("myColumn"));
 
     // Binder
@@ -411,13 +421,14 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
 
     // Form
     FormLayout formLayout = new FormLayout();
-    formLayout.setResponsiveSteps(
-        // Use 3 columns by default
-        new FormLayout.ResponsiveStep("0", 3)
-    );
+    formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 3));
+    formLayout.setMinWidth("100%");
+    formLayout.setWidth("100%");
+    formLayout.setMaxWidth("100%");
 
     // Main Horizontal Layout
     var mainHl = new HorizontalLayout();
+    mainHl.setPadding(true);
 
     // Name of the field
     TextField fieldName = new TextField("Name");
@@ -426,6 +437,9 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
     fieldName.setAutoselect(true);
     fieldName.setRequired(true);
     fieldName.setRequiredIndicatorVisible(true);
+    fieldName.setMinWidth("50%");
+    fieldName.setWidth("50%");
+    fieldName.setMaxWidth("50%");
     binder.forField(fieldName)
         .withValidator(v -> v!=null && !v.isEmpty() && !v.isBlank(), "Name must not be empty")
         .bind(FieldRepresentation::getName,
@@ -435,8 +449,6 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
       summary.add(new Text(cl.getValue()));
       formLayout.setId(cl.getValue());
     });
-    formLayout.setColspan(fieldName, 2);
-    mainHl.add(fieldName);
 
     // Type of the field
     ComboBox<FieldRepresentation.FieldType> comboBox =
@@ -447,18 +459,23 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         EnumSet.allOf(FieldRepresentation.FieldType.class).stream().toList());
     binder.bind(comboBox, FieldRepresentation::getType,
         FieldRepresentation::setType);
-    mainHl.add(comboBox);
+    comboBox.setMinWidth("40%");
+    comboBox.setWidth("40%");
+    comboBox.setMaxWidth("40%");
 
     // Remove button
     Button removeButton = new Button(VaadinIcon.TRASH.create());
     removeButton.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
-    mainHl.add(removeButton);
+    removeButton.setMinWidth("5%");
+    removeButton.setMaxWidth("5%");
+    removeButton.setWidth("5%");
 
     //Align items
     mainHl.setAlignItems(FlexComponent.Alignment.BASELINE);
+    mainHl.addAndExpand(fieldName, comboBox, removeButton);
 
     // Add main layout
-    formLayout.add(mainHl, 4);
+    formLayout.add(mainHl, 3);
 
     // Add Ghost button
     var ghostButton = ModelsUtils.createGhost(binder);
@@ -466,7 +483,7 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
     """
     To not output this column at the end but just compute it.
     Useful to create columns that depends on results of others.
-    """), 4);
+    """), 3);
     if(fieldRepresentation!=null && fieldRepresentation.getGhost()!=null) {
       ghostButton.setValue(fieldRepresentation.getGhost());
     }
@@ -932,7 +949,7 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
       }
 
       case STRING_REGEX -> {
-        var regex = ModelsUtils.createPatterDate(" Regex:", binder);
+        var regex = ModelsUtils.createRegex(" Regex:", binder);
         if(fieldRepresentation!=null && fieldRepresentation.getRegex()!=null) {
           regex.setValue(fieldRepresentation.getRegex());
         }
@@ -1315,10 +1332,15 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
     // Create final details component containing all information of the column
     Details details = new Details(summary, formLayout);
     details.setOpened(true);
+    details.setSizeFull();
+    details.getStyle().setBorder("2px dashed #e6ecf4");
+    details.getStyle().setBorderRadius("1%");
     removeButton.addClickListener(e -> {
       binders.remove(binder);
       parentLayout.remove(details);
     });
+
+
 
     return details;
   }
@@ -1553,7 +1575,7 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
                     OptionsConverter.TableNames.GCS_PROJECT_ID, tableNamesPropsBinder),
                 ""),
             createInfoForAParameter(
-                createGenericFileUpload("GCS Account key Path", null,
+                createGenericStringTableNamesProps("GCS Account key Path", null,
                     OptionsConverter.TableNames.GCS_ACCOUNT_KEY_PATH, tableNamesPropsBinder),
                 "")
         )

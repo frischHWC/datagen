@@ -111,6 +111,31 @@ public class GenerationUtils {
     return integerField;
   }
 
+  static IntegerField createGenericIntegerfieldWithBindToShort(Map<OptionsConverter.Options, Object> tableNamesProps,
+                                                OptionsConverter.Options parameter,
+                                                String label,
+                                                String helperText,
+                                                Binder<Model> binderModel,
+                                                int min,
+                                                int max) {
+
+    var integerField = new IntegerField(label);
+    integerField.setClearButtonVisible(true);
+    integerField.setRequired(false);
+    integerField.setTooltipText(helperText);
+    if (tableNamesProps.get(parameter) != null) {
+      integerField.setValue((int) tableNamesProps.get(parameter));
+    }
+    binderModel.forField(integerField)
+        .bind(
+            param -> tableNamesProps.get(parameter) != null?
+                Integer.valueOf((short) tableNamesProps.get(parameter)):null,
+            (param, newparam) -> { if(newparam!=null) tableNamesProps.put(parameter, newparam.shortValue());}
+        );
+    return integerField;
+  }
+
+
 
   static RadioButtonGroup createGenericBooleanRadio(
       Map<OptionsConverter.Options, Object> optionsProps,
@@ -614,7 +639,7 @@ public class GenerationUtils {
   }
 
   /**
-   * TODO: Currently this would need to make a conversion of HBase column family mapping before generation so it is not used.
+   * WARNING: Currently this would need to make a conversion of HBase column family mapping before generation so it is not used.
    * @param binderModel
    * @param tableNamesProps
    * @return
@@ -860,7 +885,7 @@ public class GenerationUtils {
   }
 
   static IntegerField createKafkaReplicationFactor(Binder<Model> binderModel, Map<OptionsConverter.Options, Object> tableNamesProps) {
-    var field = createGenericIntegerfield(tableNamesProps,
+    var field = createGenericIntegerfieldWithBindToShort(tableNamesProps,
         OptionsConverter.Options.KAFKA_REPLICATION_FACTOR,
         "Kafka Replication Factor",
         "Replication Factor in Kafka for messages sent",

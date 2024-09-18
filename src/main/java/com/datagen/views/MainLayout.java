@@ -8,6 +8,8 @@ import com.datagen.views.models.ModelsCreationView;
 import com.datagen.views.models.ModelsManagementView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
@@ -15,8 +17,10 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
 /**
@@ -26,8 +30,10 @@ import org.vaadin.lineawesome.LineAwesomeIcon;
 public class MainLayout extends AppLayout {
 
     private H1 viewTitle;
+    private final transient AuthenticationContext authContext;
 
-    public MainLayout() {
+    public MainLayout(AuthenticationContext authContext) {
+        this.authContext = authContext;
         setPrimarySection(Section.DRAWER);
         addDrawerContent();
         addHeaderContent();
@@ -80,16 +86,26 @@ public class MainLayout extends AppLayout {
 
     private Footer createFooter() {
         Footer footer = new Footer();
-        Anchor anchor = new Anchor("https://github.com/frischHWC/datagen", "Github" );
-        anchor.getElement().setAttribute("target", "_blank");
-        Anchor anchorDoc = new Anchor("https://datagener.github.io/", "Documentation" );
+        Anchor anchorGit = new Anchor("https://github.com/frischHWC/datagen", LineAwesomeIcon.GITHUB.create() );
+        anchorGit.getElement().setAttribute("target", "_blank");
+        Anchor anchorDoc = new Anchor("https://datagener.github.io/", LineAwesomeIcon.BOOK_OPEN_SOLID.create());
         anchorDoc.getElement().setAttribute("target", "_blank");
         String version = "1.0.0";
 
+        // User Info
+        var userInfo = authContext.getAuthenticatedUser(UserDetails.class)
+            .map(user -> {
+                return new Span(user.getUsername());
+            }).orElseGet(() -> new Span("ANONYMOUS"));
+        Button logout = new Button(" Logout ", click -> this.authContext.logout());
+        logout.setIcon(LineAwesomeIcon.SIGN_OUT_ALT_SOLID.create());
+        logout.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        logout.addThemeVariants(ButtonVariant.LUMO_ERROR);
+
         var vl = new VerticalLayout();
-        vl.add("Version : " + version);
-        vl.add(new HorizontalLayout(LineAwesomeIcon.BOOK_OPEN_SOLID.create(), new Span(" "), anchorDoc));
-        vl.add(new HorizontalLayout(LineAwesomeIcon.GITHUB.create(), new Span(" "), anchor));
+        vl.add(new HorizontalLayout(LineAwesomeIcon.USER_CIRCLE.create(), userInfo));
+        vl.add(logout);
+        vl.add(new HorizontalLayout(anchorDoc, anchorGit, new Span("V." + version)));
 
         footer.add(vl);
         return footer;

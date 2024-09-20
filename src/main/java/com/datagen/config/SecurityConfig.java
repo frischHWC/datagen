@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -52,13 +53,16 @@ public class SecurityConfig extends VaadinWebSecurity {
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
+    // Disable JWT auth and use basic auth instead + CSRF disabled for api endpoints
+    // Disable auth for metrics & status endpoints
     http
         .authorizeHttpRequests(auth ->
-        auth.requestMatchers("/public/**", "/api/v1/metrics/**", "/api/v1/health/status").permitAll())
+        auth.requestMatchers("/api/v1/metrics/**", "/api/v1/health/status").permitAll())
         .authorizeHttpRequests(authorize -> authorize.requestMatchers("/api/v1/**").authenticated())
+        .httpBasic(Customizer.withDefaults())
+        .csrf((csrf) -> csrf.ignoringRequestMatchers("/api/v1/**"));
     ;
-    // TODO: Make swagger works with authentication
-
+    // Let Vaadin secure rest of application
     super.configure(http);
 
     setLoginView(http, LoginView.class);
@@ -101,5 +105,20 @@ public class SecurityConfig extends VaadinWebSecurity {
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
+
+  // TODO: Add LDAP connection and users from it
+  /*@Autowired
+  public void configure(AuthenticationManagerBuilder auth) throws Exception {
+    auth
+        .ldapAuthentication()
+        .userDnPatterns("uid={0},ou=people")
+        .groupSearchBase("ou=groups")
+        .contextSource()
+        .url("ldap://localhost:8389/dc=springframework,dc=org")
+        .and()
+        .configure(new LdapBindAuthenticationManagerFactory(
+            new DefaultSpringSecurityContextSource("ldap://localhost:53389/dc=springframework,dc=org"))
+            .createAuthenticationManager());
+  } */
 
 }

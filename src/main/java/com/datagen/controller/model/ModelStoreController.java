@@ -26,7 +26,7 @@ public class ModelStoreController {
     return modelStoreService.addModel(modelFile, false).getName();
   }
 
-  @PostMapping(value = "/get")
+  @GetMapping(value = "/get")
   public String getModel(
       @RequestParam(required = false, name = "model") String modelName
   ) {
@@ -34,15 +34,14 @@ public class ModelStoreController {
     return modelStoreService.getModelAsJson(modelName);
   }
 
-  @PostMapping(value = "/list")
-  public List<String> lsitModel(
-      @RequestParam(required = false, name = "model") String modelName
+  @GetMapping(value = "/list")
+  public List<String> listModel(
   ) {
-    log.debug("Received request to list model: {} ,", modelName);
+    log.debug("Received request to list model");
     return modelStoreService.listModels();
   }
 
-  @PostMapping(value = "/delete")
+  @DeleteMapping(value = "/delete")
   public Boolean deleteModel(
       @RequestParam(required = false, name = "model") String modelName
   ) {

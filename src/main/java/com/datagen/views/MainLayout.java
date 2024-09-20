@@ -6,6 +6,7 @@ import com.datagen.views.generation.GenerationView;
 import com.datagen.views.models.CredentialsView;
 import com.datagen.views.models.ModelsCreationView;
 import com.datagen.views.models.ModelsManagementView;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
@@ -90,6 +91,11 @@ public class MainLayout extends AppLayout {
         anchorGit.getElement().setAttribute("target", "_blank");
         Anchor anchorDoc = new Anchor("https://datagener.github.io/", LineAwesomeIcon.BOOK_OPEN_SOLID.create());
         anchorDoc.getElement().setAttribute("target", "_blank");
+        //var localUri = Page.fetchCurrentURL();
+        // TODO: Add anchor to the swagger-ui.html#/
+        var localUri = UI.getCurrent().getActiveViewLocation().getPath();
+        Anchor anchorSwagger = new Anchor(localUri + "/swagger-ui.html#/", LineAwesomeIcon.CODE_SOLID.create());
+        anchorSwagger.getElement().setAttribute("target", "_blank");
         String version = "1.0.0";
 
         // User Info
@@ -105,7 +111,7 @@ public class MainLayout extends AppLayout {
         var vl = new VerticalLayout();
         vl.add(new HorizontalLayout(LineAwesomeIcon.USER_CIRCLE.create(), userInfo));
         vl.add(logout);
-        vl.add(new HorizontalLayout(anchorDoc, anchorGit, new Span("V." + version)));
+        vl.add(new HorizontalLayout(anchorSwagger, anchorDoc, anchorGit, new Span("V." + version)));
 
         footer.add(vl);
         return footer;

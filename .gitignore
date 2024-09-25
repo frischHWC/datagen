@@ -7,6 +7,8 @@ target/
 *.log
 logs/
 logs/*
+src/main/bundles/
+src/main/bundles/*
 src/main/resources/scripts/overall_launch.sh
 src/main/resources/scripts/create_release.sh
 src/main/resources/application-test.properties

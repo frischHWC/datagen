@@ -65,13 +65,20 @@ public class KafkaConnector implements ConnectorInterface {
 
   public KafkaConnector(Model model,
                         Map<ApplicationConfigs, String> properties) {
+    short replicationFactor1;
     this.topic = (String) model.getTableNames()
         .get(OptionsConverter.TableNames.KAFKA_TOPIC);
     this.partitions = (int) model.getOptionsOrDefault(
         OptionsConverter.Options.KAFKA_PARTITIONS_NUMBER);
-    //TODO: Maybe check if it is a short and otherwise, convert it to a short???
-    this.replicationFactor = (short) model.getOptionsOrDefault(
-        OptionsConverter.Options.KAFKA_REPLICATION_FACTOR);
+    var replicationFactorFromProps = (short) 1;
+    try {
+      replicationFactorFromProps = (short) model.getOptionsOrDefault(
+          OptionsConverter.Options.KAFKA_REPLICATION_FACTOR);
+    } catch (Exception e) {
+      log.info("Cannot get Replication factor as a proper property, so using 1.");
+    }
+    this.replicationFactor = replicationFactorFromProps;
+
     this.schema = model.getAvroSchema();
     this.messagetype = convertStringToMessageType(
         (String) model.getOptionsOrDefault(

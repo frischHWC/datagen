@@ -7,6 +7,7 @@ import com.datagen.service.command.Command;
 import com.datagen.service.command.CommandRunnerService;
 import com.datagen.utils.Utils;
 import com.datagen.views.MainLayout;
+import com.datagen.views.utils.UsersUtils;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.button.Button;
@@ -25,7 +26,8 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
-import jakarta.annotation.security.PermitAll;
+import com.vaadin.flow.spring.security.AuthenticationContext;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.lineawesome.LineAwesomeIcon;
@@ -43,16 +45,19 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Slf4j
-@PageTitle("Models")
+@PageTitle("Commands")
 @Route(value = "commands", layout = MainLayout.class)
-@PermitAll
+@RolesAllowed({"ROLE_DATAGEN_USER", "ROLE_DATAGEN_ADMIN"})
 public class CommandsView extends Composite<VerticalLayout> {
+
+    private final transient AuthenticationContext authContext;
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
     private CommandRunnerService commandRunnerService;
 
     @Autowired
-    public CommandsView(CommandRunnerService commandRunnerService) {
+    public CommandsView(AuthenticationContext authContext, CommandRunnerService commandRunnerService) {
+        this.authContext = authContext;
         this.commandRunnerService = commandRunnerService;
         VerticalLayout layoutColumn = new VerticalLayout();
         layoutColumn.setWidth("100%");
@@ -61,6 +66,11 @@ public class CommandsView extends Composite<VerticalLayout> {
         var grid = new Grid<Command>();
         grid.addColumn(Command::getModelId)
             .setHeader("Model")
+            .setSortable(true)
+            .setAutoWidth(true)
+            .setWidth("10rem");
+        grid.addColumn(Command::getOwner)
+            .setHeader("Owner")
             .setSortable(true)
             .setAutoWidth(true)
             .setWidth("10rem");
@@ -93,6 +103,16 @@ public class CommandsView extends Composite<VerticalLayout> {
             .setAutoWidth(true)
             .setWidth("10rem");
         grid.addColumn(c -> {
+                return c.getLastStartedTimestamp()==0?
+                    "-":
+                    formatter.format(LocalDateTime.ofEpochSecond(c.getLastStartedTimestamp()/1000, 0, ZoneOffset.UTC));
+            })
+            .setHeader("Started Date")
+            .setSortable(true)
+            .setAutoWidth(true)
+            .setWidth("20rem")
+            .setFlexGrow(0);
+        grid.addColumn(c -> {
             return c.getLastFinishedTimestamp()==0?
                 "-":
                 formatter.format(LocalDateTime.ofEpochSecond(c.getLastFinishedTimestamp()/1000, 0, ZoneOffset.UTC));
@@ -116,6 +136,7 @@ public class CommandsView extends Composite<VerticalLayout> {
             .setWidth("5rem")
             .setFlexGrow(0);
 
+
         grid.addClassName("styling");
         grid.setPartNameGenerator(command -> {
             if (command.getStatus()==Command.CommandStatus.FINISHED)
@@ -126,8 +147,9 @@ public class CommandsView extends Composite<VerticalLayout> {
                 return null;
         });
 
-        grid.setItems(this.commandRunnerService.getAllCommands());
-        grid.sort(List.of(new GridSortOrder<>(grid.getColumns().get(6), SortDirection.DESCENDING)));
+        setGridItems(grid);
+        grid.sort(List.of(new GridSortOrder<>(grid.getColumns().get(7), SortDirection.DESCENDING)));
+
 
         var refreshButton = refreshGridButton(grid);
         var hlrefresh = new HorizontalLayout();
@@ -138,11 +160,25 @@ public class CommandsView extends Composite<VerticalLayout> {
 
     }
 
+    /**
+     * Set grid items with all if user is an admin otherwise only its owns
+     * @param grid
+     */
+    private void setGridItems(Grid<Command> grid) {
+        if(UsersUtils.isUserDatagenAdmin(authContext)){
+            grid.setItems(this.commandRunnerService.getAllCommands());
+        } else {
+            grid.setItems(this.commandRunnerService.getAllCommands().stream()
+                .filter(c -> c.getOwner().equalsIgnoreCase(UsersUtils.getUser(authContext)))
+                .collect(Collectors.toSet()));
+        }
+    }
+
     private Button refreshGridButton(Grid<Command> grid) {
         var refreshButton = new Button("Refresh", VaadinIcon.REFRESH.create());
         refreshButton.setIconAfterText(true);
         refreshButton.addClickListener( e -> {
-            grid.setItems(this.commandRunnerService.getAllCommands());
+            setGridItems(grid);
         });
         return refreshButton;
     }

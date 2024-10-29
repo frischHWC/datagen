@@ -7,6 +7,7 @@ import com.datagen.model.Model;
 import com.datagen.model.OptionsConverter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +22,14 @@ public class CredentialsService {
   // encrypted or not, with limited access to some users/groups
 
   private final Map<ApplicationConfigs, String> properties;
-  private Map<String, Credentials> credentialsStored;
+  private final Map<String, Credentials> credentialsStored;
   private final String credentialsDir;
   private final ObjectMapper objectMapper;
 
   @Autowired
   public CredentialsService(PropertiesLoader propertiesLoader) {
     this.objectMapper = new ObjectMapper();
+    objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
     this.properties = propertiesLoader.getPropertiesCopy();
     this.credentialsDir = this.properties.get(ApplicationConfigs.DATAGEN_CREDENTIALS_PATH);
     this.credentialsStored = new HashMap<>();
@@ -70,7 +72,7 @@ public class CredentialsService {
 
   public String toJson(Credentials credentials) {
     try {
-      return objectMapper.writeValueAsString(credentials);
+      return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(credentials);
     } catch (JsonProcessingException e) {
       log.warn("Cannot return credentials: {} as JSON", credentials.getName());
       return "{ Exception: " + e + " } ";
@@ -83,6 +85,25 @@ public class CredentialsService {
 
   public List<Credentials> listCredentialsMeta() {
     return this.credentialsStored.values().stream().toList();
+  }
+
+  public List<Credentials> listCredentialsMetaAllowedForUser(String username, Set<String> groups) {
+    return this.credentialsStored.values().stream()
+        .filter(c -> {
+          if(c.owner.equalsIgnoreCase(username)) {
+            return true;
+          } else if (c.getUsersAuthorized().contains(username)) {
+            return true;
+          } else if(!c.getGroupsAuthorized().isEmpty()) {
+            for(String group: groups){
+              if(c.getGroupsAuthorized().contains(group)) {
+                return true;
+              }
+            }
+          }
+          return false;
+        })
+        .toList();
   }
 
   public Map<String, Credentials> listCredentialsMetaAsMap() {
@@ -111,11 +132,12 @@ public class CredentialsService {
         return;
       } else {
         try {
-          FileUtils
-              .createLocalFileAsOutputStream(metaCredFilePath(credentials))
-              .write(objectMapper.writeValueAsBytes(credentials));
-          FileUtils.moveLocalFile(filePathToCredentials, credFilePath(credentials));
-          credentialsStored.put(credentials.getName(), credentials);
+          synchronized (credentials) {
+            persistMetaCred(credentials);
+            FileUtils.moveLocalFile(filePathToCredentials,
+                credFilePath(credentials));
+            credentialsStored.put(credentials.getName(), credentials);
+          }
         } catch (Exception e) {
           log.warn("Could not write files for credentials: {}", credentials.getName());
         }
@@ -132,9 +154,13 @@ public class CredentialsService {
   public void addCredentialsWithValue(Credentials credentials, Boolean replace, byte[] credentialsValue) {
     if(credentialsValue!=null) {
       try {
-        FileUtils.createLocalFileAsOutputStream(credFilePath(credentials)+".tmp")
-            .write(credentialsValue);
-        addCredentials(credentials, replace, credFilePath(credentials)+".tmp");
+        synchronized (credentials) {
+          FileUtils.createLocalFileAsOutputStream(
+                  credFilePath(credentials) + ".tmp")
+              .write(credentialsValue);
+          addCredentials(credentials, replace,
+              credFilePath(credentials) + ".tmp");
+        }
       } catch (Exception e) {
         log.warn("Cannot create temporary credentials value");
       }
@@ -146,8 +172,8 @@ public class CredentialsService {
                                 String accountAssociated,
                                 String owner,
                                 Boolean toEncrypt,
-                                List<String> usersAuthorized,
-                                List<String> groupsAuthorized,
+                                Set<String> usersAuthorized,
+                                    Set<String> groupsAuthorized,
                                 String credentialsFilePath,
                                 Boolean replace) {
     var cred = new Credentials(name, type, accountAssociated, toEncrypt, owner, usersAuthorized, groupsAuthorized);
@@ -186,9 +212,11 @@ public class CredentialsService {
   public void removeCredentials(String credName) {
     var cred = credentialsStored.get(credName);
     if(cred !=null) {
-      FileUtils.deleteLocalFile(metaCredFilePath(cred));
-      FileUtils.deleteLocalFile(credFilePath(cred));
-      credentialsStored.remove(credName);
+      synchronized (cred) {
+        FileUtils.deleteLocalFile(metaCredFilePath(cred));
+        FileUtils.deleteLocalFile(credFilePath(cred));
+        credentialsStored.remove(credName);
+      }
     } else {
       log.warn("Credentials: {} has not been found", credName);
     }
@@ -282,6 +310,61 @@ public class CredentialsService {
       }
     }
 
+  }
+
+  public boolean isUserOwnerOfCred(String user, String credName) {
+    var credentials = credentialsStored.get(credName);
+    if(credentials!=null) {
+      return credentials.getOwner().equalsIgnoreCase(user);
+    }
+    return false;
+  }
+
+  public boolean canUserUseThisCred(String user, Set<String> groups, String credName) {
+    var credentials = credentialsStored.get(credName);
+    if(credentials!=null) {
+      if(credentials.getOwner().equalsIgnoreCase(user)) {
+        return true;
+      } else if (credentials.getUsersAuthorized().contains(user)) {
+        return true;
+      } else if(!credentials.getGroupsAuthorized().isEmpty()) {
+          for(String group: credentials.getGroupsAuthorized()) {
+            if(groups.contains(group)){
+              return true;
+            }
+          }
+      }
+    }
+    return false;
+  }
+
+  public boolean changeRightsCred(String credName, Set<String> users, Set<String> groups) {
+    var cred = credentialsStored.get(credName);
+    if(cred!=null) {
+      synchronized (cred) {
+        cred.setUsersAuthorized(users);
+        cred.setGroupsAuthorized(groups);
+        return persistMetaCred(cred);
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Persist a credentials Metadata by removing old one and push these ones
+   * @param credentials
+   * @return
+   */
+  private boolean persistMetaCred(Credentials credentials) {
+    try {
+        FileUtils
+            .createLocalFileAsOutputStream(metaCredFilePath(credentials))
+            .write(objectMapper.writeValueAsBytes(credentials));
+      return true;
+    } catch (Exception e) {
+      log.warn("Could not persist metadata for credentials: {}", credentials.getName());
+    }
+    return false;
   }
 
 

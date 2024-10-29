@@ -292,6 +292,7 @@ public class CommandRunnerService {
   public String generateData(
       @Nullable MultipartFile modelFileAsFile,
       @Nullable String modelName,
+      @Nullable String owner,
       @Nullable Integer numberOfThreads,
       @Nullable Long numberOfBatches,
       @Nullable Long rowsPerBatch,
@@ -319,13 +320,11 @@ public class CommandRunnerService {
             e);
       }
 
-      // If model has been uploaded, it must be renamed to use its UUID for user and admin convenience
-      String newModelFilePath =
-          properties.get(ApplicationConfigs.DATAGEN_MODEL_RECEIVED_PATH) +
-              "/model-" + System.nanoTime() + ".json";
-      FileUtils.moveLocalFile(modelFile, newModelFilePath);
+      // WHY ??? If model has been uploaded, it must be renamed to use its UUID for user and admin convenience
+      //String newModelFilePath =properties.get(ApplicationConfigs.DATAGEN_MODEL_RECEIVED_PATH) +"/model-" + System.nanoTime() + ".json";
+      //FileUtils.moveLocalFile(modelFile, newModelFilePath);
       // Parsing model
-      modelId = modelStoreService.addModel(modelFile, false).getName();
+      modelId = modelStoreService.addModel(modelFile, false, owner).getName();
     } else {
       return "{ \"commandUuid\": \"\" , \"error\": \"Error Provide a model file or an existing model named\" }";
     }
@@ -333,11 +332,13 @@ public class CommandRunnerService {
     // Transform creds passed into real creds
     var credsList = new ArrayList<Credentials>();
     var allCreds = credentialsService.listCredentialsMetaAsMap();
-    credentialsList.forEach(c -> {
-      credsList.add(allCreds.get(c));
-    });
+    if(credentialsList!=null && !credentialsList.isEmpty()) {
+      credentialsList.forEach(c -> {
+        credsList.add(allCreds.get(c));
+      });
+    }
 
-    var commandUUID = generateData(modelStoreService.getModelAsModelStored(modelId),
+    var commandUUID = generateData(modelStoreService.getModelAsModelStored(modelId), owner,
         numberOfThreads, numberOfBatches, rowsPerBatch,
         scheduledReceived, delayBetweenExecutionsReceived, connectorsListAsString, extraProperties, credsList);
 
@@ -358,6 +359,7 @@ public class CommandRunnerService {
      */
   public UUID generateData(
       ModelStoreService.ModelStored model,
+      @Nullable String owner,
       @Nullable Integer numberOfThreads,
       @Nullable Long numberOfBatches,
       @Nullable Long rowsPerBatch,
@@ -436,7 +438,7 @@ public class CommandRunnerService {
 
     // Creation of command and queued to be processed
     Command command =
-        new Command(model.getPath(), modelForTheRun, threads, batches, rows, scheduled,
+        new Command(model.getPath(), modelForTheRun, owner, threads, batches, rows, scheduled,
             delayBetweenExecutions, connectorsList, properties);
     commands.put(command.getCommandUuid(), command);
     commandsToProcess.add(command);

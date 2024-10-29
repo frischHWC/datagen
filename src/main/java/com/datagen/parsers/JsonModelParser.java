@@ -41,14 +41,14 @@ import java.util.*;
  */
 @SuppressWarnings("unchecked")
 @Slf4j
-public class JsonParser<T extends Field> implements Parser {
+public class JsonModelParser<T extends Field> implements ModelParser {
 
   DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
 
   @Getter
   private JsonNode root;
 
-  public JsonParser(String jsonFilePath) {
+  public JsonModelParser(String jsonFilePath) {
     ObjectMapper mapper = new ObjectMapper();
     try {
       log.info("Model used is from Json file : {} ", jsonFilePath);
@@ -67,7 +67,7 @@ public class JsonParser<T extends Field> implements Parser {
     }
   }
 
-  public JsonParser(InputStream inputStream) {
+  public JsonModelParser(InputStream inputStream) {
     ObjectMapper mapper = new ObjectMapper();
     try {
       log.info("Model used is from Json input");

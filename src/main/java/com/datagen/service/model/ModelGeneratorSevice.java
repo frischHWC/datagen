@@ -97,7 +97,7 @@ public class ModelGeneratorSevice {
             Collections.singletonList(source), false)
         .get(0);
 
-    var model = modelStoreService.addModel(connector.generateModel(deepAnalysis), true);
+    var model = modelStoreService.addModel(connector.generateModel(deepAnalysis), true, "generator");
     return model.toJsonSchema(outputPath);
   }
 }

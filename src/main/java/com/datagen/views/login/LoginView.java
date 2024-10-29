@@ -8,10 +8,12 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import lombok.extern.slf4j.Slf4j;
 
 @Route("login")
 @PageTitle("Login")
 @AnonymousAllowed
+@Slf4j
 public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
   private LoginForm login = new LoginForm();
@@ -37,4 +39,5 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
       login.setError(true);
     }
   }
+  
 }

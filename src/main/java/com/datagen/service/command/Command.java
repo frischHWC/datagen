@@ -48,6 +48,7 @@ public class Command implements Serializable {
   private String modelId;
   private String modelFilePath;
   private String error;
+  private String owner;
   @JsonIgnore
   private Model model;
   private Integer numberOfThreads;
@@ -59,6 +60,7 @@ public class Command implements Serializable {
   private Map<ApplicationConfigs, String> properties;
   private Long durationMilliSeconds;
   private Long lastFinishedTimestamp;
+  private Long lastStartedTimestamp;
   private double progress;
 
 
@@ -68,6 +70,7 @@ public class Command implements Serializable {
     oos.writeObject(commandError);
     oos.writeObject(modelId);
     oos.writeObject(modelFilePath);
+    oos.writeObject(owner);
     oos.writeObject(numberOfThreads);
     oos.writeObject(numberOfBatches);
     oos.writeObject(rowsPerBatch);
@@ -77,6 +80,7 @@ public class Command implements Serializable {
     oos.writeObject(properties);
     oos.writeObject(durationMilliSeconds);
     oos.writeObject(lastFinishedTimestamp);
+    oos.writeObject(lastStartedTimestamp);
     oos.writeObject(progress);
   }
 
@@ -87,6 +91,7 @@ public class Command implements Serializable {
     this.commandError = (String) ois.readObject();
     this.modelId = (String) ois.readObject();
     this.modelFilePath = (String) ois.readObject();
+    this.owner = (String) ois.readObject();
     this.numberOfThreads = (Integer) ois.readObject();
     this.numberOfBatches = (Long) ois.readObject();
     this.rowsPerBatch = (Long) ois.readObject();
@@ -96,6 +101,7 @@ public class Command implements Serializable {
     this.properties = (Map<ApplicationConfigs, String>) ois.readObject();
     this.durationMilliSeconds = (Long) ois.readObject();
     this.lastFinishedTimestamp = (Long) ois.readObject();
+    this.lastStartedTimestamp = (Long) ois.readObject();
     this.progress = (double) ois.readObject();
   }
 
@@ -162,6 +168,7 @@ public class Command implements Serializable {
         "\"duration_ms\": \"" + durationMilliSeconds + "\"," + System.lineSeparator() +
         "\"progress\": \"" + progress + "\"," + System.lineSeparator() +
         "\"error\": \"" + commandError + "\"," + System.lineSeparator() +
+        "\"owner\": \"" + owner + "\"," + System.lineSeparator() +
         "\"modelId\": \"" + modelId + "\"," + System.lineSeparator() +
         "\"model_file\": \"" + modelFilePath + "\"," + System.lineSeparator() +
         "\"number_of_batches\": \"" + numberOfBatches + "\"," + System.lineSeparator() +
@@ -169,6 +176,7 @@ public class Command implements Serializable {
         "\"scheduled\": \"" + scheduled + "\"," + System.lineSeparator() +
         "\"delay_between_executions\": \"" + delayBetweenExecutions + "\"," + System.lineSeparator() +
         "\"last_finished_timestamp\": \"" + lastFinishedTimestamp + "\"," + System.lineSeparator() +
+        "\"last_started_timestamp\": \"" + lastStartedTimestamp + "\"," + System.lineSeparator() +
         "\"connectors\": \"" + connectorList + "\"," + System.lineSeparator() +
         "\"extra_properties\": [ " + propertiesAsString + " ] " + System.lineSeparator() +
         " }";
@@ -195,12 +203,14 @@ public class Command implements Serializable {
         "\"scheduled\": \"" + scheduled + "\"," + System.lineSeparator() +
         "\"delay_between_executions\": \"" + delayBetweenExecutions + "\"," + System.lineSeparator() +
         "\"last_finished_timestamp\": \"" + lastFinishedTimestamp + "\"," + System.lineSeparator() +
+        "\"last_started_timestamp\": \"" + lastFinishedTimestamp + "\"," + System.lineSeparator() +
         "\"connectors\": \"" + connectorList + "\"" + System.lineSeparator() +
         " }";
   }
 
   public Command(String modelFilePath,
                  Model model,
+                 String owner,
                  Integer numberOfThreads,
                  Long numberOfBatches,
                  Long rowsPerBatch,
@@ -210,6 +220,7 @@ public class Command implements Serializable {
                  Map<ApplicationConfigs, String> properties) {
     this.commandUuid = UUID.randomUUID();
     this.status = CommandStatus.QUEUED;
+    this.owner = owner == null || owner.isEmpty() ? "anonymous":owner;
     this.commandError = "";
     this.model = model;
     this.modelId = model.getName();
@@ -220,6 +231,7 @@ public class Command implements Serializable {
     this.scheduled = scheduled;
     this.delayBetweenExecutions = delayBetweenExecutions;
     this.lastFinishedTimestamp = 0L;
+    this.lastStartedTimestamp = System.currentTimeMillis();
     this.connectorsList = connectorsList;
     this.properties = properties;
     this.durationMilliSeconds = 0L;

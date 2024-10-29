@@ -596,6 +596,20 @@
           "type": "password"
         },
         {
+          "name": "auth_type",
+          "label": "Datagen Authentication Type",
+          "description": "The Authentication type to connect to Datagen. Internal: users are created in Datagen and a required admin user must be set first. LDAP: Plugged to a LDAP provider.",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "internal",
+          "type": "string_enum",
+          "validValues": [
+            "internal",
+            "ldap",
+            "ldap-embedded"
+          ]
+        },
+        {
           "name": "admin_user",
           "label": "Datagen admin user",
           "description": "The user to connect to Datagen Web Server",
@@ -612,6 +626,195 @@
           "configurableInWizard": true,
           "default": "admin",
           "type": "password"
+        },
+        {
+          "name": "admin_users",
+          "label": "Datagen admin users",
+          "description": "Comma separated list of users that will be admin",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "",
+          "type": "string"
+        },
+        {
+          "name": "admin_groups",
+          "label": "Datagen admin groups",
+          "description": "Comma separated list of groups that will be admin",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "",
+          "type": "string"
+        },
+        {
+          "name": "ldap_allowed_groups",
+          "label": "Datagen allowed groups",
+          "description": "(Only for LDAP) Comma separated list of groups that will be allowed to use Datagen. Empty means all groups, once connected are allowed to use Datagen.",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "",
+          "type": "string"
+        },
+        {
+          "name": "ldap_allowed_users",
+          "label": "Datagen allowed users",
+          "description": "(Only for LDAP) Comma separated list of users that will be allowed to use Datagen. Empty means all groups, once connected are allowed to use Datagen.",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "",
+          "type": "string"
+        },
+        {
+          "name": "ldap_url",
+          "label": "LDAP URL",
+          "description": "URL Of ldap in format: ldap://<ldap_host>:<ldap_port>/",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "",
+          "type": "string"
+        },
+        {
+          "name": "ldap_basedn",
+          "label": "LDAP Base DN",
+          "description": "Base DN in format: dc=datagen,dc=com",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "",
+          "type": "string"
+        },
+        {
+          "name": "ldap_bind_user",
+          "label": "LDAP Bind User",
+          "description": "Bind user to the ldap in full format (including base dn): uid=bind_user,cn=user,dc=datagen,dc=com",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "",
+          "type": "string"
+        },
+        {
+          "name": "ldap_bind_password",
+          "label": "LDAP Bind password",
+          "description": "LDAP Password associated to bind user",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "",
+          "type": "password"
+        },
+        {
+          "name": "ldap_group_base",
+          "label": "LDAP Group Base",
+          "description": "Group Base in format (without base DN): cn=groups,cn=accounts",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "",
+          "type": "string"
+        },
+        {
+          "name": "ldap_group_filter",
+          "label": "LDAP Group Filter",
+          "description": "group Filter, usually: (member={0})",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "(member={0})",
+          "type": "string"
+        },
+        {
+          "name": "ldap_group_search_subtree",
+          "label": "LDAP Search subtree",
+          "description": "To search subtree or not when looking for groups.",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "true",
+          "type": "boolean"
+        },
+        {
+          "name": "ldap_group_search_maxdepth",
+          "label": "LDAP Group search Max Depth",
+          "description": "Max depth where to search groups",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "5",
+          "type": "long"
+        },
+        {
+          "name": "ldap_group_role_attribute",
+          "label": "LDAP Group Role Attribute",
+          "description": "group Role Attribute to get name of the group, usually: cn",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "cn",
+          "type": "string"
+        },
+        {
+          "name": "ldap_group_convert_uppercase",
+          "label": "LDAP Group Convert Uppercase",
+          "description": "To automatically convert group to uppercase",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "true",
+          "type": "boolean"
+        },
+        {
+          "name": "ldap_group_attribute",
+          "label": "LDAP Group Attribute",
+          "description": "Attribute found in a user to attach it to a group, usually: memberof",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "memberof",
+          "type": "string"
+        },
+        {
+          "name": "ldap_group_user_attribute",
+          "label": "LDAP Group User Attribute",
+          "description": "Attribute found in a group to attach users to it, usually: member",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "member",
+          "type": "string"
+        },
+        {
+          "name": "ldap_reverse_search",
+          "label": "LDAP Enable Reverse Search",
+          "description": "Enabling reverse search means searching groups to retrieve groups of a user once logged in.",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "true",
+          "type": "boolean"
+        },
+        {
+          "name": "ldap_reverse_search_timeout",
+          "label": "LDAP Reverse search Timeout",
+          "description": "Timeout for the reverse search that could take a long time. (in seconds)",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "60",
+          "type": "long"
+        },
+        {
+          "name": "ldap_user_base",
+          "label": "LDAP User Base",
+          "description": "LDAP User base to find users, in format (without base DN): cn=user,cn=accounts",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "",
+          "type": "string"
+        },
+        {
+          "name": "ldap_user_filter",
+          "label": "LDAP User Filter",
+          "description": "LDAP User Filter, usually: (uid={0})",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "(uid={0})",
+          "type": "string"
+        },
+        {
+          "name": "ldap_user_attribute",
+          "label": "LDAP User Attribute",
+          "description": "LDAP Attribute to get username, usually: uid",
+          "required": true,
+          "configurableInWizard": true,
+          "default": "uid",
+          "type": "string"
         },
         {
           "name": "java_home_custom",
@@ -956,6 +1159,15 @@
           "label": "Commands directory",
           "description": "Where to store the internal status of commands and their information",
           "default": "/home/datagen/commands",
+          "type": "path",
+          "pathType": "serviceSpecific",
+          "mode": "0700"
+        },
+        {
+          "name": "users_file_path",
+          "label": "Users File Path",
+          "description": "Where to store the internal users",
+          "default": "/home/datagen/users/users.txt",
           "type": "path",
           "pathType": "serviceSpecific",
           "mode": "0700"

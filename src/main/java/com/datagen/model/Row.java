@@ -250,6 +250,10 @@ public class Row<T extends Field> {
       case "IpField":
       case "PhoneField":
       case "UuidField":
+      case "BedrockField":
+      case "LocalLLMField":
+      case "OllamaField":
+      case "OpenAIField":
         BytesColumnVector bytesColumnVector = (BytesColumnVector) cv;
         String stringValue = (String) values.get(field);
         bytesColumnVector.setVal(rowNumber,

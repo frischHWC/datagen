@@ -20,7 +20,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
-import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +38,7 @@ import static com.datagen.views.analysis.AnalysisUtils.*;
 @Slf4j
 @PageTitle("Models")
 @Route(value = "analysis", layout = MainLayout.class)
-@PermitAll
+@RolesAllowed({"ROLE_DATAGEN_USER", "ROLE_DATAGEN_ADMIN"})
 public class AnalysisView extends Composite<VerticalLayout> {
 
     @Autowired

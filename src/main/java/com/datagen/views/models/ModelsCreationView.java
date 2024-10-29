@@ -8,6 +8,7 @@ import com.datagen.model.Row;
 import com.datagen.model.type.*;
 import com.datagen.service.model.ModelStoreService;
 import com.datagen.views.MainLayout;
+import com.datagen.views.utils.UsersUtils;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -31,7 +32,8 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
-import jakarta.annotation.security.PermitAll;
+import com.vaadin.flow.spring.security.AuthenticationContext;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.lineawesome.LineAwesomeIcon;
@@ -48,11 +50,14 @@ import static com.datagen.views.models.ModelsUtils.*;
 @Slf4j
 @PageTitle("Models Creation")
 @Route(value = "model/creation", layout = MainLayout.class)
-@PermitAll
+@RolesAllowed({"ROLE_DATAGEN_USER", "ROLE_DATAGEN_ADMIN"})
 public class ModelsCreationView extends Composite<VerticalLayout> {
+
+  private final transient AuthenticationContext authContext;
 
   @Autowired
   private ModelStoreService modelStoreService;
+
 
   private final LinkedList<Binder<FieldRepresentation>> binders;
   private final Binder<Map<OptionsConverter.TableNames, String>> tableNamesPropsBinder;
@@ -63,7 +68,8 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
   private String modelLoaded="";
 
   @Autowired
-  public ModelsCreationView(PropertiesLoader propertiesLoader) {
+  public ModelsCreationView(AuthenticationContext authContext, PropertiesLoader propertiesLoader) {
+    this.authContext = authContext;
     binders = new LinkedList<>();
     propertiesFromConfigFile = propertiesLoader.getPropertiesCopy();
     tableNamesPropsBinder = new Binder<>();
@@ -190,19 +196,34 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
     // Save model by getting all fields, creating a model object and writing this model object on disk
     saveModel.addClickListener(e -> {
       if(modelStoreService.checkModelExists(modelName.getValue())) {
-        var dialogModelAlreadyExists = new Dialog("Model already exists, do you want to overwrite it ?");
-        Button cancelButton = new Button("Close", ev -> {
-          dialogModelAlreadyExists.close();
-        });
-        Button saveButton = new Button("Overwrite");
-        saveButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
-        saveButton.addClickListener(saveEvent -> {
-          saveModel(createModelFromBinders(modelName.getValue()), layoutColumn, modelHl, saveModel, testModel, downloadModel);
-          dialogModelAlreadyExists.close();
-        });
+        // A non-admin user cannot overwrite a model if it does not belong to him
+        if(
+            !modelStoreService.isUserAllowedToAdminModel(UsersUtils.getUser(authContext), UsersUtils.getUserGroups(authContext), modelName.getValue()) &&
+                !UsersUtils.isUserDatagenAdmin(authContext)
+        ) {
+          Notification notificationErrorModelSave = Notification.show(" You cannot save model: \'" + modelName.getValue() +
+                  "\' because you are not admin. " +
+                  "Change name or ask to change permissions on it.", 5000,
+              Notification.Position.TOP_CENTER);
+          notificationErrorModelSave.addThemeVariants(NotificationVariant.LUMO_ERROR);
+          notificationErrorModelSave.open();
+        } else {
+          var dialogModelAlreadyExists =
+              new Dialog("Model already exists, do you want to overwrite it ?");
+          Button cancelButton = new Button("Close", ev -> {
+            dialogModelAlreadyExists.close();
+          });
+          Button saveButton = new Button("Overwrite");
+          saveButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+          saveButton.addClickListener(saveEvent -> {
+            saveModel(createModelFromBinders(modelName.getValue()),
+                layoutColumn, modelHl, saveModel, testModel, downloadModel);
+            dialogModelAlreadyExists.close();
+          });
 
-        dialogModelAlreadyExists.getFooter().add(cancelButton, saveButton);
-        dialogModelAlreadyExists.open();
+          dialogModelAlreadyExists.getFooter().add(cancelButton, saveButton);
+          dialogModelAlreadyExists.open();
+        }
       } else {
         saveModel(createModelFromBinders(modelName.getValue()), layoutColumn, modelHl, saveModel, testModel, downloadModel);
       }
@@ -269,7 +290,7 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
    */
   private void saveModel(Model model, VerticalLayout layoutColumn, HorizontalLayout modelHl, Button saveModel, Button testModel, Button downloadModel) {
     // Save the model
-    var modelStored = modelStoreService.addModel(model, false);
+    var modelStored = modelStoreService.addModel(model, false, UsersUtils.getUser(authContext));
     modelId = modelStored.getName();
     log.debug("Created model with id: {} from UI: {}", modelId, model);
 
@@ -308,7 +329,14 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
       var dialogLoad = new Dialog();
       dialogLoad.setHeaderTitle("Which model do you want to load ?");
       var listOfmodels = new ComboBox<String>("Registered Models");
-      listOfmodels.setItems(modelStoreService.listModels());
+      if(UsersUtils.isUserDatagenAdmin(authContext)) {
+        listOfmodels.setItems(modelStoreService.listModels());
+      } else {
+        listOfmodels.setItems(
+            modelStoreService.listModelsAsModelStoredAuthorized(
+                UsersUtils.getUser(authContext)).stream().map(
+                ModelStoreService.ModelStored::getName).toList());
+      }
       listOfmodels.addValueChangeListener(modelChosen -> modelLoaded=modelChosen.getValue());
       dialogLoad.add(listOfmodels);
       // dialogLoad.add(uploadModelButton());
@@ -377,7 +405,8 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
     upload.addSucceededListener(event -> {
       var fileName = event.getFileName();
       try(var inputStream = buffer.getInputStream(fileName)) {
-        modelLoaded = modelStoreService.addModel(inputStream, true).getName();
+        var ownerName = this.authContext.getPrincipalName().orElseGet(() -> "anonymous");
+        modelLoaded = modelStoreService.addModel(inputStream, true, ownerName).getName();
       } catch (IOException e){
         log.warn("Cannot read input data");
       } catch (Exception e) {
@@ -456,7 +485,9 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
     comboBox.setRequired(true);
     comboBox.setRequiredIndicatorVisible(true);
     comboBox.setItems(
-        EnumSet.allOf(FieldRepresentation.FieldType.class).stream().toList());
+        EnumSet.allOf(FieldRepresentation.FieldType.class).stream()
+            .sorted(Comparator.comparing(Enum::name))
+            .toList());
     binder.bind(comboBox, FieldRepresentation::getType,
         FieldRepresentation::setType);
     comboBox.setMinWidth("40%");
@@ -522,9 +553,14 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         listOfField.add(injectionValue);
         listOfOptionsForField.add(ModelsUtils.createInfoForAParameter(injectionValue,
             """
-                Instead of generating random value, value is generated using other column values, by making an injection of theses values inside this column.
-                Other columns are referenced using a ${}
-                Example: ${name}@${company}.com will generate: francois@cloudera.com, michael@company.com depending on values of columns name & company previous ly defined.
+                Instead of generating random value, value is generated using other column values,
+                  by making an injection of theses values inside this column.
+                Other columns are referenced using a ${}.
+                Example: 
+                  ${name}@${company}.com 
+                  will generate: 
+                   'francois@cloudera.com' or 'michael@company.com' 
+                   depending on values of columns 'name' & 'company' previous ly defined.
                 """
         ));
 
@@ -535,10 +571,14 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         listOfField.add(formulaValue);
         listOfOptionsForField.add(ModelsUtils.createInfoForAParameter(formulaValue,
             """
-                Instead of generating random value, value is generated using other column values, by making a computing using other column values.
-                It is using a JS evaluator, hence letting to use any kind of operators to compute a formula, or to even use coding function like if, for etc...
+                Instead of generating random value, value is generated using other column values, 
+                  by making a computing using other column values.
+                It is using a JS evaluator, hence letting to use any kind of operators to compute a formula, 
+                  or to even use coding function like if, for etc...
                 Other columns are referenced using a ${}.
-                Examples: '(${hour} +6)/24'
+                Examples:
+                '(${hour} +6)/24'
+                or:
                 'if( ${test} > 15) { true } else { false }'
                 """
         ));
@@ -575,16 +615,20 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         listOfField.add(formulaValue);
         listOfOptionsForField.add(ModelsUtils.createInfoForAParameter(formulaValue,
             """
-                Instead of generating random value, value is generated using other column values, by making a computing using other column values.
-                It is using a JS evaluator, hence letting to use any kind of operators to compute a formula, or to even use coding function like if, for etc...
+                Instead of generating random value, value is generated using other column values, 
+                  by making a computing using other column values.
+                It is using a JS evaluator, hence letting to use any kind of operators to compute a formula, 
+                  or to even use coding function like if, for etc...
                 Other columns are referenced using a ${}.
-                Examples: '(${hour} +6)/24'
+                Examples:
+                '(${hour} +6)/24'
+                or:
                 'if( ${test} > 15) { true } else { false }'
                 """
         ));
       }
 
-      case INCREMENT_INTEGER -> {
+      case INCREMENT_INTEGER, INCREMENT_LONG -> {
         var minParam = ModelsUtils.createMinInt("(Optional) Minimum:", binder, Integer.MIN_VALUE, Integer.MAX_VALUE);
         if(fieldRepresentation!=null && fieldRepresentation.getMin()!=null) {
           minParam.setValue(fieldRepresentation.getMin().intValue());
@@ -618,10 +662,14 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         listOfField.add(formulaValue);
         listOfOptionsForField.add(ModelsUtils.createInfoForAParameter(formulaValue,
             """
-                Instead of generating random value, value is generated using other column values, by making a computing using other column values.
-                It is using a JS evaluator, hence letting to use any kind of operators to compute a formula, or to even use coding function like if, for etc...
+                Instead of generating random value, value is generated using other column values, 
+                  by making a computing using other column values.
+                It is using a JS evaluator, hence letting to use any kind of operators to compute a formula, 
+                  or to even use coding function like if, for etc...
                 Other columns are referenced using a ${}.
-                Examples: '(${hour} +6)/24'
+                Examples:
+                '(${hour} +6)/24'
+                or:
                 'if( ${test} > 15) { true } else { false }'
                 """
         ));
@@ -658,10 +706,14 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         listOfField.add(formulaValue);
         listOfOptionsForField.add(ModelsUtils.createInfoForAParameter(formulaValue,
             """
-                Instead of generating random value, value is generated using other column values, by making a computing using other column values.
-                It is using a JS evaluator, hence letting to use any kind of operators to compute a formula, or to even use coding function like if, for etc...
+                Instead of generating random value, value is generated using other column values, 
+                  by making a computing using other column values.
+                It is using a JS evaluator, hence letting to use any kind of operators to compute a formula, 
+                  or to even use coding function like if, for etc...
                 Other columns are referenced using a ${}.
-                Examples: '(${hour} +6)/24'
+                Examples:
+                '(${hour} +6)/24'
+                or:
                 'if( ${test} > 15) { true } else { false }'
                 """
         ));
@@ -698,10 +750,14 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         listOfField.add(formulaValue);
         listOfOptionsForField.add(ModelsUtils.createInfoForAParameter(formulaValue,
             """
-                Instead of generating random value, value is generated using other column values, by making a computing using other column values.
-                It is using a JS evaluator, hence letting to use any kind of operators to compute a formula, or to even use coding function like if, for etc...
+                Instead of generating random value, value is generated using other column values, 
+                  by making a computing using other column values.
+                It is using a JS evaluator, hence letting to use any kind of operators to compute a formula, 
+                  or to even use coding function like if, for etc...
                 Other columns are referenced using a ${}.
-                Examples: '(${hour} +6)/24'
+                Examples:
+                '(${hour} +6)/24'
+                or:
                 'if( ${test} > 15) { true } else { false }'
                 """
         ));
@@ -729,10 +785,14 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         listOfField.add(formulaValue);
         listOfOptionsForField.add(ModelsUtils.createInfoForAParameter(formulaValue,
             """
-                Instead of generating random value, value is generated using other column values, by making a computing using other column values.
-                It is using a JS evaluator, hence letting to use any kind of operators to compute a formula, or to even use coding function like if, for etc...
+                Instead of generating random value, value is generated using other column values, 
+                  by making a computing using other column values.
+                It is using a JS evaluator, hence letting to use any kind of operators to compute a formula, 
+                  or to even use coding function like if, for etc...
                 Other columns are referenced using a ${}.
-                Examples: '(${hour} +6)/24'
+                Examples:
+                '(${hour} +6)/24'
+                or:
                 'if( ${test} > 15) { true } else { false }'
                 """
         ));
@@ -815,9 +875,12 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         listOfOptionsForField.add(ModelsUtils.createInfoForAParameter(linkValue,
             """
       This field provides a way to make a link from another column whose type is either CSV or City.
-      The link must be consists of 4 parts: $<name of the other column to reference>.<name_of_the_column_to_use>
-      Example: $city_col.lat will give the latitude of a city picked by another column named 'city_col'.
-      Available links for city column are: lat, long, country. For CSV, it is the other columns of the CSV.
+      The link must be consists of 4 parts: 
+        $<name of the other column to reference>.<name_of_the_column_to_use>
+      Example: 
+        $city_col.lat will give the latitude of a city picked by another column named 'city_col'.
+      For City, links are: lat, long, country. 
+      For CSV, links are other columns present in the CSV file.
       """
         ));}
 
@@ -846,7 +909,7 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         }
         listOfField.add(separator);
         listOfOptionsForField.add(ModelsUtils.createInfoForAParameter(separator,
-            "Separator character of teh input CSV "
+            "Separator character of the input CSV "
         ));
 
         var filters = ModelsUtils.createListOfFilters("(Optional) Filters to apply:", binder);
@@ -865,7 +928,7 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         }
         listOfField.add(filters);
         listOfOptionsForField.add(ModelsUtils.createInfoForAParameter(filters,
-            "Apply one or more filters to get only phone style numbers present in one or more specified country."
+            "Apply one or more filters to get only phone numbers like present in one or more specified country."
         ));
       }
 
@@ -919,7 +982,8 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         listOfOptionsForField.add(createInfoForAParameter(pattern,
             """
                 Optional pattern on how date should be generated.
-                Patterns are respecting standard Java ones described here: https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html
+                Patterns are respecting standard Java ones described here:
+                  https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html
                 (Note that the output is cast to as String using this pattern).
                 (Default to pattern: YYYY-MM-DD HH:MM:SS if not set)
                 """));
@@ -957,9 +1021,12 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         listOfOptionsForField.add(createInfoForAParameter(regex,
             """
                 Give the regex that define what data should be generated.
-                All characters are accepted and will be printed out, to insert a regex, it must be between [], and followed with a number between {} to determine the repetition of this expression.
+                All characters are accepted and will be printed out.
+                To insert a regex, it must be between [], and followed with a number between {} 
+                  to determine the repetition of this expression.
                 Inside the [], all values are accepted (including special characters), and must be separated by a ','.
-                To make a range, 3 types of range are available: A-Z for upper, a-z for lower and 0-9 for numbers. (Range can be shortened to A-D for example)
+                To make a range, 3 types of range are available: 
+                  A-Z for upper, a-z for lower and 0-9 for numbers. (Range can be shortened to A-D for example)
                 """));
       }
 
@@ -971,8 +1038,10 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         listOfField.add(modelFile);
         listOfOptionsForField.add(ModelsUtils.createInfoForAParameter(modelFile,
             """
-        Absolute path of the Model file in gguf format, that will load the model for data generation.
-        Or URL to file in a repository (such as Hugging Face), where it will be downloaded from and used.
+        Absolute path of the Model file in gguf format present on Datagen's machine.
+          It will then load the model for data generation.
+        Or URL to a file in a repository (such as Hugging Face).
+         It will be downloaded from and used.
         """
         ));
 
@@ -985,7 +1054,8 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
             """
                 What request to send to the LLM to generate wanted data.
                 The request can include references to other columns values by using ${}.
-                Example: 'generate a one line birthday wish to ${name} who is ${age} years old today'.
+                Example: 
+                  'generate a one line birthday wish to ${name} who is ${age} years old today'.
                 """));
 
         var context = ModelsUtils.createContext("(Optional) Context: ", binder);
@@ -1055,7 +1125,8 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
             """
                 What request to send to the LLM to generate wanted data.
                 The request can include references to other columns values by using ${}.
-                Example: 'generate a one line birthday wish to ${name} who is ${age} years old today'.
+                Example: 
+                  'generate a one line birthday wish to ${name} who is ${age} years old today'.
                 """));
 
         var url = ModelsUtils.createURL("(Optional) Url: ", binder);
@@ -1067,7 +1138,7 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
             """ 
         URL of the llama to use in format: http://hostname:port.
         Example: http://localhost:11434
-        Default to the one set in configuration files otherwise.
+        Default to the one set in configuration files.
         """));
 
         var modelType = ModelsUtils.createModelType("(Optional) Model: ", binder, "llama3");
@@ -1077,8 +1148,9 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         listOfField.add(modelType);
         listOfOptionsForField.add(createInfoForAParameter(modelType,
             """
-                Name of the model to ask LLM to use (tested are llama3, mistral, phi3, moondream).
-                Default to the one set in configuration, and  if not set to llama3.
+                Name of the model to ask LLM to use 
+                  (tested are llama3, mistral, phi3, moondream).
+                Default to the one set in configuration, and if not set to 'llama3'.
                 """));
 
         var context = ModelsUtils.createContext("(Optional) Context: ", binder);
@@ -1147,7 +1219,8 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
             """
                 What request to send to the LLM to generate wanted data.
                 The request can include references to other columns values by using ${}.
-                Example: 'generate a one line birthday wish to ${name} who is ${age} years old today'.
+                Example: 
+                  'generate a one line birthday wish to ${name} who is ${age} years old today'.
                 """));
 
         var username = ModelsUtils.createUsername("(Optional) AWS Access Key ID: ", binder);
@@ -1179,9 +1252,11 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         listOfField.add(modelType);
         listOfOptionsForField.add(createInfoForAParameter(modelType,
             """
-                Name of the model to ask LLM to use (tested are amazon.titan-text-lite-v1, meta.llama3-8b-instruct-v1:0).
+                Name of the model to ask LLM to use 
+                  (tested are amazon.titan-text-lite-v1, meta.llama3-8b-instruct-v1:0).
                 Default to the one set in configuration, and if not set to amazon.titan-text-lite-v1.
-                List of all current model IDs can be found here: https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids.html
+                List of all current model IDs can be found in AWS documentation:
+                  https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids.html
                 """));
 
         var context = ModelsUtils.createContext("(Optional) Context: ", binder);
@@ -1238,7 +1313,7 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         listOfField.add(password);
         listOfOptionsForField.add(createInfoForAParameter(password,
             """
-                To authenticate against Bedrock.
+                To authenticate to OpenAI API.
                 Default to the one set in configuration.
                 """));
 
@@ -1351,6 +1426,7 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
    */
   private Details connectorsConfigs() {
     var mainDetails = new Details("(Optional) Connectors Configuration: ");
+    mainDetails.setWidthFull();
     var genDetails = new Details("Generic");
     genDetails.add(
         List.of(
@@ -1425,14 +1501,6 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
             createInfoForAParameter(
                 createGenericIntegerOptionProps("HDFS Replication Factor", null,
                     OptionsConverter.Options.HDFS_REPLICATION_FACTOR, optionsPropsBinder),
-                ""),
-            createInfoForAParameter(
-                createGenericStringTableNamesProps("HDFS File Path", null,
-                    OptionsConverter.TableNames.HDFS_FILE_PATH, tableNamesPropsBinder),
-                ""),
-            createInfoForAParameter(
-                createGenericStringTableNamesProps("HDFS File Name", null,
-                    OptionsConverter.TableNames.HDFS_FILE_NAME, tableNamesPropsBinder),
                 "")
         )
     );
@@ -1756,7 +1824,7 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
                     OptionsConverter.Options.SOLR_REPLICAS, optionsPropsBinder),
                 ""),
             createInfoForAParameter(
-                createGenericBooleanOptionProps("SOLR JaaS File Path", null,
+                createGenericStringOptionProps("SOLR JaaS File Path", null,
                     OptionsConverter.Options.SOLR_JAAS_FILE_PATH, optionsPropsBinder),
                 "")
         )

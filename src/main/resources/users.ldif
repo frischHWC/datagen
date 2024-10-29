@@ -1,0 +1,60 @@
+dn: dc=springframework,dc=org
+objectclass: top
+objectclass: domain
+objectclass: extensibleObject
+dc: springframework
+
+dn: ou=groups,dc=springframework,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: groups
+
+dn: ou=people,dc=springframework,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: people
+
+dn: uid=admin,ou=people,dc=springframework,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Rod Johnson
+sn: Johnson
+uid: admin
+userPassword: password
+
+dn: uid=francois,ou=people,dc=springframework,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Francois R
+sn: ff
+uid: francois
+userPassword: $2a$10$.3a6w/Mgq2KL.oyKJn9XtuC5/nwiBi7SkmTQB652zl7t2.ZMKZ45S
+
+dn: uid=auguste,ou=people,dc=springframework,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Auguste R
+sn: ar
+uid: auguste
+userPassword: $2a$10$.3a6w/Mgq2KL.oyKJn9XtuC5/nwiBi7SkmTQB652zl7t2.ZMKZ45S
+
+dn: cn=users,ou=groups,dc=springframework,dc=org
+objectclass: top
+objectclass: groupOfNames
+cn: user
+member: uid=admin,ou=people,dc=springframework,dc=org
+member: uid=francois,ou=people,dc=springframework,dc=org
+member: uid=auguste,ou=people,dc=springframework,dc=org
+
+dn: cn=admin,ou=groups,dc=springframework,dc=org
+objectclass: top
+objectclass: groupOfNames
+cn: admin
+member: uid=admin,ou=people,dc=springframework,dc=org
+member: uid=francois,ou=people,dc=springframework,dc=org

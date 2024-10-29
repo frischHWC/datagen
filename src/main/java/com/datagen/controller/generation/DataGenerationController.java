@@ -26,6 +26,8 @@ import com.datagen.service.model.ModelStoreService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -66,7 +68,8 @@ public class DataGenerationController {
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
       List<String> credentials,
-      @RequestParam(name = "connectors") List<String> connectors
+      @RequestParam(name = "connectors") List<String> connectors,
+      @AuthenticationPrincipal User user
   ) {
     StringBuffer connectorList = new StringBuffer();
     connectors.forEach(s -> {
@@ -77,7 +80,7 @@ public class DataGenerationController {
     log.debug(
         "Received request with model: {} , threads: {} , batches: {}, rows: {}, to connectors: {}",
         modelName, threads, numberOfBatches, rowsPerBatch, connectorList);
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         connectors,
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -97,13 +100,14 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for CSV with model: {} , threads: {} , batches: {}, rows: {}",
         modelName, threads, numberOfBatches, rowsPerBatch);
     Boolean scheduled = delayBetweenExecutions != null;
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("CSV"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -123,13 +127,14 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for JSON with model: {} , threads: {} , batches: {}, rows: {}",
         modelName, threads, numberOfBatches, rowsPerBatch);
     Boolean scheduled = delayBetweenExecutions != null;
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("JSON"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -149,13 +154,14 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for Avro with model: {} , threads: {} , batches: {}, rows: {}",
         modelName, threads, numberOfBatches, rowsPerBatch);
     Boolean scheduled = delayBetweenExecutions != null;
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("AVRO"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -175,13 +181,14 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for Parquet with model: {} , threads: {} , batches: {}, rows: {}",
         modelName, threads, numberOfBatches, rowsPerBatch);
     Boolean scheduled = delayBetweenExecutions != null;
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("PARQUET"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -201,13 +208,14 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for ORC with model: {} , threads: {} , batches: {}, rows: {}",
         modelName, threads, numberOfBatches, rowsPerBatch);
     Boolean scheduled = delayBetweenExecutions != null;
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("ORC"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -227,14 +235,15 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for HDFS-CSV with model: {} , threads: {} , batches: {}, rows: {}",
         modelName, threads, numberOfBatches, rowsPerBatch);
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("HDFS-CSV"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -254,7 +263,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for HDFS-AVRO with model: {} , threads: {} , batches: {}, rows: {}",
@@ -262,7 +272,7 @@ public class DataGenerationController {
     Boolean scheduled = delayBetweenExecutions != null;
 
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("HDFS-AVRO"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -282,7 +292,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for HDFS-JSON with model: {} , threads: {} , batches: {}, rows: {}",
@@ -290,7 +301,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("HDFS-JSON"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -310,7 +321,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for HDFS-PARQUET with model: {} , threads: {} , batches: {}, rows: {}",
@@ -318,7 +330,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("HDFS-PARQUET"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -338,7 +350,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for HDFS-ORC with model: {} , threads: {} , batches: {}, rows: {}",
@@ -346,7 +359,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("HDFS-ORC"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -366,7 +379,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for HBASE with model: {} , threads: {} , batches: {}, rows: {}",
@@ -374,7 +388,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("HBASE"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -394,7 +408,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for HIVE with model: {} , threads: {} , batches: {}, rows: {}",
@@ -402,7 +417,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("HIVE"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -422,7 +437,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for OZONE with model: {} , threads: {} , batches: {}, rows: {}",
@@ -430,7 +446,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("OZONE"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -450,7 +466,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for OZONE-CSV with model: {} , threads: {} , batches: {}, rows: {}",
@@ -458,7 +475,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("OZONE-CSV"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -478,7 +495,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for OZONE-JSON with model: {} , threads: {} , batches: {}, rows: {}",
@@ -486,7 +504,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("OZONE-JSON"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -506,7 +524,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for OZONE-AVRO with model: {} , threads: {} , batches: {}, rows: {}",
@@ -514,7 +533,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("OZONE-AVRO"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -534,7 +553,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for OZONE-PARQUET with model: {} , threads: {} , batches: {}, rows: {}",
@@ -542,7 +562,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("OZONE-PARQUET"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -562,7 +582,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for OZONE-ORC with model: {} , threads: {} , batches: {}, rows: {}",
@@ -570,7 +591,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("OZONE-ORC"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -590,7 +611,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for KAFKA with model: {} , threads: {} , batches: {}, rows: {}",
@@ -598,7 +620,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("KAFKA"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -618,7 +640,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for SOLR with model: {} , threads: {} , batches: {}, rows: {}",
@@ -626,7 +649,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("SOLR"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -646,7 +669,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for KUDU with model: {} , threads: {} , batches: {}, rows: {}",
@@ -654,7 +678,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("KUDU"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -665,7 +689,8 @@ public class DataGenerationController {
   public String generateAPI(
       @RequestPart(required = false, name = "model_file")
       MultipartFile modelFile,
-      @RequestParam(required = false, name = "model") String modelName
+      @RequestParam(required = false, name = "model") String modelName,
+      @AuthenticationPrincipal User user
   ) {
     log.debug("Received request for API with model: {}", modelName);
 
@@ -675,7 +700,9 @@ public class DataGenerationController {
 
   @GetMapping(value = "/api/gen")
   @ResponseBody
-  public String getFromAPI(@RequestParam(name = "modelId") String modelId) {
+  public String getFromAPI(@RequestParam(name = "modelId") String modelId,
+      @AuthenticationPrincipal User user
+  ) {
     log.debug("Received request for API to generate data from model: {}",
         modelId);
 
@@ -696,7 +723,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for S3-CSV with model: {} , threads: {} , batches: {}, rows: {}",
@@ -704,7 +732,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("S3-CSV"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -724,7 +752,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for S3-JSON with model: {} , threads: {} , batches: {}, rows: {}",
@@ -732,7 +761,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("S3-JSON"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -752,7 +781,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for S3-AVRO with model: {} , threads: {} , batches: {}, rows: {}",
@@ -760,7 +790,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("S3-AVRO"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -780,7 +810,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for S3-PARQUET with model: {} , threads: {} , batches: {}, rows: {}",
@@ -788,7 +819,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("S3-PARQUET"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -808,7 +839,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for S3-ORC with model: {} , threads: {} , batches: {}, rows: {}",
@@ -816,7 +848,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("S3-ORC"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -836,7 +868,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for ADLS-CSV with model: {} , threads: {} , batches: {}, rows: {}",
@@ -844,7 +877,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("ADLS-CSV"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -864,7 +897,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for ADLS-JSON with model: {} , threads: {} , batches: {}, rows: {}",
@@ -872,7 +906,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("ADLS-JSON"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -892,7 +926,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for ADLS-AVRO with model: {} , threads: {} , batches: {}, rows: {}",
@@ -900,7 +935,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("ADLS-AVRO"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -920,7 +955,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for ADLS-PARQUET with model: {} , threads: {} , batches: {}, rows: {}",
@@ -928,7 +964,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("ADLS-PARQUET"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -948,7 +984,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for ADLS-ORC with model: {} , threads: {} , batches: {}, rows: {}",
@@ -956,7 +993,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("ADLS-ORC"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -977,7 +1014,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for GCS-CSV with model: {} , threads: {} , batches: {}, rows: {}",
@@ -985,7 +1023,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("GCS-CSV"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -1005,7 +1043,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for GCS-JSON with model: {} , threads: {} , batches: {}, rows: {}",
@@ -1013,7 +1052,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("GCS-JSON"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -1033,7 +1072,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for GCS-AVRO with model: {} , threads: {} , batches: {}, rows: {}",
@@ -1041,7 +1081,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("GCS-AVRO"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -1061,7 +1101,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for GCS-PARQUET with model: {} , threads: {} , batches: {}, rows: {}",
@@ -1069,7 +1110,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("GCS-PARQUET"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);
@@ -1089,7 +1130,8 @@ public class DataGenerationController {
       @RequestParam(required = false, name = "extraProperties")
       Map<String, String> extraProperties,
       @RequestParam(required = false, name = "credentials")
-      List<String> credentials
+      List<String> credentials,
+      @AuthenticationPrincipal User user
   ) {
     log.debug(
         "Received request for GCS-ORC with model: {} , threads: {} , batches: {}, rows: {}",
@@ -1097,7 +1139,7 @@ public class DataGenerationController {
 
     Boolean scheduled = delayBetweenExecutions != null;
 
-    return commandRunnerService.generateData(modelFile, modelName, threads,
+    return commandRunnerService.generateData(modelFile, modelName, user.getUsername(), threads,
         numberOfBatches, rowsPerBatch, scheduled, delayBetweenExecutions,
         Collections.singletonList("GCS-ORC"),
         ApplicationConfigMapper.parsePropertiesMap(extraProperties), credentials);

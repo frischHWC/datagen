@@ -6,6 +6,8 @@ import com.datagen.views.generation.GenerationView;
 import com.datagen.views.models.CredentialsView;
 import com.datagen.views.models.ModelsCreationView;
 import com.datagen.views.models.ModelsManagementView;
+import com.datagen.views.users.UsersView;
+import com.datagen.views.utils.UsersUtils;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -80,7 +82,13 @@ public class MainLayout extends AppLayout {
         dataAnalysisNav.setPrefixComponent(LineAwesomeIcon.COMPASS.create());
         dataAnalysisNav.addItem(new SideNavItem("Analyze", AnalysisView.class, LineAwesomeIcon.PLAY_CIRCLE.create()));
 
-        nav.addItem(homeNav, modelsNav, dataGenNav, dataAnalysisNav);
+        var usersNav = new SideNavItem("Users");
+        usersNav.setPrefixComponent(LineAwesomeIcon.USER.create());
+        usersNav.addItem(new SideNavItem("Manage", UsersView.class,
+            LineAwesomeIcon.USER_SLASH_SOLID.create()));
+
+        nav.addItem(homeNav, modelsNav, dataGenNav, dataAnalysisNav, usersNav);
+
 
         return nav;
     }
@@ -92,7 +100,6 @@ public class MainLayout extends AppLayout {
         Anchor anchorDoc = new Anchor("https://datagener.github.io/", LineAwesomeIcon.BOOK_OPEN_SOLID.create());
         anchorDoc.getElement().setAttribute("target", "_blank");
         //var localUri = Page.fetchCurrentURL();
-        // TODO: Add anchor to the swagger-ui.html#/
         var localUri = UI.getCurrent().getActiveViewLocation().getPath();
         Anchor anchorSwagger = new Anchor(localUri + "/swagger-ui.html#/", LineAwesomeIcon.CODE_SOLID.create());
         anchorSwagger.getElement().setAttribute("target", "_blank");
@@ -101,7 +108,7 @@ public class MainLayout extends AppLayout {
         // User Info
         var userInfo = authContext.getAuthenticatedUser(UserDetails.class)
             .map(user -> {
-                return new Span(user.getUsername());
+                return new Span(user.getUsername() + (UsersUtils.isUserDatagenAdmin(authContext)?" (admin) ":" (user) "));
             }).orElseGet(() -> new Span("ANONYMOUS"));
         Button logout = new Button(" Logout ", click -> this.authContext.logout());
         logout.setIcon(LineAwesomeIcon.SIGN_OUT_ALT_SOLID.create());

@@ -33,7 +33,6 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class StringRegexField extends Field<String> {
@@ -145,15 +144,15 @@ public class StringRegexField extends Field<String> {
       charsMatchedByRegex.chars().forEach(c ->
           regexUniqueList.add(String.valueOf((char) c))
       );
-      remainingExpressionsToAdd = matcher.replaceAll("");
     }
+    remainingExpressionsToAdd = matcher.replaceAll("");
 
     // N.B: Juts before it replaces interval, so only retrieving values separated by a comma
     log.debug("Remaining choices to add are: {}", remainingExpressionsToAdd);
     regexUniqueList.addAll(
         Arrays.stream(remainingExpressionsToAdd.split(","))
             .filter(t -> !t.isEmpty())
-            .collect(Collectors.toList())
+            .toList()
     );
 
     // Add list as many times as occurrences are found

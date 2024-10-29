@@ -21,7 +21,7 @@ package com.datagen.model;
 import com.datagen.config.ApplicationConfigs;
 import com.datagen.model.conditions.ConditionalEvaluator;
 import com.datagen.model.type.Field;
-import com.datagen.parsers.JsonUnparser;
+import com.datagen.parsers.JsonModelUnparser;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -212,7 +212,7 @@ public class Model<T extends Field> {
    * @return json schema as a string
    */
   public String toJsonSchema(String pathToWriteModel) {
-    String json = new JsonUnparser().renderFileFromModel(this, pathToWriteModel);
+    String json = new JsonModelUnparser().renderFileFromModel(this, pathToWriteModel);
     log.debug("JSON schema for model is: {}", json);
     return json;
   }
@@ -222,7 +222,7 @@ public class Model<T extends Field> {
    * @return json schema as a string
    */
   public String toJsonSchema() {
-    String json = new JsonUnparser().renderJsonFromModel(this);
+    String json = new JsonModelUnparser().renderJsonFromModel(this);
     log.debug("JSON schema for model is: {}", json);
     return json;
   }
@@ -359,7 +359,7 @@ public class Model<T extends Field> {
 
 /**
  * Calls to get Options values should go through this method instead of getting the map in order to provide default values in case options is not set
- * Except for hbase column families mapping which is particurlaly handle by a function below
+ * Except for hbase column families mapping which is particularly handle by a function below
  * @param option
  * @return
  */

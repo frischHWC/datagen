@@ -10,6 +10,7 @@ import com.datagen.service.credentials.CredentialsService;
 import com.datagen.service.model.ModelStoreService;
 import com.datagen.utils.Utils;
 import com.datagen.views.MainLayout;
+import com.datagen.views.utils.UsersUtils;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasText;
@@ -31,8 +32,9 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import com.vaadin.flow.theme.lumo.LumoUtility;
-import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -46,8 +48,10 @@ import static com.datagen.views.generation.GenerationUtils.*;
 @Slf4j
 @PageTitle("Data Generation")
 @Route(value = "generation", layout = MainLayout.class)
-@PermitAll
+@RolesAllowed({"ROLE_DATAGEN_USER", "ROLE_DATAGEN_ADMIN"})
 public class GenerationView extends Composite<VerticalLayout> {
+
+    private final transient AuthenticationContext authContext;
 
     @Autowired
     private ModelStoreService modelStoreService;
@@ -72,7 +76,8 @@ public class GenerationView extends Composite<VerticalLayout> {
     private Binder<InternalCommandLaunch> binderCommand;
 
     @Autowired
-    public GenerationView(ModelStoreService modelStoreService, CommandRunnerService commandRunnerService, CredentialsService credentialsService) {
+    public GenerationView(AuthenticationContext authContext, ModelStoreService modelStoreService, CommandRunnerService commandRunnerService, CredentialsService credentialsService) {
+        this.authContext = authContext;
         this.binderModel = new Binder<>();
         this.binderCommand = new Binder<>();
         this.binderCredentials = new Binder<>();
@@ -99,11 +104,11 @@ public class GenerationView extends Composite<VerticalLayout> {
         var hlLayout = new HorizontalLayout();
         hlLayout.add(batchesEntry, rowsEntry, threadsEntry);
 
-        var credentialslayout = createCredentialsButton();
+        var credentialsLayout = createCredentialsButton();
 
         layoutColumn.add(formLayout);
         layoutColumn.add(hlLayout);
-        layoutColumn.add(credentialslayout);
+        layoutColumn.add(credentialsLayout);
         layoutColumn.add(launchButton);
 
         getContent().add(layoutColumn);
@@ -116,7 +121,15 @@ public class GenerationView extends Composite<VerticalLayout> {
      */
     private ComboBox<Model> createModelListButton(ComboBox<ConnectorParser.Connector> cbConnector) {
         var comboBox = new ComboBox<Model>("Model:");
-        comboBox.setItems(modelStoreService.listModelsAsModels());
+        if(UsersUtils.isUserDatagenAdmin(authContext)) {
+            comboBox.setItems(
+                modelStoreService.listModelsAsModels());
+        } else {
+            comboBox.setItems(
+                modelStoreService.listModelsAsModelStoredAuthorized(
+                        UsersUtils.getUser(authContext)).stream()
+                    .map(ModelStoreService.ModelStored::getModel).toList());
+        }
         comboBox.setItemLabelGenerator(Model::getName);
         comboBox.setRequired(true);
         comboBox.setHelperText("Select what kind of data to generate using existing models");
@@ -128,12 +141,17 @@ public class GenerationView extends Composite<VerticalLayout> {
     }
 
     /**
-     * Createa multi select button to choose credentials
+     * Create a multi select button to choose credentials
      * @return
      */
     private MultiSelectComboBox<Credentials> createCredentialsButton() {
         var comboBox = new MultiSelectComboBox<Credentials>("Credentials:");
-        comboBox.setItems(credentialsService.listCredentialsMeta());
+        if(UsersUtils.isUserDatagenAdmin(authContext)) {
+            comboBox.setItems(credentialsService.listCredentialsMeta());
+        } else {
+            comboBox.setItems(credentialsService.listCredentialsMetaAllowedForUser(
+                UsersUtils.getUser(authContext), UsersUtils.getUserGroups(authContext)));
+        }
         comboBox.setItemLabelGenerator(Credentials::getName);
         comboBox.setRequired(false);
         comboBox.setHelperText("Select one or multiple credentials stored to use for data generation");
@@ -173,7 +191,7 @@ public class GenerationView extends Composite<VerticalLayout> {
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
             } else {
                 var commandId =
-                    this.commandRunnerService.generateData(modelStored,
+                    this.commandRunnerService.generateData(modelStored, UsersUtils.getUser(authContext),
                         command.getThreads(), command.getNumberOfBatches(),
                         command.getRowsPerBatch(),
                         null, null,
@@ -258,7 +276,9 @@ public class GenerationView extends Composite<VerticalLayout> {
      */
     private ComboBox<ConnectorParser.Connector> createConnectorListButton(FormLayout formLayout, Button launchButton) {
         var comboBox = new ComboBox<ConnectorParser.Connector>("Connector:");
-        comboBox.setItems(EnumSet.allOf(ConnectorParser.Connector.class).stream().toList());
+        comboBox.setItems(EnumSet.allOf(ConnectorParser.Connector.class).stream()
+            .sorted(Comparator.comparing(Enum::toString))
+            .toList());
         comboBox.setRequired(true);
         comboBox.setVisible(false);
         comboBox.setHelperText("Select where to generate data among existing connectors");

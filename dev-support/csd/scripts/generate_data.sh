@@ -63,7 +63,7 @@ generate_data() {
 
   if [ $number_of_connectors == 1 ]
   then
-    URL_TO_CALL="${DATAGEN_URL}/datagen/${CONNECTOR_ARRAY[0]}/?batches=${BATCHES}&rows=${ROWS}&threads=${THREADS}"
+    URL_TO_CALL="${DATAGEN_URL}/datagen/${CONNECTOR_ARRAY[0]}?batches=${BATCHES}&rows=${ROWS}&threads=${THREADS}"
   else
     CONNECTOR_STRING=""
     for i in ${CONNECTOR_ARRAY[@]}

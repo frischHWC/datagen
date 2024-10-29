@@ -4,6 +4,7 @@ import com.datagen.service.credentials.Credentials;
 import com.datagen.service.credentials.CredentialsService;
 import com.datagen.service.credentials.CredentialsType;
 import com.datagen.views.MainLayout;
+import com.datagen.views.utils.UsersUtils;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasText;
@@ -27,7 +28,8 @@ import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import jakarta.annotation.security.PermitAll;
+import com.vaadin.flow.spring.security.AuthenticationContext;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -35,17 +37,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @PageTitle("Credentials")
 @Route(value = "model/credentials", layout = MainLayout.class)
-@PermitAll
+@RolesAllowed({"ROLE_DATAGEN_USER", "ROLE_DATAGEN_ADMIN"})
 public class CredentialsView extends Composite<VerticalLayout> {
 
     private CredentialsService credentialsService;
+
+  private final transient AuthenticationContext authContext;
 
   /**
    * Fake binders below for just getting required info for adding a credentials
@@ -63,9 +69,11 @@ public class CredentialsView extends Composite<VerticalLayout> {
     @Setter
     private CredentialsType credTypeAdded;
 
+
     @Autowired
-    public CredentialsView(CredentialsService credentialsService) {
+    public CredentialsView(AuthenticationContext authContext, CredentialsService credentialsService) {
         this.credentialsService = credentialsService;
+        this.authContext = authContext;
 
         VerticalLayout layoutColumn = new VerticalLayout();
         layoutColumn.setWidth("100%");
@@ -110,13 +118,29 @@ public class CredentialsView extends Composite<VerticalLayout> {
             .setWidth("5rem")
             .setFlexGrow(0);;
 
+      // RightsButton
+      grid.addColumn(rightsButton())
+          .setHeader("Rights")
+          .setWidth("5rem")
+          .setFlexGrow(0);
+
       // Add grid to main layout and load data
-      grid.setItems(this.credentialsService.listCredentialsMeta());
+      setGridItems(grid);
       grid.sort(List.of(new GridSortOrder<>(grid.getColumns().get(0), SortDirection.ASCENDING)));
       getContent().add(grid);
 
       getContent().add(uploadButton(grid));
 
+    }
+
+    private void setGridItems(Grid<Credentials> grid) {
+      if(UsersUtils.isUserDatagenAdmin(authContext)){
+        grid.setItems(this.credentialsService.listCredentialsMeta());
+      } else {
+        var user = UsersUtils.getUser(authContext);
+        var groups = UsersUtils.getUserGroups(authContext);
+        grid.setItems(this.credentialsService.listCredentialsMetaAllowedForUser(user, groups));
+      }
     }
 
   /**
@@ -132,6 +156,7 @@ public class CredentialsView extends Composite<VerticalLayout> {
           dialogInfo.setHeaderTitle("Model: " + credentials.getName());
 
           var credAsJson = new Span(this.credentialsService.toJson(credentials));
+
           credAsJson.setWhiteSpace(HasText.WhiteSpace.PRE);
           dialogInfo.add(credAsJson);
           var closeButton = new Button("Close", eventClose -> dialogInfo.close());
@@ -157,20 +182,27 @@ public class CredentialsView extends Composite<VerticalLayout> {
 
       return new ComponentRenderer<>(Button::new, (button, credentials) -> {
         button.addThemeVariants(ButtonVariant.LUMO_ICON,
-            ButtonVariant.LUMO_ERROR,
-            ButtonVariant.LUMO_TERTIARY);
+            ButtonVariant.LUMO_ERROR);
         button.addClickListener(e -> {
           dialog.setHeader("Delete : " + credentials.getName());
           dialog.addConfirmListener(event -> {
             this.credentialsService.removeCredentials(credentials.getName());
             grid.getDataProvider().refreshAll();
-            grid.setItems(this.credentialsService.listCredentialsMeta());
+            setGridItems(grid);
             Notification notification = Notification.show("Deleted Credential:" + credentials.getName());
             notification.addThemeVariants(NotificationVariant.LUMO_PRIMARY);
           });
           dialog.open();
         });
-        button.setIcon(LineAwesomeIcon.TRASH_ALT_SOLID.create());
+        if(!this.credentialsService.isUserOwnerOfCred(UsersUtils.getUser(authContext), credentials.getName()) &&
+            !UsersUtils.isUserDatagenAdmin(authContext)){
+          button.setEnabled(false);
+          button.setIcon(LineAwesomeIcon.TRASH_ALT.create());
+          button.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        } else {
+          button.setIcon(LineAwesomeIcon.TRASH_ALT.create());
+          button.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        }
       });
     }
 
@@ -224,7 +256,7 @@ public class CredentialsView extends Composite<VerticalLayout> {
         notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
       } else {
         var credentialsToSave =
-            new Credentials(this.getCredNameAdded(), this.getCredTypeAdded(), this.getCredAccountAdded(), false, null, null,
+            new Credentials(this.getCredNameAdded(), this.getCredTypeAdded(), this.getCredAccountAdded(), false, UsersUtils.getUser(authContext), null,
                 null);
         this.credentialsService.addCredentialsWithValue(credentialsToSave, true,
             this.getCredValueAdded());
@@ -236,7 +268,7 @@ public class CredentialsView extends Composite<VerticalLayout> {
       }
 
       grid.getDataProvider().refreshAll();
-      grid.setItems(this.credentialsService.listCredentialsMeta());
+      setGridItems(grid);
     });
     var closeCredentials = new Button("Close");
     closeCredentials.addClickListener(closeEvent -> dialogUpload.close());
@@ -340,4 +372,69 @@ public class CredentialsView extends Composite<VerticalLayout> {
       listOfPossible.add(accountField);
       listOfPossible.add(upload);
     }
+
+  /**
+   * Create a rights Button to check rights but also change them
+   * @return
+   */
+  private ComponentRenderer<Button, Credentials> rightsButton() {
+    return new ComponentRenderer<>(Button::new, (button, credentials) -> {
+      button.addThemeVariants(ButtonVariant.LUMO_ICON,
+          ButtonVariant.LUMO_TERTIARY);
+
+      button.addClickListener(e -> {
+        Dialog dialogRights = new Dialog();
+        dialogRights.setHeaderTitle("Credential: " + credentials.getName());
+
+        var metaVL = new VerticalLayout();
+        var spanOwner = new Span("Owner: " + credentials.getOwner());
+        metaVL.add(spanOwner);
+
+        var userUsers = new TextField("Users:");
+        userUsers.setClearButtonVisible(true);
+        userUsers.setTooltipText("A ',' separated list of users for use privileges");
+        userUsers.setValue(String.join(",", credentials.getUsersAuthorized()));
+
+        var userGroups = new TextField("Groups:");
+        userGroups.setClearButtonVisible(true);
+        userGroups.setTooltipText("A ',' separated list of groups for use privileges");
+        userGroups.setValue(String.join(",", credentials.getGroupsAuthorized()));
+
+        metaVL.add(userUsers, userGroups);
+        dialogRights.add(metaVL);
+
+        // Only admin users of a credentials can modify its rights (or datagen admin)
+        if(UsersUtils.isUserDatagenAdmin(authContext) || this.credentialsService.isUserOwnerOfCred(UsersUtils.getUser(authContext), credentials.getName())) {
+          var saveButton = new Button("Save", event -> {
+            var success = this.credentialsService.changeRightsCred(credentials.getName(),
+                Arrays.stream(userUsers.getValue().split(",")).collect(Collectors.toSet()),
+                Arrays.stream(userGroups.getValue().split(",")).collect(Collectors.toSet()));
+            if(success) {
+              Notification.show(
+                      "Successfully changed rights for credential: " + credentials.getName())
+                  .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            } else {
+              Notification.show(
+                      "Unable to change rights for credential: " + credentials.getName() + " check server logs for more details")
+                  .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+            dialogRights.close();
+          });
+          saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+          dialogRights.getFooter().add(saveButton);
+        } else {
+          userUsers.setEnabled(false);
+          userGroups.setEnabled(false);
+          metaVL.add(new Span("You are not the owner, so cannot modify its rights."));
+        }
+
+        var closeButton = new Button("Close", eventClose -> dialogRights.close());
+
+        dialogRights.getFooter().add(closeButton);
+        dialogRights.open();
+      });
+      button.setIcon(LineAwesomeIcon.ACCESSIBLE_ICON.create());
+    });
+  }
+
 }

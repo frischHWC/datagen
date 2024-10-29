@@ -6,6 +6,7 @@ import com.datagen.service.credentials.CredentialsType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class CredentialsController {
   @GetMapping(value = "/listCredentials", produces = {
       MediaType.APPLICATION_JSON_VALUE})
   public List<Credentials> getCredentials() {
+    SecurityContextHolder.getContext().getAuthentication().getName();
     return credentialsService.listCredentialsMeta();
   }
 
@@ -40,7 +42,7 @@ public class CredentialsController {
       @RequestParam(name = "account") String accountAssociated,
       @RequestParam(name = "owner") String owner,
       @RequestParam(name = "content") String credentialsContent,
-      @RequestParam(name = "repllace") Boolean replace
+      @RequestParam(name = "replace") Boolean replace
   ) {
     return credentialsService.addCredentials(name,type,accountAssociated,owner, credentialsContent,replace);
   }

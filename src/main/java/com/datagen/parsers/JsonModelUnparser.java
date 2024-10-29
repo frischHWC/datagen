@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
  */
 @SuppressWarnings("unchecked")
 @Slf4j
-public class JsonUnparser implements UnParser {
+public class JsonModelUnparser implements ModelUnParser {
 
   DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
       .withZone(ZoneOffset.UTC);
@@ -54,7 +54,7 @@ public class JsonUnparser implements UnParser {
 
   private final ObjectMapper mapper;
 
-  public JsonUnparser() {
+  public JsonModelUnparser() {
     this.mapper = new ObjectMapper();
     mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
     mapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -360,7 +360,7 @@ public class JsonUnparser implements UnParser {
     root.putPOJO("Options", optionsFiltered);
 
     try {
-      json = this.mapper.writeValueAsString(root);
+      json = this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(root);
       if(pathToWriteModel!=null) {
         this.mapper.writeValue(new File(pathToWriteModel), root);
       }

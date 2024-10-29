@@ -27,10 +27,11 @@ datagen.model.path=${DATAGEN_MODELS_DIR}
 datagen.model.received.path={{ globals['data_model_received'] }}
 datagen.model.generated.path={{ globals['data_model_generated'] }}
 datagen.model.store.path={{ globals['data_model_store'] }}
+datagen.commands.path={{ globals['commands_file_path'] }}
 datagen.credentials.path={{ globals['credentials_file_path'] }}
 datagen.analysis.path={{ globals['analysis_file_path'] }}
 datagen.scheduler.file.path={{ globals['scheduler_file_path'] }}
-datagen.commands.path={{ globals['commands_file_path'] }}
+datagen.users.file.path={{ globals['users_file_path'] }}
 datagen.load.default.models={{ globals['load_default_models'] }}
 
 {% if globals['tls_enabled'] == 'true' %}
@@ -46,8 +47,51 @@ server.ssl.trust-store-password=${TRUSTSTORE_PASSWORD}
 
 # Auth config
 security.basic.enabled=false
-admin.user={{ globals['admin_user'] }}
-admin.password=${ADMIN_PASSWORD}
+# Auth config
+security.basic.enabled=false
+# Can be ldap, ldap-embedded, internal
+datagen.auth.type={{ globals['auth_type'] }}
+# Internal Settings
+datagen.admin.user={{ globals['admin_user'] }}
+datagen.admin.password=${ADMIN_PASSWORD}
+{% if globals['auth_type'] == 'internal' %}
+# List of groups/users that will be admin
+datagen.auth.internal.group.admins={{ globals['admin_users'] }}
+datagen.auth.internal.user.admins={{ globals['admin_groups'] }}
+{% endif %}
+
+{% if globals['auth_type'] == 'ldap' %}
+# LDAP Settings
+datagen.auth.ldap.url={{ globals['ldap_url'] }}
+datagen.auth.ldap.basedn={{ globals['ldap_basedn'] }}
+datagen.auth.ldap.bind.user={{ globals['ldap_bind_user'] }}
+datagen.auth.ldap.bind.password={{ globals['ldap_bind_password'] }}
+datagen.auth.ldap.group.base={{ globals['ldap_group_base'] }}
+datagen.auth.ldap.group.filter={{ globals['ldap_group_filter'] }}
+datagen.auth.ldap.group.search.subtree={{ globals['ldap_group_search_subtree'] }}
+datagen.auth.ldap.group.search.maxdepth={{ globals['ldap_group_search_maxdepth'] }}
+datagen.auth.ldap.group.role.attribute={{ globals['ldap_group_role_attribute'] }}
+datagen.auth.ldap.group.convert.uppercase={{ globals['ldap_group_convert_uppercase'] }}
+datagen.auth.ldap.group.attribute={{ globals['ldap_group_attribute'] }}
+datagen.auth.ldap.group.user.attribute={{ globals['ldap_group_user_attribute'] }}
+datagen.auth.ldap.group.reverse.search={{ globals['ldap_reverse_search'] }}
+datagen.auth.ldap.group.reverse.search.timeout={{ globals['ldap_reverse_search_timeout'] }}
+datagen.auth.ldap.user.base={{ globals['ldap_user_base'] }}
+datagen.auth.ldap.user.filter={{ globals['ldap_user_filter'] }}
+datagen.auth.ldap.user.attribute={{ globals['ldap_user_attribute'] }}
+# List of groups/users that will be admin
+datagen.auth.ldap.group.admins={{ globals['admin_groups'] }}
+datagen.auth.ldap.user.admins={{ globals['admin_users'] }}
+# List of group/users that can access datagen (if empty, all can access)
+datagen.auth.ldap.group.users={{ globals['ldap_allowed_groups'] }}
+datagen.auth.ldap.user.users={{ globals['ldap_allowed_users'] }}
+{% endif %}
+
+{% if globals['auth_type'] == 'ldap-embedded' %}
+spring.ldap.embedded.ldif=classpath:users.ldif
+spring.ldap.embedded.base-dn=dc=springframework,dc=org
+spring.ldap.embedded.port=8389
+{% endif %}
 
 # Kerberos Config
 kerberos.enabled={{ globals['kerberos_enabled'] }}

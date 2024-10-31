@@ -410,7 +410,7 @@ public abstract class Field<T> {
     case "floatfield":
       return "FLOAT";
     case "hashmd5field":
-      return "HASHMD5";
+      return "HASH_MD5";
     case "incrementintegerfield":
       return "INCREMENT_INTEGER";
     case "incrementlongfield":

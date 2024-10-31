@@ -572,7 +572,6 @@
           "name": "ranger_url",
           "label": "Ranger URL",
           "description": "Ranger URM, used to push policies to Ranger (needed only once at startup) in this format: http://RANGER_HOST:RANGER_PORT. if this is not set, it is required to create your own policies in Ranger. Default push policies are on 'datagen*' and does not include specific paths that custom model may required",
-          "required": true,
           "configurableInWizard": true,
           "default": "https://localhost:6182",
           "type": "string"
@@ -581,7 +580,6 @@
           "name": "ranger_user",
           "label": "Ranger admin user",
           "description": "Ranger user, used to push policies to Ranger (needed only once at startup). if this is not set, it is required to create your own policies in Ranger. Default push policies are on 'datagen*' and does not include specific paths that custom model may required",
-          "required": true,
           "configurableInWizard": true,
           "default": "admin",
           "type": "string"
@@ -590,7 +588,6 @@
           "name": "ranger_password",
           "label": "Ranger Password of provided user",
           "description": "Ranger user's password, used to push policies to Ranger (needed only once at startup). if this is not set, it is required to create your own policies in Ranger. Default push policies are on 'datagen*' and does not include specific paths that custom model may required",
-          "required": true,
           "configurableInWizard": true,
           "default": "admin",
           "type": "password"
@@ -613,7 +610,6 @@
           "name": "admin_user",
           "label": "Datagen admin user",
           "description": "The user to connect to Datagen Web Server",
-          "required": true,
           "configurableInWizard": true,
           "default": "admin",
           "type": "string"
@@ -622,7 +618,6 @@
           "name": "admin_password",
           "label": "Datagen Admin Password",
           "description": "The password of the user to connect to Datagen Web Server",
-          "required": true,
           "configurableInWizard": true,
           "default": "admin",
           "type": "password"
@@ -631,7 +626,6 @@
           "name": "admin_users",
           "label": "Datagen admin users",
           "description": "Comma separated list of users that will be admin",
-          "required": true,
           "configurableInWizard": true,
           "default": "",
           "type": "string"
@@ -640,7 +634,6 @@
           "name": "admin_groups",
           "label": "Datagen admin groups",
           "description": "Comma separated list of groups that will be admin",
-          "required": true,
           "configurableInWizard": true,
           "default": "",
           "type": "string"
@@ -649,7 +642,6 @@
           "name": "ldap_allowed_groups",
           "label": "Datagen allowed groups",
           "description": "(Only for LDAP) Comma separated list of groups that will be allowed to use Datagen. Empty means all groups, once connected are allowed to use Datagen.",
-          "required": true,
           "configurableInWizard": true,
           "default": "",
           "type": "string"
@@ -658,7 +650,6 @@
           "name": "ldap_allowed_users",
           "label": "Datagen allowed users",
           "description": "(Only for LDAP) Comma separated list of users that will be allowed to use Datagen. Empty means all groups, once connected are allowed to use Datagen.",
-          "required": true,
           "configurableInWizard": true,
           "default": "",
           "type": "string"
@@ -667,7 +658,6 @@
           "name": "ldap_url",
           "label": "LDAP URL",
           "description": "URL Of ldap in format: ldap://<ldap_host>:<ldap_port>/",
-          "required": true,
           "configurableInWizard": true,
           "default": "",
           "type": "string"
@@ -676,7 +666,6 @@
           "name": "ldap_basedn",
           "label": "LDAP Base DN",
           "description": "Base DN in format: dc=datagen,dc=com",
-          "required": true,
           "configurableInWizard": true,
           "default": "",
           "type": "string"
@@ -685,7 +674,6 @@
           "name": "ldap_bind_user",
           "label": "LDAP Bind User",
           "description": "Bind user to the ldap in full format (including base dn): uid=bind_user,cn=user,dc=datagen,dc=com",
-          "required": true,
           "configurableInWizard": true,
           "default": "",
           "type": "string"
@@ -694,7 +682,6 @@
           "name": "ldap_bind_password",
           "label": "LDAP Bind password",
           "description": "LDAP Password associated to bind user",
-          "required": true,
           "configurableInWizard": true,
           "default": "",
           "type": "password"
@@ -703,7 +690,6 @@
           "name": "ldap_group_base",
           "label": "LDAP Group Base",
           "description": "Group Base in format (without base DN): cn=groups,cn=accounts",
-          "required": true,
           "configurableInWizard": true,
           "default": "",
           "type": "string"
@@ -712,7 +698,6 @@
           "name": "ldap_group_filter",
           "label": "LDAP Group Filter",
           "description": "group Filter, usually: (member={0})",
-          "required": true,
           "configurableInWizard": true,
           "default": "(member={0})",
           "type": "string"
@@ -721,7 +706,6 @@
           "name": "ldap_group_search_subtree",
           "label": "LDAP Search subtree",
           "description": "To search subtree or not when looking for groups.",
-          "required": true,
           "configurableInWizard": true,
           "default": "true",
           "type": "boolean"
@@ -730,7 +714,6 @@
           "name": "ldap_group_search_maxdepth",
           "label": "LDAP Group search Max Depth",
           "description": "Max depth where to search groups",
-          "required": true,
           "configurableInWizard": true,
           "default": "5",
           "type": "long"
@@ -739,7 +722,6 @@
           "name": "ldap_group_role_attribute",
           "label": "LDAP Group Role Attribute",
           "description": "group Role Attribute to get name of the group, usually: cn",
-          "required": true,
           "configurableInWizard": true,
           "default": "cn",
           "type": "string"
@@ -748,7 +730,6 @@
           "name": "ldap_group_convert_uppercase",
           "label": "LDAP Group Convert Uppercase",
           "description": "To automatically convert group to uppercase",
-          "required": true,
           "configurableInWizard": true,
           "default": "true",
           "type": "boolean"
@@ -757,7 +738,6 @@
           "name": "ldap_group_attribute",
           "label": "LDAP Group Attribute",
           "description": "Attribute found in a user to attach it to a group, usually: memberof",
-          "required": true,
           "configurableInWizard": true,
           "default": "memberof",
           "type": "string"
@@ -766,7 +746,6 @@
           "name": "ldap_group_user_attribute",
           "label": "LDAP Group User Attribute",
           "description": "Attribute found in a group to attach users to it, usually: member",
-          "required": true,
           "configurableInWizard": true,
           "default": "member",
           "type": "string"
@@ -775,7 +754,6 @@
           "name": "ldap_reverse_search",
           "label": "LDAP Enable Reverse Search",
           "description": "Enabling reverse search means searching groups to retrieve groups of a user once logged in.",
-          "required": true,
           "configurableInWizard": true,
           "default": "true",
           "type": "boolean"
@@ -784,7 +762,6 @@
           "name": "ldap_reverse_search_timeout",
           "label": "LDAP Reverse search Timeout",
           "description": "Timeout for the reverse search that could take a long time. (in seconds)",
-          "required": true,
           "configurableInWizard": true,
           "default": "60",
           "type": "long"
@@ -793,7 +770,6 @@
           "name": "ldap_user_base",
           "label": "LDAP User Base",
           "description": "LDAP User base to find users, in format (without base DN): cn=user,cn=accounts",
-          "required": true,
           "configurableInWizard": true,
           "default": "",
           "type": "string"
@@ -802,7 +778,6 @@
           "name": "ldap_user_filter",
           "label": "LDAP User Filter",
           "description": "LDAP User Filter, usually: (uid={0})",
-          "required": true,
           "configurableInWizard": true,
           "default": "(uid={0})",
           "type": "string"
@@ -811,7 +786,6 @@
           "name": "ldap_user_attribute",
           "label": "LDAP User Attribute",
           "description": "LDAP Attribute to get username, usually: uid",
-          "required": true,
           "configurableInWizard": true,
           "default": "uid",
           "type": "string"
@@ -820,7 +794,6 @@
           "name": "java_home_custom",
           "label": "Custom JAVA_HOME",
           "description": "The JAVA_HOME path to use for Datagen Web Server. (By default, it is using the one provided by CM)",
-          "required": false,
           "configurableInWizard": true,
           "default": "",
           "type": "string"
@@ -829,8 +802,6 @@
           "name": "use_extra_header",
           "label": "Datagen Use Extra Header for API calls from CM",
           "description": "To use a extra header with multipart/form-data when making calls from Cloudera Manager",
-          "required": false,
-          "configurableInWizard": false,
           "default": "false",
           "type": "boolean"
         },

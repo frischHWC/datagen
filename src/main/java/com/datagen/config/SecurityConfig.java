@@ -23,6 +23,8 @@ import com.datagen.views.login.LoginView;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.ContextSource;
@@ -51,6 +53,7 @@ import java.util.*;
 @Slf4j
 @Configuration
 @EnableWebSecurity
+@SpringBootApplication(exclude= {UserDetailsServiceAutoConfiguration.class})
 public class SecurityConfig extends VaadinWebSecurity {
 
   private final PropertiesLoader propertiesLoader;

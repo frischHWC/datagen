@@ -66,10 +66,9 @@ public class FloatField extends Field<Float> {
       return possibleValuesProvided.get(random.nextInt(possibleValuesProvided.size()));
     } else {
       float randomFloat = random.nextFloat();
-      while (randomFloat < min && randomFloat > max) {
-        randomFloat = random.nextFloat();
-      }
-      return randomFloat;
+      // Because float are taken between 0 and 1, min and max should be added (max is an excluded bound in nextInt).
+      var baseInt = random.nextLong(min, max);
+      return randomFloat+Float.valueOf(baseInt);
     }
   }
 

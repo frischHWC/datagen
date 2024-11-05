@@ -247,11 +247,12 @@ then
   create_index_file "Datagen Repository" "CSD files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/csd/
   create_index_file "Datagen Repository" "Parcels files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/parcels/
 
-  #create_index_file "Datagen Repository" "Standalone files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/standalone/
-  #create_index_file "Datagen Repository" "Standalone model files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/standalone/models/
-  #create_index_file "Datagen Repository" "Standalone dictionaries files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/standalone/dictionaries/
-
   create_index_file "Datagen Repository" "Standalone files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/standalone/
   create_index_file "Datagen Repository" "Standalone model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/standalone/models/
-  #create_index_file "Datagen Repository" "Standalone dictionaries files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/standalone/dictionaries/
+  create_index_file "Datagen Repository" "Standalone model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/standalone/models/customer/
+  create_index_file "Datagen Repository" "Standalone model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/standalone/models/finance/
+  create_index_file "Datagen Repository" "Standalone model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/standalone/models/industry/
+  create_index_file "Datagen Repository" "Standalone model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/standalone/models/public_service/
+  create_index_file "Datagen Repository" "Standalone model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/standalone/models/travel/
+
 fi

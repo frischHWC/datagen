@@ -26,6 +26,7 @@ export BUILD_DATAGEN_JAR="true"
 export BUILD_CSD="true"
 export BUILD_PARCEL="true"
 export BUILD_STANDALONE="true"
+export BUILD_MODELS="true"
 
 # DEBUG
 export DEBUG=false
@@ -48,11 +49,13 @@ function usage()
     echo "  --build-csd=$BUILD_CSD : To build the CSD or not (Default) $BUILD_CSD "
     echo "  --build-parcel=$BUILD_PARCEL : To build the parcels or not (Default) $BUILD_PARCEL "
     echo "  --build-standalone=$BUILD_STANDALONE : To build the standalone files or not (Default) $BUILD_STANDALONE "
+     echo "  --build-models=$BUILD_MODELS : To build the model files or not (Default) $BUILD_STANDALONE "
     echo ""
     echo "  --temp-dir=$TEMP_DIR : Temporary directory used for generation of files (Default) $TEMP_DIR "
     echo "  --csd-dir=$CSD_DIR : Directory where CSD will be generated  (Default) $CSD_DIR"
     echo "  --parcel-dir=$PARCEL_DIR : Directory where parcels will be generated  (Default) $PARCEL_DIR"
     echo "  --standalone-dir=$STANDALONE_DIR : Directory where standalone files will be generated  (Default) $STANDALONE_DIR"
+    echo "  --model-dir=$MODEL_DIR : Directory where model files will be generated  (Default) $STANDALONE_DIR"
     echo ""
     echo "  --debug=$DEBUG : To set DEBUG log-level (Default) $DEBUG "
     echo "  --log-dir=$LOG_DIR : Log directory (Default) $LOG_DIR "
@@ -85,6 +88,12 @@ while [ "$1" != "" ]; do
         --build-parcel)
             BUILD_PARCEL=$VALUE
             ;;
+        --build-standalone)
+            BUILD_STANDALONE=$VALUE
+            ;;
+        --build-models)
+            BUILD_MODELS=$VALUE
+            ;;
         --temp-dir)
             TEMP_DIR=$VALUE
             ;;
@@ -96,6 +105,9 @@ while [ "$1" != "" ]; do
             ;;
         --standalone-dir)
             STANDALONE_DIR=$VALUE
+            ;;
+        --model-dir)
+            MODEL_DIR=$VALUE
             ;;
         --debug)
             DEBUG=$VALUE
@@ -125,6 +137,10 @@ fi
 if [ -z ${STANDALONE_DIR} ]
 then
   export STANDALONE_DIR="/tmp/datagen_standalone-${DATAGEN_VERSION}"
+fi
+if [ -z ${MODEL_DIR} ]
+then
+  export MODEL_DIR="/tmp/datagen_model-${DATAGEN_VERSION}"
 fi
 
 # INTERNAL: Do not touch these
@@ -161,24 +177,37 @@ then
   cd $DEPLOY_DIR
 fi
 
+################# Prepare Model files #################
+if [ "${BUILD_MODELS}" = "true" ]
+then
+  mkdir -p  ${MODEL_DIR}/
+  cp -Rp ../../../src/main/resources/models/* ${MODEL_DIR}/
+fi
+
 ################# Standalone Files #################
 if [ "${BUILD_STANDALONE}" = "true" ]
 then
     mkdir -p ${STANDALONE_DIR}
-    mkdir -p  ${STANDALONE_DIR}/models/
-    mkdir -p  ${STANDALONE_DIR}/dictionaries/
 
     cp -Rp ../../../src/main/resources/application.properties "${STANDALONE_DIR}/application-standalone.properties"
     cp -Rp ../../../src/main/resources/logback-spring.xml "${STANDALONE_DIR}/"
     cp -Rp ../../../target/datagen*.jar "${STANDALONE_DIR}/datagen.jar"
-    cp -Rp ../../../src/main/resources/models/* "${STANDALONE_DIR}/models/"
     cp -Rp ../../../src/main/resources/scripts/launch.sh "${STANDALONE_DIR}/"
 
     # For BSD-like, tar includes some files which should not be present to be GNU-compliant
     export COPYFILE_DISABLE=true
     tar -czv --no-xattrs --exclude '._*' -f "${STANDALONE_DIR}/datagen-standalone-files.tar.gz" -C "${STANDALONE_DIR}/.." $(basename ${STANDALONE_DIR})
 
+    # Remove all files except the tar.gz
+    rm "${STANDALONE_DIR}/application-standalone.properties"
+    rm "${STANDALONE_DIR}/logback-spring.xml"
+    rm "${STANDALONE_DIR}/datagen.jar"
+    rm "${STANDALONE_DIR}/launch.sh"
+
 fi
+
+################# K8s Files #################
+# TODO: Add building of the docker image and add deployment.yml file
 
 ################# CSD #################
 if [ "${BUILD_CSD}" = "true" ]

@@ -1,5 +1,5 @@
 {
-  "model_name": "My_Example_model",
+  "model_name": "example-model",
   "Fields": [
     {
       "name": "name",
@@ -10,15 +10,6 @@
       "type": "LONG",
       "min": 5,
       "max": 85
-    },
-    {
-      "name": "birthday_wish_bedrock",
-      "type": "BEDROCK",
-      "request": "generate a one line birthday wish to ${name} who is ${age} years old today",
-      "model_type": "mistral.mistral-small-2402-v1:0",
-      "temperature": 1.0,
-      "max_tokens": 256,
-      "context": "For their birthday, kids wants a toy, young wants a new car, adults wants a prosper family and friends, elder wants a strong health"
     }
   ],
   "Table_Names": {

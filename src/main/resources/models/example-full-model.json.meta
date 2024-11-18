@@ -1,5 +1,5 @@
 {
-  "model_name": "example-model",
+  "model_name": "example-full-model",
   "owner": "francois",
   "allowed_users": [],
   "allowed_groups": ["public"],

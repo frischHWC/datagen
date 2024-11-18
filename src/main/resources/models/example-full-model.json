@@ -1,5 +1,5 @@
 {
-  "model_name" : "example-full-model",
+  "model_name" : "customer-usa-full-v1",
   "Fields" : [ {
     "name" : "name",
     "type" : "NAME",

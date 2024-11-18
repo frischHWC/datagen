@@ -20,6 +20,7 @@ package com.datagen.model.conditions;
 import com.datagen.model.Model;
 import com.datagen.model.Row;
 import com.datagen.model.type.CityField;
+import com.datagen.model.type.NameField;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -50,10 +51,12 @@ public class Link {
     Object linkedField = row.getValues().get(this.linkedFieldName);
     try {
       switch (linkedFieldType) {
-      case "CityField":
-        return evaluateLinkedCity((CityField.City) linkedField);
-      case "CsvField":
-        return evaluateLinkedCsv((Map<String, String>) linkedField);
+        case "NameField":
+          return evaluateLinkedName((NameField.Name) linkedField);
+        case "CityField":
+          return evaluateLinkedCity((CityField.City) linkedField);
+        case "CsvField":
+          return evaluateLinkedCsv((Map<String, String>) linkedField);
       default:
         log.warn("Not able to find any link for FieldType: " + linkedFieldType +
             " for row: " + row);
@@ -68,23 +71,34 @@ public class Link {
   }
 
   public String evaluateLinkedCity(CityField.City city) {
-    switch (linkedFieldAttribute) {
-    case "lat":
-      return city.getLatitude();
-    case "long":
-      return city.getLongitude();
-    case "country":
-      return city.getCountry();
-    default:
-      log.warn(
-          "Cannot find attribute, returning empty value for city: " + city);
-      return "";
-    }
+      return switch (linkedFieldAttribute) {
+          case "lat" -> city.getLatitude();
+          case "long" -> city.getLongitude();
+          case "country" -> city.getCountry();
+          default -> {
+              log.warn(
+                      "Cannot find attribute, returning empty value for city: " + city.getName());
+              yield "";
+          }
+      };
   }
 
   public String evaluateLinkedCsv(Map<String, String> csvRow) {
     return csvRow.get(linkedFieldAttribute);
   }
 
+  public String evaluateLinkedName(NameField.Name name) {
+      return switch (linkedFieldAttribute) {
+          case "sex" -> name.getUnisex() ? "UNKNOWN" : name.getMale() ? "MALE" : "FEMALE";
+          case "male" -> name.getMale().toString();
+          case "female" -> name.getFemale().toString();
+          case "unisex" -> name.getUnisex().toString();
+          default -> {
+              log.warn(
+                      "Cannot find attribute, returning empty value for name: " + name.getFirst_name());
+              yield "";
+          }
+      };
+  }
 
 }

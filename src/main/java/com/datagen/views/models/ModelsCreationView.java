@@ -339,7 +339,6 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
       }
       listOfmodels.addValueChangeListener(modelChosen -> modelLoaded=modelChosen.getValue());
       dialogLoad.add(listOfmodels);
-      // dialogLoad.add(uploadModelButton());
       Button cancelButton = new Button("Close", ev -> dialogLoad.close());
       Button loadFinalButton = new Button("Load");
       loadFinalButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -686,7 +685,7 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
 
         var maxParam = ModelsUtils.createMaxFloat("(Optional) Maximum:", binder, Float.MIN_VALUE, Float.MAX_VALUE);
         if(fieldRepresentation!=null && fieldRepresentation.getMax()!=null) {
-          maxParam.setValue(fieldRepresentation.getMin().doubleValue());
+          maxParam.setValue(fieldRepresentation.getMax().doubleValue());
         }
         listOfField.add(maxParam);
         listOfOptionsForField.add(createInfoForAParameter(maxParam,
@@ -730,7 +729,7 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
 
         var maxParam = ModelsUtils.createMaxLong("(Optional) Maximum:", binder, Long.MIN_VALUE, Long.MAX_VALUE);
         if(fieldRepresentation!=null && fieldRepresentation.getMax()!=null) {
-          maxParam.setValue(fieldRepresentation.getMin().doubleValue());
+          maxParam.setValue(fieldRepresentation.getMax().doubleValue());
         }
         listOfField.add(maxParam);
         listOfOptionsForField.add(createInfoForAParameter(maxParam,
@@ -763,7 +762,7 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         ));
       }
 
-      case BYTES, HASH_MD5, BLOB -> {
+      case BYTES, HASH_MD5 -> {
         var lengthParam = ModelsUtils.createLengthInt("(Optional) Length:", binder, 0, Integer.MAX_VALUE);
         if(fieldRepresentation!=null && fieldRepresentation.getLength()!=null) {
           lengthParam.setValue(fieldRepresentation.getLength());
@@ -874,12 +873,13 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         listOfField.add(linkValue);
         listOfOptionsForField.add(ModelsUtils.createInfoForAParameter(linkValue,
             """
-      This field provides a way to make a link from another column whose type is either CSV or City.
+      This field provides a way to make a link from another column whose type is either CSV or City or Name.
       The link must be consists of 4 parts: 
         $<name of the other column to reference>.<name_of_the_column_to_use>
       Example: 
         $city_col.lat will give the latitude of a city picked by another column named 'city_col'.
       For City, links are: lat, long, country. 
+      For Name, links are: sex, male, female, unisex.
       For CSV, links are other columns present in the CSV file.
       """
         ));}

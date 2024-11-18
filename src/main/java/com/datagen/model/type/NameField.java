@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class NameField extends Field<String> {
+public class NameField extends Field<NameField.Name> {
 
   public class Name {
     @Getter
@@ -88,20 +88,18 @@ public class NameField extends Field<String> {
         this.possibleValuesInternal.addAll(
             nameDico.stream().filter(
                     n -> n.country.equalsIgnoreCase(filterOnCountry))
-                .map(n -> n.first_name)
                 .toList());
       });
     } else {
       this.possibleValuesInternal.addAll(
           nameDico.stream()
-              .map(n -> n.first_name)
               .toList()
       );
     }
     this.possibleValueSize = possibleValuesInternal.size();
   }
 
-  public String generateRandomValue() {
+  public Name generateRandomValue() {
     return possibleValuesInternal.get(random.nextInt(possibleValueSize));
   }
 
@@ -125,20 +123,39 @@ public class NameField extends Field<String> {
     }
   }
 
-    /*
-     Override if needed Field function to insert into special connectors
-     */
+  @Override
+  public String toString(Name value) {
+    return " " + name + " : " + value.getFirst_name() + " ;";
+  }
 
   @Override
-  public Put toHbasePut(String value, Put hbasePut) {
+  public String toCSVString(Name value) {
+    return "\"" + value.getFirst_name() + "\",";
+  }
+
+  @Override
+  public String toJSONString(Name value) {
+    return "\"" + name + "\" : " + "\"" + value.getFirst_name() + "\", ";
+  }
+
+  /*
+   Override if needed Field function to insert into special connectors
+   */
+  @Override
+  public String toStringValue(Name value) {
+    return value.getFirst_name();
+  }
+
+  @Override
+  public Put toHbasePut(Name value, Put hbasePut) {
     hbasePut.addColumn(Bytes.toBytes(hbaseColumnQualifier), Bytes.toBytes(name),
-        Bytes.toBytes(value));
+        Bytes.toBytes(value.getFirst_name()));
     return hbasePut;
   }
 
   @Override
-  public PartialRow toKudu(String value, PartialRow partialRow) {
-    partialRow.addString(name, value);
+  public PartialRow toKudu(Name value, PartialRow partialRow) {
+    partialRow.addString(name, value.getFirst_name());
     return partialRow;
   }
 
@@ -148,12 +165,12 @@ public class NameField extends Field<String> {
   }
 
   @Override
-  public HivePreparedStatement toHive(String value, int index,
+  public HivePreparedStatement toHive(Name value, int index,
                                       HivePreparedStatement hivePreparedStatement) {
     try {
-      hivePreparedStatement.setString(index, value);
+      hivePreparedStatement.setString(index, value.getFirst_name());
     } catch (SQLException e) {
-      log.warn("Could not set value : " + value.toString() +
+      log.warn("Could not set value : " + value +
           " into hive statement due to error :", e);
     }
     return hivePreparedStatement;

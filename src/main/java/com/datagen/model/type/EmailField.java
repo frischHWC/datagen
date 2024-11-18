@@ -79,6 +79,7 @@ public class EmailField extends Field<String> {
   public EmailField(String name, HashMap<String, Long> possible_values_weighted,
                     List<String> filters) {
     this.name = name;
+    this.filters = filters;
     this.possibleValuesProvided = new ArrayList<>();
     if (possible_values_weighted != null &&
         !possible_values_weighted.isEmpty()) {

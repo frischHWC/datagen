@@ -48,7 +48,7 @@ public class ConditionsLine {
   @Getter
   private String valueToReturn;
   @Getter
-  private String rawValueToReturn;
+  private final String rawValueToReturn;
   @Getter
   private final String rawOperatorValue;
 

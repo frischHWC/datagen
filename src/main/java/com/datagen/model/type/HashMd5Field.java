@@ -70,12 +70,17 @@ public class HashMd5Field extends Field<byte[]> {
   @Override
   public String toString(byte[] value) {
     return " " + name + " : " +
-        DatatypeConverter.printHexBinary(value).toUpperCase() + " ;";
+        DatatypeConverter.printHexBinary(value) + " ;";
   }
 
   @Override
   public String toCSVString(byte[] value) {
-    return "\"" + DatatypeConverter.printHexBinary(value).toUpperCase() + "\",";
+    return "\"" + DatatypeConverter.printHexBinary(value) + "\",";
+  }
+
+  @Override
+  public String toJSONString(byte[] value) {
+    return "\"" + name + "\" : " + "\"" + DatatypeConverter.printHexBinary(value) + "\", ";
   }
 
 

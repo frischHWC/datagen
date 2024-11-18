@@ -33,14 +33,14 @@ public class FieldRepresentation {
   // INT, LONG, FLOAT, INCREMENT_INTEGER, INCREMENT_LONG
   Long min;
 
-  // For STRING, STRING_AZ, BYTES, HASH_MD5, BLOB, PHONE
+  // For STRING, STRING_AZ, BYTES, HASH_MD5, PHONE
   Integer length;
 
   // For STRING, STRING_AZ, INT, BOOLEAN, FLOAT, LONG, TIMESTAMP, BYTES, HASH_MD5, BIRTHDATE, COUNTRY, EMAIL, DATE, DATE_AS_STRING
   HashMap<String, Long> possibleValuesWeighted;
 
   LinkedHashMap<String, String> conditionals;
-  // For STRING, STRING_AZ, INT, FLOAT, LONG, BYTES, HASH_MD5, BLOB, BOOLEAN, TIMESTAMP
+  // For STRING, STRING_AZ, INT, FLOAT, LONG, BYTES, HASH_MD5, BOOLEAN, TIMESTAMP
   String formula;
   // For STRING, STRING_AZ
   String injection;
@@ -233,13 +233,13 @@ public class FieldRepresentation {
       this.conditionals = new LinkedHashMap<>();
       field.getConditional().getConditionLines().forEach(cl -> {
         if(cl.isLink()) {
-          this.link = cl.getValueToReturn();
+          this.link = cl.getRawValueToReturn();
         } else if(cl.isFormula()) {
-          this.formula = cl.getValueToReturn();
+          this.formula = cl.getRawValueToReturn();
         } else if(cl.isInjection()) {
-          this.injection = cl.getValueToReturn();
+          this.injection = cl.getRawValueToReturn();
         }
-        this.conditionals.put(cl.getRawOperatorValue(), cl.getValueToReturn());
+        this.conditionals.put(cl.getRawOperatorValue(), cl.getRawValueToReturn());
       });
     }
 
@@ -248,7 +248,6 @@ public class FieldRepresentation {
   public enum FieldType {
     BEDROCK,
     BIRTHDATE,
-    BLOB,
     BOOLEAN,
     BYTES,
     CITY,

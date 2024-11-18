@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -43,7 +44,7 @@ import java.util.*;
 @Slf4j
 public class JsonModelParser<T extends Field> implements ModelParser {
 
-  DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
+  DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneOffset.UTC);
 
   @Getter
   private JsonNode root;
@@ -196,27 +197,35 @@ public class JsonModelParser<T extends Field> implements ModelParser {
     if(jsonField.get("min_date")!=null) {
       var minDateJson = jsonField.get("min_date").asText();
       if(minDateJson.length()<=10) {
-        log.debug("Min date provided is a date");
-        String[] maxSplit = minDateJson.split("[/]");
-        fieldRepresentation.setMinDate(LocalDate.of(Integer.parseInt(maxSplit[2]),
-            Integer.parseInt(maxSplit[1]), Integer.parseInt(maxSplit[0])));
+        log.debug("Min date provided is a date: {}", minDateJson);
+        String[] maxSplit = minDateJson.split("/");
+        var localParsedDate = LocalDate.of(Integer.parseInt(maxSplit[2]),
+                Integer.parseInt(maxSplit[1]), Integer.parseInt(maxSplit[0]));
+        fieldRepresentation.setMinDate(localParsedDate);
+        log.debug("Found min date as: {}", localParsedDate);
       } else {
         log.debug("Min date provided is a date with time");
-        String minFormatted = minDateJson.substring(0,11) + "T" + minDateJson.substring(12) + "Z";
-        fieldRepresentation.setMinDateTime(LocalDateTime.parse(minFormatted, formatter));
+        // It assumes this pattern: 2011-12-03T10:15:30Z
+        var parsedDate = LocalDateTime.parse(minDateJson, formatter);
+        fieldRepresentation.setMinDateTime(parsedDate);
+        log.debug("Found max date with time as: {}", parsedDate);
       }
     }
     if(jsonField.get("max_date")!=null) {
       var maxDateJson = jsonField.get("max_date").asText();
       if(maxDateJson.length()<=10) {
         log.debug("Max date provided is a date");
-        String[] maxSplit = maxDateJson.split("[/]");
-        fieldRepresentation.setMaxDate(LocalDate.of(Integer.parseInt(maxSplit[2]),
-            Integer.parseInt(maxSplit[1]), Integer.parseInt(maxSplit[0])));
+        String[] maxSplit = maxDateJson.split("/");
+        var localParsedDate = LocalDate.of(Integer.parseInt(maxSplit[2]),
+                Integer.parseInt(maxSplit[1]), Integer.parseInt(maxSplit[0]));
+        fieldRepresentation.setMaxDate(localParsedDate);
+        log.debug("Found max date as: {}", localParsedDate);
       } else {
         log.debug("Max date provided is a date with time");
-        String minFormatted = maxDateJson.substring(0,11) + "T" + maxDateJson.substring(12) + "Z";
-        fieldRepresentation.setMaxDateTime(LocalDateTime.parse(minFormatted, formatter));
+        // It assumes this pattern: 2011-12-03T10:15:30Z
+        var parsedDate = LocalDateTime.parse(maxDateJson, formatter);
+        fieldRepresentation.setMaxDateTime(parsedDate);
+        log.debug("Found max date with time as: {}", parsedDate);
       }
     }
     JsonNode filtersArray = jsonField.get("filters");

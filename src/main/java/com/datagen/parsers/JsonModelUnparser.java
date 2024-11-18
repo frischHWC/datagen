@@ -149,14 +149,14 @@ public class JsonModelUnparser implements ModelUnParser {
           objectNode.put("min_date",
               LocalDateTime.ofEpochSecond(castedField.getMin(), 0, ZoneOffset.UTC)
                   .atZone(ZoneOffset.UTC)
-                  .format(dateFormatter)
+                  .format(dateTimeFormatter)
           );
         }
         if(castedField.getMax()!=null) {
           objectNode.put("max_date",
               LocalDateTime.ofEpochSecond(castedField.getMax(), 0, ZoneOffset.UTC)
                   .atZone(ZoneOffset.UTC)
-                  .format(dateFormatter)
+                  .format(dateTimeFormatter)
           );
         }
         objectNode.put("use_now", castedField.isUseNow());
@@ -167,14 +167,14 @@ public class JsonModelUnparser implements ModelUnParser {
           objectNode.put("min_date",
               LocalDateTime.ofEpochSecond(castedField.getMin(), 0, ZoneOffset.UTC)
                   .atZone(ZoneOffset.UTC)
-                  .format(dateFormatter)
+                  .format(dateTimeFormatter)
           );
         }
         if(castedField.getMax()!=null) {
           objectNode.put("max_date",
               LocalDateTime.ofEpochSecond(castedField.getMax(), 0, ZoneOffset.UTC)
                   .atZone(ZoneOffset.UTC)
-                  .format(dateFormatter)
+                  .format(dateTimeFormatter)
           );
         }
         objectNode.put("use_now", castedField.isUseNow());

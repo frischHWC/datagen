@@ -180,9 +180,6 @@ public abstract class Field<T> {
       case CITY:
         yield new CityField(f.name, f.filters);
 
-      case BLOB:
-        yield new BlobField(f.name, f.length, possibleValuesWeighted);
-
       case EMAIL:
         yield new EmailField(f.name,
             possibleValuesWeighted,
@@ -389,8 +386,6 @@ public abstract class Field<T> {
     switch (this.getClass().getSimpleName().toLowerCase(Locale.ROOT)) {
     case "birthdatefield":
       return "BIRTHDATE";
-    case "blobfield":
-      return "BLOB";
     case "booleanfield":
       return "BOOLEAN";
     case "bytesfield":
@@ -428,7 +423,7 @@ public abstract class Field<T> {
     case "phonefield":
       return "PHONE";
     case "stringazfield":
-      return "STRINGAZ";
+      return "STRING_AZ";
     case "stringfield":
       return "STRING";
     case "stringregexfield":

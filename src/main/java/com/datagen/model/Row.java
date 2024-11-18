@@ -291,7 +291,6 @@ public class Row<T extends Field> {
         longColumnVectorBoolean.vector[rowNumber] =
             (boolean) values.get(field) ? 1L : 0L;
         break;
-      case "BlobField":
       case "BytesField":
       case "HashMd5Field":
         BytesColumnVector bytesColumnVectorBytes = (BytesColumnVector) cv;

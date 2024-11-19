@@ -27,6 +27,7 @@ import org.apache.hive.jdbc.HivePreparedStatement;
 import org.apache.kudu.Type;
 import org.apache.kudu.client.PartialRow;
 import org.apache.orc.TypeDescription;
+import org.apache.solr.common.SolrInputDocument;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -147,10 +148,28 @@ public class NameField extends Field<NameField.Name> {
   }
 
   @Override
+  public Name toCastValue(String value) {
+    String[] valueSplitted = value.split(";");
+    return new Name(valueSplitted[0], valueSplitted[1], valueSplitted[2],
+            valueSplitted[3], valueSplitted[4]);
+  }
+
+  @Override
   public Put toHbasePut(Name value, Put hbasePut) {
     hbasePut.addColumn(Bytes.toBytes(hbaseColumnQualifier), Bytes.toBytes(name),
         Bytes.toBytes(value.getFirst_name()));
     return hbasePut;
+  }
+
+  @Override
+  public SolrInputDocument toSolrDoc(Name value, SolrInputDocument doc) {
+    doc.addField(name, value.getFirst_name());
+    return doc;
+  }
+
+  @Override
+  public String toOzone(Name value) {
+    return value.getFirst_name();
   }
 
   @Override
@@ -184,6 +203,11 @@ public class NameField extends Field<NameField.Name> {
   @Override
   public String getGenericRecordType() {
     return "string";
+  }
+
+  @Override
+  public Object toAvroValue(Name value) {
+    return value.getFirst_name();
   }
 
   @Override

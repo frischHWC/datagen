@@ -23,7 +23,7 @@
     "name" : "review",
     "type" : "BEDROCK",
     "request" : "write a ${sentiment} review on your stay of ${duration} days at ${city} in the ${residence} of ${host}",
-    "context" : "Generate only the answer.\nUse the following information to answer the question:\nThis is a conversation between User and Llama, a traveler guide.",
+    "context" : "Generate only the answer.\nYou are a traveler that went to France last month and you are commenting your stay to help future people\nBe precise, no more than 1000 characters.",
     "model_type" : "meta.llama3-8b-instruct-v1:0",
     "temperature" : 1.0,
     "user" : "",

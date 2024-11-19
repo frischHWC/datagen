@@ -21,6 +21,7 @@ import com.datagen.connector.queues.KafkaConnector;
 import com.datagen.model.type.CityField;
 import com.datagen.model.type.CsvField;
 import com.datagen.model.type.Field;
+import com.datagen.model.type.NameField;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -244,7 +245,6 @@ public class Row<T extends Field> {
       case "DateAsStringField":
       case "CountryField":
       case "StringAZField":
-      case "NameField":
       case "EmailField":
       case "LinkField":
       case "IpField":
@@ -265,6 +265,12 @@ public class Row<T extends Field> {
         bytesColumnVectorCity.setVal(rowNumber,
             valueAsCity.getName().getBytes(StandardCharsets.UTF_8));
         break;
+      case "NameField":
+          BytesColumnVector bytesColumnVectorName = (BytesColumnVector) cv;
+          NameField.Name valueAsName = (NameField.Name) values.get(field);
+          bytesColumnVectorName.setVal(rowNumber,
+                  valueAsName.getFirst_name().getBytes(StandardCharsets.UTF_8));
+          break;
       case "CsvField":
         BytesColumnVector bytesColumnVectorCsv = (BytesColumnVector) cv;
         Map<String, String> valueAsCsv =

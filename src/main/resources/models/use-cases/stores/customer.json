@@ -1,5 +1,5 @@
 {
-  "model_name" : "customer-usa-full-noblob-v1",
+  "model_name" : "customer-stores",
   "Fields" : [ {
     "name" : "name",
     "type" : "NAME",
@@ -121,11 +121,11 @@
   }, {
     "name" : "uuid",
     "type" : "UUID"
-  }, {
+  },{
     "name" : "associated_employee_id",
     "type" : "LONG",
-    "max" : 10001000000,
-    "min" : 10000000000
+    "max" : 1000001000000,
+    "min" : 1000000000000
   }, {
     "name" : "last_connection_timestamp",
     "type" : "TIMESTAMP"

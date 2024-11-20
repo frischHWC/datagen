@@ -256,6 +256,8 @@ then
   create_index_file "Datagen Repository" "Standalone files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/standalone/
 
   create_index_file "Datagen Repository" "Model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/models/
+  create_index_file "Datagen Repository" "Model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/models/use-cases/
+  create_index_file "Datagen Repository" "Model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/models/use-cases/stores/
   create_index_file "Datagen Repository" "Model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/models/customer/
   create_index_file "Datagen Repository" "Model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/models/finance/
   create_index_file "Datagen Repository" "Model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/models/industry/

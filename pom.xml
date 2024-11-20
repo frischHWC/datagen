@@ -203,7 +203,7 @@
         <dependency>
             <groupId>de.kherud</groupId>
             <artifactId>llama</artifactId>
-            <version>3.3.0</version>
+            <version>3.4.1</version>
         </dependency>
 
         <!-- HDFS -->

@@ -627,7 +627,7 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         ));
       }
 
-      case INCREMENT_INTEGER, INCREMENT_LONG -> {
+      case INCREMENT_INTEGER -> {
         var minParam = ModelsUtils.createMinInt("(Optional) Minimum:", binder, Integer.MIN_VALUE, Integer.MAX_VALUE);
         if(fieldRepresentation!=null && fieldRepresentation.getMin()!=null) {
           minParam.setValue(fieldRepresentation.getMin().intValue());
@@ -635,6 +635,16 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
         listOfField.add(minParam);
         listOfOptionsForField.add(createInfoForAParameter(minParam,
             " Optional minimum value. Default to " + 0L));
+      }
+
+      case INCREMENT_LONG -> {
+        var minParam = ModelsUtils.createMinLong("(Optional) Minimum:", binder, Long.MIN_VALUE, Long.MAX_VALUE);
+        if(fieldRepresentation!=null && fieldRepresentation.getMin()!=null) {
+          minParam.setValue(fieldRepresentation.getMin().doubleValue());
+        }
+        listOfField.add(minParam);
+        listOfOptionsForField.add(createInfoForAParameter(minParam,
+                " Optional minimum value. Default to " + 0L));
       }
 
       case COUNTRY -> {

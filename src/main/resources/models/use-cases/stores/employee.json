@@ -1,5 +1,5 @@
 {
-  "model_name" : "employee",
+  "model_name" : "employee-stores",
   "Fields" : [ {
     "name" : "employee_id",
     "type" : "INCREMENT_LONG",

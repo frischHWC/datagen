@@ -1,5 +1,5 @@
 {
-  "model_name" : "store",
+  "model_name" : "store-nodesc",
   "Fields" : [ {
     "name" : "store_id",
     "type" : "INCREMENT_INTEGER",
@@ -129,14 +129,7 @@
       "name" : "employees",
       "type" : "INTEGER",
       "formula" : "var extra_factor = 0\nif(${open-sunday} == true){\nextra_factor+=1\n}\nif(${extra-night-hours-week}==1) {\nextra_factor+=0.7\n} else if(${extra-night-hours-week}==2) {\nextra_factor+=1\n}\nif(${extra-night-hours-week-end}==1) {\nextra_factor+=0.6\n} else if(${extra-night-hours-week-end}>=2) {\nextra_factor+=1.1\n}\n1+Math.round((${square_meters}/17.5)+extra_factor)"
-    }, {
-      "name" : "description",
-      "type" : "OLLAMA",
-      "request" : "write a short description about your ${size} clothing store located in ${city}, ${country}",
-      "context" : "You are owner of a clothing store. Write short description to present it to customers. Description is less than 100 characters. Provide only short description. Provide only description, no metadata, no annotations.",
-      "file" : "https://huggingface.co/TheBloke/CapybaraHermes-2.5-Mistral-7B-GGUF/resolve/main/capybarahermes-2.5-mistral-7b.Q2_K.gguf",
-      "model_type" : "llama3"
-    } ],
+    }],
   "Table_Names" : {
     "HIVE_HDFS_FILE_PATH" : "/tmp/datagen-store/",
     "HDFS_FILE_NAME": "store",

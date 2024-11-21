@@ -30,7 +30,7 @@ import java.util.List;
 public class RowGeneratorThread<T extends Field> extends Thread {
 
   @Getter
-  private volatile List<Row> rows;
+  private List<Row> rows;
 
   private final long numberofRows;
   private final Model model;

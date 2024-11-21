@@ -172,7 +172,12 @@
     "type" : "LINK",
     "link" : "$name.sex"
   } ],
-  "Table_Names" : { },
+  "Table_Names" : {
+    "HIVE_HDFS_FILE_PATH" : "/tmp/datagen-customer/",
+    "HDFS_FILE_NAME": "customer",
+    "HIVE_DATABASE" : "datagen",
+    "HIVE_TABLE_NAME" : "customer"
+  },
   "Options" : {
     "KAFKA_MESSAGE_TYPE" : "JSON",
     "ONE_FILE_PER_ITERATION" : true,

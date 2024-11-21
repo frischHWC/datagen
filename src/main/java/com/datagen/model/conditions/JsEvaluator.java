@@ -33,16 +33,20 @@ public class JsEvaluator {
     context.initialize("js");
   }
 
-  String evaluateJsExpression(String expression) {
-    Object value = 0f;
-    try {
-      value = context.eval("js", expression);
-      log.debug("Evaluating formula: " + expression + " to: " + value);
-    } catch (PolyglotException e) {
-      log.warn("Could not evaluate expression: " + expression + " due to error: ",
-          e);
+  synchronized String evaluateJsExpression(String expression) {
+    var toReturn = "";
+    synchronized (context) {
+      Object value = 0f;
+      try {
+        value = context.eval("js", expression);
+        log.debug("Evaluating formula: " + expression + " to: " + value);
+      } catch (PolyglotException e) {
+        log.warn("Could not evaluate expression: " + expression + " due to error: ",
+                e);
+      }
+      toReturn = value.toString();
     }
-    return value.toString();
+    return toReturn;
   }
 
 

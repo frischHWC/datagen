@@ -1,7 +1,7 @@
 {
   "model_name" : "customer-stores",
   "Fields" : [ {
-    "name" : "name",
+    "name" : "customer_name",
     "type" : "NAME",
     "filters" : [ "USA" ]
   }, {
@@ -16,15 +16,15 @@
   }, {
     "name" : "customer_country",
     "type" : "LINK",
-    "link" : "$city.country"
+    "link" : "$customer_city.country"
   }, {
     "name" : "city_lat",
     "type" : "LINK",
-    "link" : "$city.lat"
+    "link" : "$customer_city.lat"
   }, {
     "name" : "city_long",
     "type" : "LINK",
-    "link" : "$city.long"
+    "link" : "$customer_city.long"
   }, {
     "name" : "customer_email",
     "type" : "EMAIL",
@@ -170,7 +170,7 @@
   }, {
     "name" : "customer_gender",
     "type" : "LINK",
-    "link" : "$name.sex"
+    "link" : "$customer_name.sex"
   } ],
   "Table_Names" : {
     "HIVE_HDFS_FILE_PATH" : "/tmp/datagen-customer/",

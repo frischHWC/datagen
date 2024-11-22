@@ -11,7 +11,7 @@
   }, {
     "name" : "country_of_store",
     "type" : "LINK",
-    "link" : "$city.country"
+    "link" : "$city_of_store.country"
   }, {
     "name" : "opening_date",
     "type" : "BIRTHDATE",
@@ -132,7 +132,7 @@
     }, {
       "name" : "description",
       "type" : "OLLAMA",
-      "request" : "write a short description about your ${size} clothing store located in ${city}, ${country}",
+      "request" : "write a short description about your ${size} clothing store located in ${city_of_store}, ${country_of_store}",
       "context" : "You are owner of a clothing store. Write short description to present it to customers. Description is less than 100 characters. Provide only short description. Provide only description, no metadata, no annotations.",
       "file" : "https://huggingface.co/TheBloke/CapybaraHermes-2.5-Mistral-7B-GGUF/resolve/main/capybarahermes-2.5-mistral-7b.Q2_K.gguf",
       "model_type" : "llama3"

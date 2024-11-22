@@ -17,35 +17,73 @@
  */
 package com.datagen.model.conditions;
 
+import com.datagen.config.ApplicationConfigs;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.PolyglotException;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 @Slf4j
 public class JsEvaluator {
 
-  private final Context context;
+  private class ContextEvaluator {
+    private Context context;
+    @Getter
+    @Setter
+    private boolean used;
 
-  JsEvaluator() {
-    this.context = Context.newBuilder()
-        .allowAllAccess(true)
-        .build();
-    context.initialize("js");
+    public ContextEvaluator(String language) {
+      this.context = Context.newBuilder()
+              .allowAllAccess(true)
+              .build();
+      context.initialize(language);
+      this.used = false;
+    }
+  }
+
+  private final List<ContextEvaluator> contexts;
+
+  JsEvaluator(Map<ApplicationConfigs, String> properties) {
+    this.contexts = new ArrayList<>();
+    int numberOfContext = Integer.parseInt(properties.getOrDefault(ApplicationConfigs.GENERATION_JS_EVALUATOR_CONTEXT_NUMBER, "1"));
+    for(int i=0;i<numberOfContext;i++){
+      this.contexts.add(new ContextEvaluator(properties.getOrDefault(ApplicationConfigs.GENERATION_JS_EVALUATOR_CONTEXT_LANGUAGE, "js")));
+    }
   }
 
   synchronized String evaluateJsExpression(String expression) {
     var toReturn = "";
-    synchronized (context) {
-      Object value = 0f;
-      try {
-        value = context.eval("js", expression);
-        log.debug("Evaluating formula: " + expression + " to: " + value);
-      } catch (PolyglotException e) {
-        log.warn("Could not evaluate expression: " + expression + " due to error: ",
-                e);
+    Object value = 0f;
+    ContextEvaluator contextToUse;
+
+    // Loop until one context is found available
+    synchronized (this.contexts) {
+      outerloop:
+      while(true) {
+        for (ContextEvaluator contextEvaluator : this.contexts) {
+          if (!contextEvaluator.isUsed()) {
+            contextToUse = contextEvaluator;
+            contextToUse.setUsed(true);
+            break outerloop;
+          }
+        }
       }
-      toReturn = value.toString();
     }
+
+    try {
+        value = contextToUse.context.eval("js", expression);
+        contextToUse.setUsed(false);
+        log.debug("Evaluating formula: {} to: {}", expression, value);
+    } catch (PolyglotException e) {
+        log.warn("Could not evaluate expression: {} due to error: ", expression, e);
+    }
+    toReturn = value.toString();
+
     return toReturn;
   }
 

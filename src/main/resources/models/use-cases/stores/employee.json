@@ -16,16 +16,16 @@
     "type" : "NAME",
     "filters" : [ "France", "USA", "UK", "Italy", "Spain", "Germany" ]
   }, {
-    "name" : "email",
+    "name" : "internal_email",
     "type" : "STRING",
     "length" : 20,
     "injection" : "${first_name}.${last_name}@company.com"
   }, {
-    "name" : "gender",
+    "name" : "employee_gender",
     "type" : "LINK",
     "link" : "$first_name.sex"
   }, {
-    "name" : "phone",
+    "name" : "internal_phone",
     "type" : "PHONE",
     "filters" : [ "USA" ]
   }, {
@@ -52,7 +52,7 @@
     "type" : "INTEGER",
     "formula" : "var factor=1\nvar base=41234\nvar additional=0\n\nif ( \"${gender}\" == \"female\") {\nfactor-=0.1\n}\n\nswitch(\"${seniority_level}\") {\ncase \"SKILLED\": \nfactor+=0.5\nbreak;\ncase \"SENIOR\": \nfactor+=1\nbreak;\ndefault:\nfactor+=0.1\n}\n\nif ( \"${specialty}\" == \"Kids\") {\nadditional+=1000\n}\n\nif ( \"${specialty}\" == \"Women's dress\" && \"${gender}\" == \"FEMALE\") {\nadditional+=2000\n}\n\nif ( \"${specialty}\" == \"Women's top\" && \"${gender}\" == \"MALE\") {\nadditional+=800\n}\n\nif ( \"${specialty}\" == \"Men's shirts\" && \"${gender}\" == \"MALE\") {\nadditional-=500\n}\n\nif ( \"${specialty}\" == \"Men's pants\" && \"${gender}\" == \"FEMALE\") {\nadditional+=1500\n}\n\nif ( \"${specialty}\" == \"Jackets & Coats\") {\nfactor+=0.3\n}\n\n\nMath.round((base + additional)*factor)\n\n"
   },{
-    "name" : "start_date",
+    "name" : "hiring_date",
     "type" : "BIRTHDATE",
     "min_date" : "01/01/2019",
     "max_date" : "01/01/2024"

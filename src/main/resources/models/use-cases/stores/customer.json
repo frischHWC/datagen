@@ -10,11 +10,11 @@
     "min_date" : "01/01/1955",
     "max_date" : "31/12/2004"
   }, {
-    "name" : "city",
+    "name" : "customer_city",
     "type" : "CITY",
     "filters" : [ "USA" ]
   }, {
-    "name" : "country",
+    "name" : "customer_country",
     "type" : "LINK",
     "link" : "$city.country"
   }, {
@@ -26,11 +26,11 @@
     "type" : "LINK",
     "link" : "$city.long"
   }, {
-    "name" : "email",
+    "name" : "customer_email",
     "type" : "EMAIL",
     "filters" : [ "USA" ]
   }, {
-    "name" : "phone_number",
+    "name" : "customer_phone_number",
     "type" : "PHONE",
     "filters" : [ "USA" ]
   }, {
@@ -72,7 +72,7 @@
       "Main" : 15
     }
   }, {
-    "name" : "address",
+    "name" : "customer_address",
     "type" : "STRING",
     "length" : 20,
     "injection" : "74, Main Boulevard"
@@ -168,7 +168,7 @@
     "max" : 16,
     "min" : 4
   }, {
-    "name" : "gender",
+    "name" : "customer_gender",
     "type" : "LINK",
     "link" : "$name.sex"
   } ],

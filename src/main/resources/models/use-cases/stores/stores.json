@@ -5,11 +5,11 @@
     "type" : "INCREMENT_INTEGER",
     "min" : 0
   }, {
-    "name" : "city",
+    "name" : "city_of_store",
     "type" : "CITY",
     "filters" : [ "USA" ]
   }, {
-    "name" : "country",
+    "name" : "country_of_store",
     "type" : "LINK",
     "link" : "$city.country"
   }, {
@@ -121,12 +121,12 @@
       "max" : 500,
       "min" : 50
     }, {
-      "name" : "size",
+      "name" : "store_size",
       "type" : "STRING",
       "length" : 20,
       "formula" : "if(${square_meters} < 100) {\n\"small\"\n} else if(${square_meters} < 250) {\n\"medium\"\n} else if(${square_meters} < 450) {\n\"large\" \n} else {\n\"extra-large\"\n}"
     }, {
-      "name" : "employees",
+      "name" : "number_of_employees",
       "type" : "INTEGER",
       "formula" : "var extra_factor = 0\nif(${open-sunday} == true){\nextra_factor+=1\n}\nif(${extra-night-hours-week}==1) {\nextra_factor+=0.7\n} else if(${extra-night-hours-week}==2) {\nextra_factor+=1\n}\nif(${extra-night-hours-week-end}==1) {\nextra_factor+=0.6\n} else if(${extra-night-hours-week-end}>=2) {\nextra_factor+=1.1\n}\n1+Math.round((${square_meters}/17.5)+extra_factor)"
     }, {

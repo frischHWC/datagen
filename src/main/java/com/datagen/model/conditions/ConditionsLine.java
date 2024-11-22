@@ -18,6 +18,7 @@
 package com.datagen.model.conditions;
 
 
+import com.datagen.config.ApplicationConfigs;
 import com.datagen.model.Row;
 import com.datagen.utils.ParsingUtils;
 import lombok.Getter;
@@ -25,6 +26,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.LinkedList;
+import java.util.Map;
 
 
 /**
@@ -64,7 +66,7 @@ public class ConditionsLine {
   private LinkedList<ParsingUtils.StringFragment> stringFragments;
   private JsEvaluator jsEvaluator;
 
-  public ConditionsLine(String conditionLine, String valueToReturn) {
+  public ConditionsLine(String conditionLine, String valueToReturn, Map<ApplicationConfigs, String> properties) {
     this.valueToReturn = valueToReturn;
     this.rawValueToReturn = valueToReturn;
     this.rawOperatorValue = conditionLine;
@@ -80,7 +82,7 @@ public class ConditionsLine {
     } else if (conditionSplitted[0].equalsIgnoreCase("formula")) {
       log.debug("Found a formula, that will need to be evaluated");
       this.formula = true;
-      this.jsEvaluator = new JsEvaluator();
+      this.jsEvaluator = new JsEvaluator(properties);
       this.stringFragments = ParsingUtils.parseStringWithVars(valueToReturn);
       return;
     } else if (conditionSplitted[0].equalsIgnoreCase("link")) {

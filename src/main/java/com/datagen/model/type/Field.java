@@ -108,7 +108,7 @@ public abstract class Field<T> {
 
 
   /**
-   *  Create the right instance of a field (i.e. String, password etc..) according to its type
+   *  Create the right instance of a field (i.e. String, password etc...) according to its type
    * @param properties
    * @param f
    * @return
@@ -315,19 +315,19 @@ public abstract class Field<T> {
 
     // Set conditionals or formula or injections for the field if there are
     if ((f.conditionals != null && !f.conditionals.isEmpty())) {
-      field.setConditional(new ConditionalEvaluator(f.conditionals));
+      field.setConditional(new ConditionalEvaluator(f.conditionals, properties));
     } else if (f.formula != null && !f.formula.isEmpty()) {
       LinkedHashMap<String, String> lm = new LinkedHashMap<>();
       lm.put("formula", f.formula);
-      field.setConditional(new ConditionalEvaluator(lm));
+      field.setConditional(new ConditionalEvaluator(lm, properties));
     } else if (f.injection != null && !f.injection.isEmpty()) {
       LinkedHashMap<String, String> lm = new LinkedHashMap<>();
       lm.put("injection", f.injection);
-      field.setConditional(new ConditionalEvaluator(lm));
+      field.setConditional(new ConditionalEvaluator(lm, properties));
     } else if (f.link != null && !f.link.isEmpty()) {
       LinkedHashMap<String, String> lm = new LinkedHashMap<>();
       lm.put("link", f.link);
-      field.setConditional(new ConditionalEvaluator(lm));
+      field.setConditional(new ConditionalEvaluator(lm, properties));
     }
 
     if (log.isDebugEnabled()) {

@@ -550,6 +550,23 @@
           "type": "long"
         },
         {
+           "name": "js_evaluator_context_number",
+           "label": "Number of JS evaluator to start",
+           "description": "The number of JS evaluator context to start to parallelize process (when using js evaluator)",
+           "required": true,
+           "default": 4,
+           "min": 1,
+           "type": "long"
+         },
+        {
+           "name": "js_evaluator_context_language",
+           "label": "Language for the JS Evaluator",
+           "description": "The language of the jS evaluator (by default it is js)",
+           "required": true,
+           "default": "js",
+           "type": "string"
+         },
+        {
           "name": "app_port",
           "label": "Web Server Port",
           "description": "Port that Web Server should expose",

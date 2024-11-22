@@ -18,6 +18,7 @@
 package com.datagen.model.conditions;
 
 
+import com.datagen.config.ApplicationConfigs;
 import com.datagen.model.Row;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,13 +36,13 @@ public class ConditionalEvaluator {
   /*
   A conditionalEvaluator is responsible for preparing conditions evaluations set on a field by parsing the list of conditions to met
    */
-  public ConditionalEvaluator(LinkedHashMap<String, String> conditionals) {
+  public ConditionalEvaluator(LinkedHashMap<String, String> conditionals, Map<ApplicationConfigs, String> properties) {
     Iterator<Map.Entry<String, String>> condIterator =
         conditionals.entrySet().iterator();
     while (condIterator.hasNext()) {
       Map.Entry<String, String> condLine = condIterator.next();
       conditionLines.add(
-          new ConditionsLine(condLine.getKey(), condLine.getValue()));
+          new ConditionsLine(condLine.getKey(), condLine.getValue(), properties));
       log.debug(" Added condition line: " + condLine.getKey() + " : " +
           condLine.getValue());
     }

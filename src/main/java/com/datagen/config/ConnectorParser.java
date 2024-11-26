@@ -28,7 +28,7 @@ public class ConnectorParser {
   }
 
   public static Connector stringToConnector(String connector) {
-    return Connector.valueOf(connector);
+    return Connector.valueOf(connector.toUpperCase());
   }
 
   public enum Connector {

@@ -163,8 +163,8 @@ public class Row<T extends Field> {
   }
 
   public Put toHbasePut() {
-    Put put = new Put(Bytes.toBytes(
-        (String) model.getOptionsOrDefault(OptionsConverter.Options.HBASE_PRIMARY_KEY)));
+    var hbasePkId = (String) model.getOptionsOrDefault(OptionsConverter.Options.HBASE_PRIMARY_KEY);
+    Put put = new Put(Bytes.toBytes(values.get(hbasePkId).toString()));
     this.model.getFieldsToPrint().forEach((name, fieldtype) ->
         model.getFieldFromName(name.toString())
             .toHbasePut(values.get(name.toString()), put)

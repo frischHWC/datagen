@@ -46,7 +46,6 @@ import java.util.stream.Collectors;
 import static com.datagen.views.generation.GenerationUtils.*;
 
 @Slf4j
-@PageTitle("Data Generation")
 @Route(value = "generation", layout = MainLayout.class)
 @RolesAllowed({"ROLE_DATAGEN_USER", "ROLE_DATAGEN_ADMIN"})
 public class GenerationView extends Composite<VerticalLayout> {

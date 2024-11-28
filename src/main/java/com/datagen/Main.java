@@ -18,6 +18,7 @@
 package com.datagen;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.theme.Theme;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +52,13 @@ public class Main implements AppShellConfigurator {
             Shutdowner.log.error("Going to shutdown due to previous error");
             SpringApplication.exit(appContext, () -> returnCode);
         }
-
     }
+
+    @Override
+    public void configurePage(AppShellSettings settings) {
+        settings.setPageTitle("Datagen");
+        settings.addFavIcon("icon", "favicon.icon", "64x64");
+    }
+
 
 }

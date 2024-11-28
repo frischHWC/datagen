@@ -12,6 +12,7 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -21,6 +22,7 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
@@ -39,7 +41,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-@PageTitle("Models Management")
 @Route(value = "model/management", layout = MainLayout.class)
 @RolesAllowed({"ROLE_DATAGEN_USER", "ROLE_DATAGEN_ADMIN"})
 public class ModelsManagementView extends Composite<VerticalLayout> {
@@ -58,6 +59,7 @@ public class ModelsManagementView extends Composite<VerticalLayout> {
         layoutColumn.getStyle().set("flex-grow", "1");
 
         var grid = new Grid<ModelStoreService.ModelStored>();
+        grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
         grid.addColumn(ModelStoreService.ModelStored::getName)
             .setHeader("Name")
             .setSortable(true)
@@ -99,6 +101,9 @@ public class ModelsManagementView extends Composite<VerticalLayout> {
         grid.addColumn(m -> m.getModel().getFields().keySet().stream().collect(Collectors.joining(",")))
             .setHeader("Columns List")
             .setAutoWidth(true);
+
+      grid.getStyle().setBorderRadius("15px");
+      grid.getStyle().setOverflow(Style.Overflow.HIDDEN);
 
       // Add grid to main layout and load data
       setItemsForGrid(grid);

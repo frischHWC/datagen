@@ -48,7 +48,6 @@ import static com.datagen.views.models.ModelsUtils.*;
 
 
 @Slf4j
-@PageTitle("Models Creation")
 @Route(value = "model/creation", layout = MainLayout.class)
 @RolesAllowed({"ROLE_DATAGEN_USER", "ROLE_DATAGEN_ADMIN"})
 public class ModelsCreationView extends Composite<VerticalLayout> {

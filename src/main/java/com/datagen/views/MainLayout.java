@@ -9,6 +9,7 @@ import com.datagen.views.models.ModelsManagementView;
 import com.datagen.views.users.UsersView;
 import com.datagen.views.utils.UsersUtils;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
@@ -53,9 +54,16 @@ public class MainLayout extends AppLayout {
     }
 
     private void addDrawerContent() {
-        Span appName = new Span("Datagen");
+        Span appName = new Span("atagen");
         appName.addClassNames(LumoUtility.FontWeight.SEMIBOLD, LumoUtility.FontSize.LARGE);
-        Header header = new Header(appName);
+
+        Image logo = new Image("images/logo.png", "logo");
+        logo.setHeight("3rem");
+        logo.setWidth("3rem");
+
+        var divTitleBar = new Div(logo, appName);
+
+        Header header = new Header(divTitleBar);
 
         Scroller scroller = new Scroller(createNavigation());
 

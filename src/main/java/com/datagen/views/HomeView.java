@@ -12,7 +12,7 @@ import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
-@PageTitle("Home")
+
 @Route(value = "", layout = MainLayout.class)
 @PermitAll
 public class HomeView extends Composite<VerticalLayout> {
@@ -66,7 +66,7 @@ public class HomeView extends Composite<VerticalLayout> {
         buttonRunningCommands.setWidth("33%");
         buttonRunningCommands.addClickListener(e ->
             buttonRunningCommands.getUI().ifPresent(ui ->
-                ui.navigate("commands/running"))
+                ui.navigate("commands"))
         );
 
         hl.add(buttonModelCreation, buttonDataGeneration, buttonRunningCommands);

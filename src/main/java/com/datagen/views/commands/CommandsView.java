@@ -15,6 +15,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -23,6 +24,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
@@ -45,7 +47,6 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Slf4j
-@PageTitle("Commands")
 @Route(value = "commands", layout = MainLayout.class)
 @RolesAllowed({"ROLE_DATAGEN_USER", "ROLE_DATAGEN_ADMIN"})
 public class CommandsView extends Composite<VerticalLayout> {
@@ -64,6 +65,7 @@ public class CommandsView extends Composite<VerticalLayout> {
         layoutColumn.getStyle().set("flex-grow", "1");
 
         var grid = new Grid<Command>();
+        grid.addThemeVariants(GridVariant.LUMO_WRAP_CELL_CONTENT);
         grid.addColumn(Command::getModelId)
             .setHeader("Model")
             .setSortable(true)
@@ -146,6 +148,8 @@ public class CommandsView extends Composite<VerticalLayout> {
             else
                 return null;
         });
+        grid.getStyle().setBorderRadius("15px");
+        grid.getStyle().setOverflow(Style.Overflow.HIDDEN);
 
         setGridItems(grid);
         grid.sort(List.of(new GridSortOrder<>(grid.getColumns().get(7), SortDirection.DESCENDING)));

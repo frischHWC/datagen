@@ -36,7 +36,6 @@ import java.util.List;
 import static com.datagen.views.analysis.AnalysisUtils.*;
 
 @Slf4j
-@PageTitle("Models")
 @Route(value = "analysis", layout = MainLayout.class)
 @RolesAllowed({"ROLE_DATAGEN_USER", "ROLE_DATAGEN_ADMIN"})
 public class AnalysisView extends Composite<VerticalLayout> {

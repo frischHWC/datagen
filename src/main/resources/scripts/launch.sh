@@ -16,7 +16,6 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-#!/usr/bin/env bash
 
 # Base configuration
 export JAR_PATH="datagen.jar"

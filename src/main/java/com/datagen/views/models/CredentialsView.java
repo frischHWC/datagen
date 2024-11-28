@@ -26,6 +26,7 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.security.AuthenticationContext;
@@ -44,7 +45,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-@PageTitle("Credentials")
 @Route(value = "model/credentials", layout = MainLayout.class)
 @RolesAllowed({"ROLE_DATAGEN_USER", "ROLE_DATAGEN_ADMIN"})
 public class CredentialsView extends Composite<VerticalLayout> {
@@ -123,6 +123,9 @@ public class CredentialsView extends Composite<VerticalLayout> {
           .setHeader("Rights")
           .setWidth("5rem")
           .setFlexGrow(0);
+
+      grid.getStyle().setBorderRadius("15px");
+      grid.getStyle().setOverflow(Style.Overflow.HIDDEN);
 
       // Add grid to main layout and load data
       setGridItems(grid);

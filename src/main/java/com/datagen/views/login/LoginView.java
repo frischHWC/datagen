@@ -1,6 +1,7 @@
 package com.datagen.views.login;
 
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -11,7 +12,6 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import lombok.extern.slf4j.Slf4j;
 
 @Route("login")
-@PageTitle("Login")
 @AnonymousAllowed
 @Slf4j
 public class LoginView extends VerticalLayout implements BeforeEnterObserver {

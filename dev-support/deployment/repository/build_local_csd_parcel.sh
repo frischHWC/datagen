@@ -27,6 +27,10 @@ export BUILD_CSD="true"
 export BUILD_PARCEL="true"
 export BUILD_STANDALONE="true"
 export BUILD_MODELS="true"
+export BUILD_K8S="true"
+
+# Docker Build
+PODMAN_OR_DOCKER=podman
 
 # DEBUG
 export DEBUG=false
@@ -49,13 +53,15 @@ function usage()
     echo "  --build-csd=$BUILD_CSD : To build the CSD or not (Default) $BUILD_CSD "
     echo "  --build-parcel=$BUILD_PARCEL : To build the parcels or not (Default) $BUILD_PARCEL "
     echo "  --build-standalone=$BUILD_STANDALONE : To build the standalone files or not (Default) $BUILD_STANDALONE "
-     echo "  --build-models=$BUILD_MODELS : To build the model files or not (Default) $BUILD_STANDALONE "
+    echo "  --build-models=$BUILD_MODELS : To build the model files or not (Default) $BUILD_MODELS "
+    echo "  --build-k8s=$BUILD_K8S : To build the docker & k8s files or not (Default) $BUILD_K8S "
     echo ""
     echo "  --temp-dir=$TEMP_DIR : Temporary directory used for generation of files (Default) $TEMP_DIR "
     echo "  --csd-dir=$CSD_DIR : Directory where CSD will be generated  (Default) $CSD_DIR"
     echo "  --parcel-dir=$PARCEL_DIR : Directory where parcels will be generated  (Default) $PARCEL_DIR"
     echo "  --standalone-dir=$STANDALONE_DIR : Directory where standalone files will be generated  (Default) $STANDALONE_DIR"
-    echo "  --model-dir=$MODEL_DIR : Directory where model files will be generated  (Default) $STANDALONE_DIR"
+    echo "  --model-dir=$MODEL_DIR : Directory where model files will be generated  (Default) $MODEL_DIR"
+    echo "  --k8s-dir=$K8S_DIR : Directory where k8s files will be generated  (Default) $K8S_DIR"
     echo ""
     echo "  --debug=$DEBUG : To set DEBUG log-level (Default) $DEBUG "
     echo "  --log-dir=$LOG_DIR : Log directory (Default) $LOG_DIR "
@@ -94,6 +100,9 @@ while [ "$1" != "" ]; do
         --build-models)
             BUILD_MODELS=$VALUE
             ;;
+        --build-k8s)
+            BUILD_K8S=$VALUE
+            ;;
         --temp-dir)
             TEMP_DIR=$VALUE
             ;;
@@ -108,6 +117,9 @@ while [ "$1" != "" ]; do
             ;;
         --model-dir)
             MODEL_DIR=$VALUE
+            ;;
+        --k8s-dir)
+            K8S_DIR=$VALUE
             ;;
         --debug)
             DEBUG=$VALUE
@@ -142,6 +154,10 @@ if [ -z ${MODEL_DIR} ]
 then
   export MODEL_DIR="/tmp/datagen_model-${DATAGEN_VERSION}"
 fi
+if [ -z ${K8S_DIR} ]
+then
+  export K8S_DIR="/tmp/datagen_k8s-${DATAGEN_VERSION}"
+fi
 
 # INTERNAL: Do not touch these
 export DEPLOY_DIR=$(pwd)
@@ -166,6 +182,7 @@ fi
 rm -rf ${CSD_DIR}
 rm -rf ${PARCEL_DIR}
 rm -rf ${TEMP_DIR}
+rm -rf ${STANDALONE_DIR}
 
 ################# Build Datagen Jar #################
 if [ "${BUILD_DATAGEN_JAR}" = "true" ]
@@ -207,7 +224,41 @@ then
 fi
 
 ################# K8s Files #################
-# TODO: Add building of the docker image and add deployment.yml file
+if [ "${BUILD_K8S}" = "true" ]
+then
+
+  mkdir -p ${K8S_DIR}
+
+  cp -Rp ../../../src/main/resources/application.properties "${K8S_DIR}/application-standalone.properties"
+  cp -Rp ../../../src/main/resources/logback-spring.xml "${K8S_DIR}/"
+  cp -Rp ../../../target/datagen*.jar "${K8S_DIR}/datagen.jar"
+  cp -Rp ../../../src/main/resources/scripts/launch.sh "${K8S_DIR}/"
+  cp -Rp ../../docker/Dockerfile "${K8S_DIR}/"
+  cp -Rp ../../docker/datagen_deployment.yml "${K8S_DIR}/"
+
+  # Build docker file
+  cd ${K8S_DIR}
+  ${PODMAN_OR_DOCKER} build --platform linux/amd64 -t datagen:v${DATAGEN_VERSION} .
+  ${PODMAN_OR_DOCKER} save -o datagen-docker-image-v${DATAGEN_VERSION}.tar datagen:v${DATAGEN_VERSION}
+
+  cd ${DEPLOY_DIR}
+
+  # Do not include thes files in tar.gz (only docker image and k8s yml file)
+  rm "${K8S_DIR}/datagen.jar"
+  rm "${K8S_DIR}/launch.sh"
+  rm "${K8S_DIR}/Dockerfile"
+
+  # For BSD-like, tar includes some files which should not be present to be GNU-compliant
+  export COPYFILE_DISABLE=true
+  tar -czv --no-xattrs --exclude '._*' -f "${K8S_DIR}/datagen-k8s.tar.gz" -C "${K8S_DIR}/.." $(basename ${K8S_DIR})
+
+  # Remove all files except the tar.gz
+  rm "${K8S_DIR}/datagen_deployment.yml"
+  rm "${K8S_DIR}/application-standalone.properties"
+  rm "${K8S_DIR}/logback-spring.xml"
+  rm "${K8S_DIR}/datagen-docker-image-v${DATAGEN_VERSION}.tar"
+
+fi
 
 ################# CSD #################
 if [ "${BUILD_CSD}" = "true" ]

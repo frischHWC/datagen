@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: datagen-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: datagen-app
+  template:
+    metadata:
+      labels:
+        app: datagen-app
+    spec:
+      containers:
+        - name: datagen
+          image: datagen:v1.0.0
+          ports:
+            - containerPort: 4242
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2"
+          env:
+            - name: MIN_MEM
+              value: "1G"
+            - name: MAX_MEM
+              value: "4G"
+            - name: PROFILE
+              value: "standalone"
+            - name: LOGGING_FILE
+              value: "/home/datagen/logback-spring.xml"
+            - name: CONFIG_FILE
+              value: "/home/datagen/application-standalone.properties"
+          volumeMounts:
+            - name: app-properties
+              mountPath: /home/datagen/application-standalone.properties
+              readOnly: true
+              subPath: application-standalone.properties
+            - name: logback-xml
+              mountPath: /home/datagen/logback-spring.xml
+              readOnly: true
+              subPath: logback-spring.xml
+      volumes:
+        - name: app-properties
+          configMap:
+            name: app-properties
+        - name: logback-xml
+          configMap:
+            name: logback-xml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: datagen-service
+spec:
+  selector:
+    app: datagen-app
+  ports:
+    - protocol: TCP
+      port: 4242
+      targetPort: 4242
+---
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: datagen-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: "datagen.<YOUR_K8S_DOMAIN>"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: datagen-service
+                port:
+                  number: 4242
+---

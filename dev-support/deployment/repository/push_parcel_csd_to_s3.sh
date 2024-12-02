@@ -35,6 +35,7 @@ export PARCEL_DIR="/tmp/datagen_parcel"
 export STANDALONE_DIR="/tmp/datagen_standalone"
 export MAIN_STANDALONE_VERSION="false"
 export MODELS_DIR="/tmp/datagen_models"
+export K8S_DIR="/tmp/datagen_k8s"
 
 # DEBUG
 export DEBUG=false
@@ -63,6 +64,7 @@ function usage()
     echo "  --parcel-dir=$PARCEL_DIR : Directory where parcels have been generated  (Default) $PARCEL_DIR"
     echo "  --standalone-dir=$STANDALONE_DIR : Directory where standalone files have been generated  (Default) $STANDALONE_DIR"
     echo "  --model-dir=$MODEL_DIR : Directory where model files have been generated  (Default) $MODEL_DIR"
+    echo "  --k8s-dir=$K8S_DIR : Directory where k8s files have been generated  (Default) $K8S_DIR"
     echo "  --main-standalone-version=$MAIN_STANDALONE_VERSION : If it is the main standalone version to publish to root of datagen version (Default) $MAIN_STANDALONE_VERSION"
     echo ""
     echo "  --debug=$DEBUG : To set DEBUG log-level (Default) $DEBUG "
@@ -104,6 +106,9 @@ while [ "$1" != "" ]; do
             ;;
         --model-dir)
             MODEL_DIR=$VALUE
+            ;;
+        --k8s-dir)
+            K8S_DIR=$VALUE
             ;;
         --main-standalone-version)
             MAIN_STANDALONE_VERSION=$VALUE
@@ -162,6 +167,14 @@ then
     then
       echo "Upload to AWS ${AWS_S3_BUCKET}/${DATAGEN_VERSION}/models/ files: ${MODEL_DIR}/${MODEL_FILES}"
       aws s3 cp ${MODEL_DIR}/ s3://${AWS_S3_BUCKET}/${DATAGEN_VERSION}/models/ --recursive
+    fi
+
+    # Upload Docker-K8s files
+    K8S_FILES=$(ls ${K8S_DIR})
+    if [[ ! -z "${K8S_FILES}" ]] && [[ "${MAIN_STANDALONE_VERSION}" == "true" ]]
+    then
+      echo "Upload to AWS ${AWS_S3_BUCKET}/${DATAGEN_VERSION}/docker/ files: ${K8S_DIR}/${K8S_FILES}"
+      aws s3 cp ${K8S_DIR}/ s3://${AWS_S3_BUCKET}/${DATAGEN_VERSION}/docker/ --recursive
     fi
 
 fi
@@ -254,6 +267,8 @@ then
   create_index_file "Datagen Repository" "Parcels files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/parcels/
 
   create_index_file "Datagen Repository" "Standalone files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/standalone/
+
+  create_index_file "Datagen Repository" "Docker/K8s files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/docker/
 
   create_index_file "Datagen Repository" "Model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/models/
   create_index_file "Datagen Repository" "Model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/models/use-cases/

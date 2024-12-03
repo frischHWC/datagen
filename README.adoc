@@ -4,6 +4,8 @@ Goal of this project is to generate meaningful Data into various Big Data Servic
 
 Built originally for Cloudera Data Platform, it works with S3, ADLS, GCS, local file systems, and open-source services (such as kafka, hive etc...).
 
+image:src/main/resources/images/datagen.gif[A quick demo]
+
 == What is it ?
 
 Datagen is a Web Server with a UI and a sets of APIs (with a swagger) to interact with.

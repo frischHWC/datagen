@@ -39,6 +39,8 @@ Datagen is made with:
 It is built for:
 
 - CDP 7.1.9+
+- AWS, GCP, Azure
+- Docker & K8s
 
 Datagen is made as a Spring Boot project with dependencies on SDK to interact with various services.
 
@@ -55,9 +57,15 @@ Datagen can be run in two ways:
 
 To make a fast and easy deployment, here is a procedure:
 
-TODO: Add Procedure
+        wget https://datagen-repo.s3.eu-west-3.amazonaws.com/1.0.0/standalone/datagen-standalone-files.tar.gz
 
-By default, TLS is activated and a user/password is required (**admin/admin** by default).
+        tar -xvzf datagen-standalone-files.tar.gz
+        cd datagen_standalone-1.0.0/
+
+        ./launch.sh
+
+
+By default, TLS is de-activated and a user/password is required (**admin/admin** by default).
 
 
 === On CDP

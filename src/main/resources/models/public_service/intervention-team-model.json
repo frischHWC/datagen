@@ -1,4 +1,5 @@
 {
+  "model_name": "intervention-team",
   "Fields": [
     {
       "name": "team_id",
@@ -44,7 +45,7 @@
       "name": "finished_hour",
       "type": "INTEGER",
       "conditionals": {
-        "formula": "$starting_hour + 8"
+        "formula": "${starting_hour} + 8"
       }
     },
     {
@@ -72,13 +73,11 @@
     "LOCAL_FILE_NAME":  "incident",
     "AVRO_NAME":  "datagenpublicserviceincident"
   },
-  "Primary_Keys": {
+  "Options": {
     "KAFKA_MSG_KEY": "city",
     "KUDU_PRIMARY_KEYS":  "team_id,maximum_qualified_emergency,qualified_type",
     "KUDU_HASH_KEYS":  "maximum_qualified_emergency",
-    "KUDU_RANGE_KEYS":  "qualified_type"
-  },
-  "Options": {
+    "KUDU_RANGE_KEYS":  "qualified_type",
     "KAFKA_ACKS_CONFIG":  "all",
     "KAFKA_RETRIES_CONFIG":  3,
     "KAFKA_MESSAGE_TYPE":  "AVRO",

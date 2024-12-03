@@ -1,6 +1,13 @@
-# WARNING: These two properties are required to make the spring boot work with all dependencies
+# WARNING: required property to start the server
 server.tomcat.additional-tld-skip-patterns=*.jar
-spring.mvc.pathmatch.matching-strategy=ANT_PATH_MATCHER
+
+# Vaadin
+logging.level.org.atmosphere=warn
+spring.mustache.check-template-location=false
+vaadin.allowed-packages=com.vaadin,org.vaadin,dev.hilla,com.datagen
+vaadin.exclude-urls=/swagger-ui/**,/api/v1/**
+spring.jpa.defer-datasource-initialization=true
+vaadin.productionMode=true
 
 # When deployed to CDP, should be set to 'cdp'
 spring.profiles.active=cdp
@@ -12,16 +19,22 @@ hadoop.user=${USER}
 hadoop.home=/user/${USER}
 
 # General default Conf
-threads={{ globals['threads'] }}
-number.batches.default={{ globals['number_of_batches'] }}
-number.rows.default={{ globals['number_of_rows'] }}
+generation.threads.default={{ globals['threads'] }}
+generation.batches.default={{ globals['number_of_batches'] }}
+generation.rows.default={{ globals['number_of_rows'] }}
+generation.js.evaluator.context.number={{ globals['js_evaluator_context_number'] }}
+generation.js.evaluator.context.language={{ globals['js_evaluator_context_language'] }}
 datagen.home.directory={{ globals['datagen_home_dir'] }}
 datagen.model.path=${DATAGEN_MODELS_DIR}
 datagen.model.received.path={{ globals['data_model_received'] }}
 datagen.model.generated.path={{ globals['data_model_generated'] }}
-datagen.model.default={{ globals['data_model'] }}
-datagen.custom.model={{ globals['custom_model_path'] }}
+datagen.model.store.path={{ globals['data_model_store'] }}
+datagen.commands.path={{ globals['commands_file_path'] }}
+datagen.credentials.path={{ globals['credentials_file_path'] }}
+datagen.analysis.path={{ globals['analysis_file_path'] }}
 datagen.scheduler.file.path={{ globals['scheduler_file_path'] }}
+datagen.users.file.path={{ globals['users_file_path'] }}
+datagen.load.default.models={{ globals['load_default_models'] }}
 
 {% if globals['tls_enabled'] == 'true' %}
 # Spring internal TLS settings
@@ -36,8 +49,51 @@ server.ssl.trust-store-password=${TRUSTSTORE_PASSWORD}
 
 # Auth config
 security.basic.enabled=false
-admin.user={{ globals['admin_user'] }}
-admin.password=${ADMIN_PASSWORD}
+# Auth config
+security.basic.enabled=false
+# Can be ldap, ldap-embedded, internal
+datagen.auth.type={{ globals['auth_type'] }}
+# Internal Settings
+datagen.admin.user={{ globals['admin_user'] }}
+datagen.admin.password=${ADMIN_PASSWORD}
+{% if globals['auth_type'] == 'internal' %}
+# List of groups/users that will be admin
+datagen.auth.internal.group.admins={{ globals['admin_users'] }}
+datagen.auth.internal.user.admins={{ globals['admin_groups'] }}
+{% endif %}
+
+{% if globals['auth_type'] == 'ldap' %}
+# LDAP Settings
+datagen.auth.ldap.url={{ globals['ldap_url'] }}
+datagen.auth.ldap.basedn={{ globals['ldap_basedn'] }}
+datagen.auth.ldap.bind.user={{ globals['ldap_bind_user'] }}
+datagen.auth.ldap.bind.password={{ globals['ldap_bind_password'] }}
+datagen.auth.ldap.group.base={{ globals['ldap_group_base'] }}
+datagen.auth.ldap.group.filter={{ globals['ldap_group_filter'] }}
+datagen.auth.ldap.group.search.subtree={{ globals['ldap_group_search_subtree'] }}
+datagen.auth.ldap.group.search.maxdepth={{ globals['ldap_group_search_maxdepth'] }}
+datagen.auth.ldap.group.role.attribute={{ globals['ldap_group_role_attribute'] }}
+datagen.auth.ldap.group.convert.uppercase={{ globals['ldap_group_convert_uppercase'] }}
+datagen.auth.ldap.group.attribute={{ globals['ldap_group_attribute'] }}
+datagen.auth.ldap.group.user.attribute={{ globals['ldap_group_user_attribute'] }}
+datagen.auth.ldap.group.reverse.search={{ globals['ldap_reverse_search'] }}
+datagen.auth.ldap.group.reverse.search.timeout={{ globals['ldap_reverse_search_timeout'] }}
+datagen.auth.ldap.user.base={{ globals['ldap_user_base'] }}
+datagen.auth.ldap.user.filter={{ globals['ldap_user_filter'] }}
+datagen.auth.ldap.user.attribute={{ globals['ldap_user_attribute'] }}
+# List of groups/users that will be admin
+datagen.auth.ldap.group.admins={{ globals['admin_groups'] }}
+datagen.auth.ldap.user.admins={{ globals['admin_users'] }}
+# List of group/users that can access datagen (if empty, all can access)
+datagen.auth.ldap.group.users={{ globals['ldap_allowed_groups'] }}
+datagen.auth.ldap.user.users={{ globals['ldap_allowed_users'] }}
+{% endif %}
+
+{% if globals['auth_type'] == 'ldap-embedded' %}
+spring.ldap.embedded.ldif=classpath:users.ldif
+spring.ldap.embedded.base-dn=dc=springframework,dc=org
+spring.ldap.embedded.port=8389
+{% endif %}
 
 # Kerberos Config
 kerberos.enabled={{ globals['kerberos_enabled'] }}
@@ -88,8 +144,8 @@ hbase.zookeeper.port={{ globals['hbase_zk_quorum_port'] }}
 hbase.zookeeper.znode={{ globals['hbase_znode_parent'] }}
 hbase.auth.kerberos=#{kerberos.enabled}
 # It is not needed to fill below configuration if KERBEROS is not activated
-hbase.security.user=#{kerberos.user}
-hbase.security.keytab=#{kerberos.keytab}
+hbase.auth.kerberos.user=#{kerberos.user}
+hbase.auth.kerberos.keytab=#{kerberos.keytab}
 
 
 # OZONE
@@ -143,7 +199,7 @@ kafka.auth.kerberos.user=#{kerberos.user}
 
 
 # KUDU
-kudu.master.server={{ globals['kudu_url'] }}
+kudu.url={{ globals['kudu_url'] }}
 kudu.auth.kerberos=#{kerberos.enabled}
 # It is not needed to fill below configuration if KERBEROS is not activated
 kudu.security.user=#{kerberos.user}
@@ -165,4 +221,41 @@ adls.sas.token={{ globals['adls_sas_token'] }}
 # GCS
 gcs.project.id={{ globals['gcs_project_id'] }}
 # Only if using a service account key, otherwise use any other ADC login
-gcs.accountkey.path={{ globals['gcs_account_key'] }}
+gcs.account.key.path={{ globals['gcs_account_key'] }}
+gcs.region={{ globals['gcs_region'] }}
+
+# OLLAMA
+spring.ai.ollama.base-url={{ globals['ollama_base_url'] }}
+spring.ai.ollama.chat.enabled=true
+spring.ai.ollama.chat.options.format=json
+ollama.model.default={{ globals['ollama_model'] }}
+ollama.temperature.default={{ globals['ollama_temperature'] }}
+ollama.frequency_penalty.default={{ globals['ollama_frequency_penalty'] }}
+ollama.presence_penalty.default={{ globals['ollama_presence_penalty'] }}
+ollama.top_p.default={{ globals['ollama_top_p'] }}
+
+# BEDROCK
+bedrock.region={{ globals['bedrock_region'] }}
+bedrock.model.default={{ globals['bedrock_model'] }}
+bedrock.temperature.default={{ globals['bedrock_temperature'] }}
+bedrock.max_tokens.default={{ globals['bedrock_max_tokens'] }}
+bedrock.access_key.id={{ globals['bedrock_access_key_id'] }}
+bedrock.access_key.secret={{ globals['bedrock_access_key_secret'] }}
+
+# OPEN AI
+# Let the api key here to 'test' (avoid auto-configuration of client not working)
+spring.ai.openai.api-key={{ globals['openai_key_name'] }}
+openai.api.key={{ globals['openai_key'] }}
+openai.model.default={{ globals['openai_model'] }}
+openai.temperature.default={{ globals['openai_temperature'] }}
+openai.frequency_penalty.default={{ globals['openai_frequency_penalty'] }}
+openai.presence_penalty.default={{ globals['openai_presence_penalty'] }}
+openai.max_tokens.default={{ globals['openai_max_tokens'] }}
+openai.top_p.default={{ globals['openai_top_p'] }}
+
+#Local LLM
+local.llm.temperature.default={{ globals['local_llm_temperature'] }}
+local.llm.frequency_penalty.default={{ globals['local_llm_frequence_penalty'] }}
+local.llm.presence_penalty.default={{ globals['local_llm_presence_penalty'] }}
+local.llm.max_tokens.default={{ globals['local_llm_max_tokens'] }}
+local.llm.top_p.default={{ globals['local_llm_top_p'] }}

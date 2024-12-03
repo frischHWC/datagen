@@ -1,0 +1,8 @@
+{
+  "model_name": "weather",
+  "owner": "datagen",
+  "allowed_users": [""],
+  "allowed_groups": ["public"],
+  "allowed_admin_users": [""],
+  "allowed_admin_groups": ["public"]
+}

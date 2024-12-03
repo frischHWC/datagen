@@ -25,7 +25,7 @@ export AWS_S3_REPO="s3.eu-west-3.amazonaws.com"
 
 # Versions
 export CDP_VERSION="7.1.9.4"
-export DATAGEN_VERSION="0.4.15"
+export DATAGEN_VERSION="1.0.0"
 
 # CSD & Parcels Directory
 export CSD_DIR="/tmp/datagen_csd"
@@ -34,6 +34,8 @@ export PARCEL_DIR="/tmp/datagen_parcel"
 # Standalone Directory
 export STANDALONE_DIR="/tmp/datagen_standalone"
 export MAIN_STANDALONE_VERSION="false"
+export MODELS_DIR="/tmp/datagen_models"
+export K8S_DIR="/tmp/datagen_k8s"
 
 # DEBUG
 export DEBUG=false
@@ -61,6 +63,8 @@ function usage()
     echo "  --csd-dir=$CSD_DIR : CSD Directory where it has been generated (Default) $CSD_DIR "
     echo "  --parcel-dir=$PARCEL_DIR : Directory where parcels have been generated  (Default) $PARCEL_DIR"
     echo "  --standalone-dir=$STANDALONE_DIR : Directory where standalone files have been generated  (Default) $STANDALONE_DIR"
+    echo "  --model-dir=$MODEL_DIR : Directory where model files have been generated  (Default) $MODEL_DIR"
+    echo "  --k8s-dir=$K8S_DIR : Directory where k8s files have been generated  (Default) $K8S_DIR"
     echo "  --main-standalone-version=$MAIN_STANDALONE_VERSION : If it is the main standalone version to publish to root of datagen version (Default) $MAIN_STANDALONE_VERSION"
     echo ""
     echo "  --debug=$DEBUG : To set DEBUG log-level (Default) $DEBUG "
@@ -99,6 +103,12 @@ while [ "$1" != "" ]; do
             ;;
         --standalone-dir)
             STANDALONE_DIR=$VALUE
+            ;;
+        --model-dir)
+            MODEL_DIR=$VALUE
+            ;;
+        --k8s-dir)
+            K8S_DIR=$VALUE
             ;;
         --main-standalone-version)
             MAIN_STANDALONE_VERSION=$VALUE
@@ -143,20 +153,28 @@ then
       aws s3 cp ${PARCEL_DIR}/ s3://${AWS_S3_BUCKET}/${DATAGEN_VERSION}/CDP/${CDP_VERSION}/parcels/ --recursive
     fi
 
-    # Upload Standalone files
-    STANDALONE_FILES=$(ls ${STANDALONE_DIR})
-    if [ ! -z "${STANDALONE_FILES}" ]
-    then
-      echo "Upload to AWS ${AWS_S3_BUCKET}/${DATAGEN_VERSION}/CDP/${CDP_VERSION}/ files: ${STANDALONE_DIR}/${STANDALONE_FILES}"
-      aws s3 cp ${STANDALONE_DIR}/ s3://${AWS_S3_BUCKET}/${DATAGEN_VERSION}/CDP/${CDP_VERSION}/standalone/ --recursive
-    fi
-
     # Upload Standalone files as MAIN Standalone Files of DATAGEN RELEASE
     STANDALONE_FILES=$(ls ${STANDALONE_DIR})
     if [[ ! -z "${STANDALONE_FILES}" ]] && [[ "${MAIN_STANDALONE_VERSION}" == "true" ]]
     then
       echo "Upload to AWS ${AWS_S3_BUCKET}/${DATAGEN_VERSION}/standalone/ files: ${STANDALONE_DIR}/${STANDALONE_FILES}"
       aws s3 cp ${STANDALONE_DIR}/ s3://${AWS_S3_BUCKET}/${DATAGEN_VERSION}/standalone/ --recursive
+    fi
+
+    # Upload Models files
+    MODEL_FILES=$(ls ${MODEL_DIR})
+    if [[ ! -z "${MODEL_FILES}" ]] && [[ "${MAIN_STANDALONE_VERSION}" == "true" ]]
+    then
+      echo "Upload to AWS ${AWS_S3_BUCKET}/${DATAGEN_VERSION}/models/ files: ${MODEL_DIR}/${MODEL_FILES}"
+      aws s3 cp ${MODEL_DIR}/ s3://${AWS_S3_BUCKET}/${DATAGEN_VERSION}/models/ --recursive
+    fi
+
+    # Upload Docker-K8s files
+    K8S_FILES=$(ls ${K8S_DIR})
+    if [[ ! -z "${K8S_FILES}" ]] && [[ "${MAIN_STANDALONE_VERSION}" == "true" ]]
+    then
+      echo "Upload to AWS ${AWS_S3_BUCKET}/${DATAGEN_VERSION}/docker/ files: ${K8S_DIR}/${K8S_FILES}"
+      aws s3 cp ${K8S_DIR}/ s3://${AWS_S3_BUCKET}/${DATAGEN_VERSION}/docker/ --recursive
     fi
 
 fi
@@ -214,10 +232,11 @@ function create_index_file()
         then
           FILE_DATE=$( echo $line | awk '{ print $1 $2 }')
           FILE_SIZE=$( echo $line | awk '{ print $3 }')
+          FILE_SIZE_FORMATTED=$( numfmt --to=iec-i --suffix=B --format="%9.2f" $FILE_SIZE)
           echo "<tr>
                               <td><a href="https://${AWS_S3_BUCKET}.${s3_repo}/${bucket_dir}${FILE_NAME}">${FILE_NAME}</a></td>
                               <td>${FILE_DATE}</td>
-                              <td>${FILE_SIZE}</td>
+                              <td>${FILE_SIZE_FORMATTED}</td>
                           </tr>" >> ${INDEX_TEMP_FILE}
         fi
     done <<< "$FILES_TO_INDEX"
@@ -240,14 +259,24 @@ if [ ${INDEX} = "true" ]
 then
   create_index_file "Datagen Repository" "Datagen Versions"
   create_index_file "Datagen Repository" "Available Versions for Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/
+
   create_index_file "Datagen Repository" "Available CDP Versions for Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/
+
   create_index_file "Datagen Repository" "CSD & Parcels for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/
   create_index_file "Datagen Repository" "CSD files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/csd/
   create_index_file "Datagen Repository" "Parcels files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/parcels/
-  create_index_file "Datagen Repository" "Standalone files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/standalone/
-  create_index_file "Datagen Repository" "Standalone model files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/standalone/models/
-  create_index_file "Datagen Repository" "Standalone dictionaries files for CDP Version: ${CDP_VERSION} of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/CDP/${CDP_VERSION}/standalone/dictionaries/
+
   create_index_file "Datagen Repository" "Standalone files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/standalone/
-  create_index_file "Datagen Repository" "Standalone model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/standalone/models/
-  create_index_file "Datagen Repository" "Standalone dictionaries files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/standalone/dictionaries/
+
+  create_index_file "Datagen Repository" "Docker/K8s files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/docker/
+
+  create_index_file "Datagen Repository" "Model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/models/
+  create_index_file "Datagen Repository" "Model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/models/use-cases/
+  create_index_file "Datagen Repository" "Model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/models/use-cases/stores/
+  create_index_file "Datagen Repository" "Model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/models/customer/
+  create_index_file "Datagen Repository" "Model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/models/finance/
+  create_index_file "Datagen Repository" "Model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/models/industry/
+  create_index_file "Datagen Repository" "Model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/models/public_service/
+  create_index_file "Datagen Repository" "Model files of Datagen: ${DATAGEN_VERSION}" ${DATAGEN_VERSION}/models/travel/
+
 fi

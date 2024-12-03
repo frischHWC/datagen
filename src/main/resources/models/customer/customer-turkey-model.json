@@ -1,4 +1,5 @@
 {
+  "model_name": "customer-turkey",
   "Fields": [
     {
       "name": "name",
@@ -14,8 +15,8 @@
     {
       "name": "birthdate",
       "type": "BIRTHDATE",
-      "min": "1/1/1969",
-      "max": "1/1/2001"
+      "min_date": "1/1/1969",
+      "max_date": "1/1/2001"
     },
     {
       "name": "city",
@@ -70,13 +71,6 @@
     "LOCAL_FILE_PATH":  "/home/datagen/customer/",
     "LOCAL_FILE_NAME":  "customer-tr",
     "AVRO_NAME":  "datagencustomer"
-  },
-  "Primary_Keys": {
-    "KAFKA_MSG_KEY": "membership",
-    "HBASE_PRIMARY_KEY":  "id",
-    "KUDU_PRIMARY_KEYS":  "country,city,id",
-    "KUDU_HASH_KEYS":  "id",
-    "KUDU_RANGE_KEYS":  "country,city"
   },
   "Options": {
     "HBASE_COLUMN_FAMILIES_MAPPING": "details:name,email,country,birthdate,phone_number;technicals:membership,id",

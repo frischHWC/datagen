@@ -1,4 +1,5 @@
 {
+  "model_name": "sensor-data",
   "Fields": [
     {
       "name": "sensor_id",
@@ -35,13 +36,6 @@
     "LOCAL_FILE_PATH":  "/home/datagen/industry/sensor_data/",
     "LOCAL_FILE_NAME":  "sensor_data",
     "AVRO_NAME":  "industrysensordata"
-  },
-  "Primary_Keys": {
-    "KAFKA_MSG_KEY": "sensor_id",
-    "HBASE_PRIMARY_KEY":  "sensor_id,timestamp",
-    "KUDU_PRIMARY_KEYS":  "sensor_id,timestamp",
-    "KUDU_HASH_KEYS":  "sensor_id",
-    "KUDU_RANGE_KEYS":  "timestamp"
   },
   "Options": {
    "HBASE_COLUMN_FAMILIES_MAPPING": "id:sensor_id;values:timestamp,value",

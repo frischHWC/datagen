@@ -50,7 +50,8 @@ case $CMD in
       JAVA_HOME_FOR_DATAGEN=${JAVA_HOME}
     fi
 
-    exec ${JAVA_HOME_FOR_DATAGEN}/bin/java -Dnashorn.args=--no-deprecation-warning --add-opens java.base/jdk.internal.ref=ALL-UNNAMED ${TRUSTSTORE_CONFIG} -Dspring.profiles.active=cdp -Dserver.port=${SERVER_PORT} \
+    exec ${JAVA_HOME_FOR_DATAGEN}/bin/java -Dnashorn.args=--no-deprecation-warning --add-opens java.base/jdk.internal.ref=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED \
+    ${TRUSTSTORE_CONFIG} -Dspring.profiles.active=cdp -Dserver.port=${SERVER_PORT} \
      -jar -Xmx${MAX_HEAP_SIZE}G ${DATAGEN_JAR_PATH} --spring.config.location=file:${CONF_DIR}/service.properties
     ;;
 

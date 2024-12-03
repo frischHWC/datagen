@@ -1,0 +1,60 @@
+{
+  "model_name" : "french_review-openai",
+  "Fields" : [ {
+    "name" : "city",
+    "type" : "CITY",
+    "filters" : [ "France" ]
+  }, {
+    "name" : "duration",
+    "type" : "INTEGER",
+    "max" : 10,
+    "min" : 1
+  }, {
+    "name" : "residence",
+    "type" : "STRING",
+    "length" : 20,
+    "possible_values_weighted" : {
+      "airbnb" : 10,
+      "hotel" : 5,
+      "lodge" : 1,
+      "b&b" : 2
+    }
+  }, {
+    "name" : "review",
+    "type" : "OPEN_AI",
+    "request" : "write a ${sentiment} review on your stay of ${duration} days at ${city} in the ${residence} of ${host}",
+    "context" : "This is a conversation between User and Llama, a traveler guide.",
+    "model_type" : "gpt-4o",
+    "password" : "",
+    "temperature" : 1.0,
+    "frequency_penalty" : 2.0,
+    "presence_penalty" : 2.0,
+    "top_p" : 1.0,
+    "max_tokens" : 256
+  }, {
+    "name" : "host",
+    "type" : "NAME",
+    "filters" : [ "France" ]
+  }, {
+    "name" : "sentiment",
+    "type" : "STRING",
+    "length" : 20,
+    "possible_values_weighted" : {
+      "bad" : 2,
+      "excellent" : 2,
+      "awful" : 1,
+      "good" : 5
+    }
+  } ],
+  "Table_Names" : { },
+  "Options" : {
+    "HIVE_ON_HDFS" : true,
+    "ONE_FILE_PER_ITERATION" : true,
+    "CSV_HEADER" : true,
+    "PARQUET_DICTIONARY_ENCODING" : true,
+    "KAFKA_MESSAGE_TYPE" : "JSON",
+    "HIVE_TABLE_FORMAT" : "PARQUET",
+    "HIVE_TABLE_TYPE" : "EXTERNAL",
+    "DELETE_PREVIOUS" : true
+  }
+}

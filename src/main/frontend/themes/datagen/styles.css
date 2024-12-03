@@ -1,0 +1,93 @@
+@import url('./main-layout.css');
+:root {
+  --main-color: 271deg, 61%, 31%;
+  --shadow-color: 280deg, 62%, 20%;
+
+  --main-text-color: 230deg, 50%, 30%;
+  --body-text-color: 214deg, 61%, 0%;
+
+  --error-color: 3deg, 96%, 60%;
+  --success-color: 145deg, 47%, 60%;
+
+  --background: #1e90ff;
+  --white: #ffffff;
+}
+
+
+html {
+      --lumo-font-family: 'Trebuchet MS';
+
+      --lumo-primary-color: hsl(var(--main-color));
+      --lumo-primary-color-50pct: hsla(var(--main-color), 0.5);
+      --lumo-primary-color-10pct: hsla(var(--main-color), 0.1);
+
+      --lumo-primary-text-color: hsl(var(--main-text-color));
+      --lumo-body-text-color: hsla(var(--main-text-color), 0.99);
+
+      --lumo-shade: hsl(var(--shadow-color));
+      --lumo-shade-5pct: hsla(var(--shadow-color), 0.05);
+      --lumo-shade-10pct: hsla(var(--shadow-color), 0.1);
+      --lumo-shade-20pct: hsla(var(--shadow-color), 0.2);
+      --lumo-shade-30pct: hsla(var(--shadow-color), 0.3);
+      --lumo-shade-40pct: hsla(var(--shadow-color), 0.4);
+      --lumo-shade-50pct: hsla(var(--shadow-color), 0.5);
+      --lumo-shade-60pct: hsla(var(--shadow-color), 0.6);
+      --lumo-shade-70pct: hsla(var(--shadow-color), 0.7);
+      --lumo-shade-80pct: hsla(var(--shadow-color), 0.8);
+      --lumo-shade-90pct: hsla(var(--shadow-color), 0.9);
+
+      --lumo-size-xl: 3rem;
+      --lumo-size-l: 2.5rem;
+      --lumo-size-m: 2rem;
+      --lumo-size-s: 1.75rem;
+      --lumo-size-xs: 1.5rem;
+      --lumo-space-xl: 1.875rem;
+      --lumo-space-l: 1.25rem;
+      --lumo-space-m: 0.625rem;
+      --lumo-space-s: 0.3125rem;
+      --lumo-space-xs: 0.1875rem;
+
+      --lumo-border-radius-s: calc(var(--lumo-size-m) / 6);
+      --lumo-border-radius-m: calc(var(--lumo-size-m) / 2);
+      --lumo-border-radius-l: var(--lumo-size-m);
+
+      --lumo-error-color: hsl(var(--error-color));
+      --lumo-error-color-50pct: hsla(var(--error-color), 0.5);
+      --lumo-error-color-10pct: hsla(var(--error-color), 0.1);
+      --lumo-error-text-color: hsl(var(--error-color));
+
+      --lumo-success-text-color: hsl(var(--success-color));
+      --lumo-success-color: hsl(var(--success-color));
+      --lumo-success-color-50pct: hsla(var(--success-color), 0.5);
+      --lumo-success-color-10pct: hsla(var(--success-color), 0.1);
+
+}
+
+/* Center the text inside the textarea */
+span.rounded-textarea {
+    border-radius: 15px; /* Adjust the value for more or less rounded corners */
+    text-align: center; /* Center the text horizontally */
+    display: flex;
+    align-items: center; /* Center the text vertically */
+    justify-content: center;
+    padding: 20px; /* Adjust padding as needed */
+    box-sizing: border-box;
+
+    text-shadow: 1px 1px 2px hsl(var(--shadow-color)) ;
+    color: hsl(var(--main-color)) ;
+    font-size: xxx-large;
+
+}
+
+/* This is a workaround to center text vertically in a textarea */
+span.rounded-textarea::placeholder {
+    text-align: center;
+}
+
+vaadin-grid.styling::part(finished) {
+    background-color: var(--lumo-success-color-10pct);
+}
+
+vaadin-grid.styling::part(failed) {
+    background-color: var(--lumo-error-color-10pct);
+}

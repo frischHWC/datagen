@@ -1,2 +1,1 @@
-New Features:
-Render a model from Data
+UI, AI, Cloud support, Credentials, re-organization of models and commands

@@ -1,0 +1,195 @@
+{
+  "model_name" : "customer-usa-full-v1",
+  "Fields" : [ {
+    "name" : "name",
+    "type" : "NAME",
+    "filters" : [ "USA" ]
+  }, {
+    "name" : "birthdate",
+    "type" : "BIRTHDATE",
+    "min_date" : "01/01/1955",
+    "max_date" : "31/12/2004"
+  }, {
+    "name" : "city",
+    "type" : "CITY",
+    "filters" : [ "USA" ]
+  }, {
+    "name" : "country",
+    "type" : "LINK",
+    "link" : "$city.country"
+  }, {
+    "name" : "city_lat",
+    "type" : "LINK",
+    "link" : "$city.lat"
+  }, {
+    "name" : "city_long",
+    "type" : "LINK",
+    "link" : "$city.long"
+  }, {
+    "name" : "email",
+    "type" : "EMAIL",
+    "filters" : [ "USA" ]
+  }, {
+    "name" : "phone_number",
+    "type" : "PHONE",
+    "filters" : [ "USA" ]
+  }, {
+    "name" : "number",
+    "type" : "INTEGER",
+    "ghost" : "true",
+    "max" : 101,
+    "min" : 1
+  }, {
+    "name" : "street",
+    "type" : "STRING",
+    "ghost" : "true",
+    "length" : 20,
+    "possible_values_weighted" : {
+      "Drive" : 1,
+      "Street" : 22,
+      "Boulevard" : 13,
+      "Avenue" : 15,
+      "Road" : 9,
+      "Place" : 1
+    }
+  }, {
+    "name" : "street_name",
+    "type" : "STRING",
+    "ghost" : "true",
+    "length" : 20,
+    "possible_values_weighted" : {
+      "Elm" : 4,
+      "Lincoln" : 7,
+      "3rd" : 6,
+      "4th" : 5,
+      "Long" : 1,
+      "Oak" : 4,
+      "Washington" : 7,
+      "1st" : 8,
+      "Maple" : 3,
+      "2nd" : 7,
+      "5th" : 2,
+      "Main" : 15
+    }
+  }, {
+    "name" : "address",
+    "type" : "STRING",
+    "length" : 20,
+    "injection" : "74, Main Boulevard"
+  }, {
+    "name" : "passport_id",
+    "type" : "STRING_REGEX",
+    "regex" : "[0-9]{1}[A-Z]{8}"
+  }, {
+    "name" : "membership",
+    "type" : "STRING",
+    "length" : 20,
+    "possible_values_weighted" : {
+      "GOLD" : 10,
+      "SILVER" : 56,
+      "PLATINUM" : 1,
+      "BRONZE" : 24
+    }
+  }, {
+    "name" : "vip_customer",
+    "type" : "BOOLEAN",
+    "possible_values_weighted" : {
+      "true" : 1,
+      "false" : 1000
+    }
+  }, {
+    "name" : "importance_customer_rate",
+    "type" : "FLOAT",
+    "max" : 10,
+    "min" : 1,
+    "formula" : "if( ${vip_customer} == true) { \n10.0 \n} else {\nswitch(\"${membership}\") {\n case \"PLATINUM\": \n   factor = 5.2\n   break;\n case \"GOLD\": \n   factor = 3.5\n   break;\n case \"SILVER\": \n   factor = 2.4\n   break;\n case \"BRONZE\": \n   factor = 1.2\n   break;\n default:\n  factor = 1.0\n}\nfactor * (1 + (${last_connection_timestamp}-Date.now())/1000)\n\n}"
+  }, {
+    "name" : "category_code",
+    "type" : "STRING_AZ",
+    "length" : 2
+  }, {
+    "name" : "last_seen_ip",
+    "type" : "IP"
+  }, {
+    "name" : "customer_id",
+    "type" : "INCREMENT_INTEGER",
+    "min" : 0
+  }, {
+    "name" : "legacy_id",
+    "type" : "INCREMENT_LONG",
+    "min" : 123456789
+  }, {
+    "name" : "uuid",
+    "type" : "UUID"
+  }, {
+    "name" : "associated_store_id",
+    "type" : "INTEGER",
+    "max" : 10000,
+    "min" : 0
+  }, {
+    "name" : "associated_agent_id",
+    "type" : "LONG",
+    "max" : 1000001000000,
+    "min" : 1000000000000
+  }, {
+    "name" : "last_connection_timestamp",
+    "type" : "TIMESTAMP"
+  }, {
+    "name" : "avatar_as_binary",
+    "type" : "BYTES",
+    "length" : 1000
+  }, {
+    "name" : "account_creation",
+    "type" : "DATE",
+    "min_date" : "2019-02-01T00:00:00Z",
+    "max_date" : "2024-11-11T00:00:00Z",
+    "use_now" : false
+  }, {
+    "name" : "last_shipment",
+    "type" : "DATE_AS_STRING",
+    "min_date" : "2024-01-25T00:00:00Z",
+    "max_date" : "2024-11-11T00:00:00Z",
+    "use_now" : false,
+    "pattern" : "EEEE',' dd 'of' LLLL YYYY, 'at' h a"
+  }, {
+    "name" : "average_rated_score",
+    "type" : "FLOAT",
+    "max" : 4,
+    "min" : 1
+  }, {
+    "name" : "password_hash",
+    "type" : "HASH_MD5",
+    "length" : 20
+  }, {
+    "name" : "preferred_shirt_size",
+    "type" : "STRING",
+    "length" : 20,
+    "possible_values_weighted" : {
+      "L" : 7,
+      "M" : 4,
+      "XXL" : 1,
+      "S" : 1,
+      "XL" : 2
+    }
+  }, {
+    "name" : "preferred_shoe_size",
+    "type" : "INTEGER",
+    "max" : 16,
+    "min" : 4
+  }, {
+    "name" : "gender",
+    "type" : "LINK",
+    "link" : "$name.sex"
+  } ],
+  "Table_Names" : { },
+  "Options" : {
+    "KAFKA_MESSAGE_TYPE" : "JSON",
+    "ONE_FILE_PER_ITERATION" : true,
+    "HIVE_TABLE_TYPE" : "EXTERNAL",
+    "DELETE_PREVIOUS" : true,
+    "HIVE_ON_HDFS" : true,
+    "CSV_HEADER" : true,
+    "HIVE_TABLE_FORMAT" : "PARQUET",
+    "PARQUET_DICTIONARY_ENCODING" : true
+  }
+}

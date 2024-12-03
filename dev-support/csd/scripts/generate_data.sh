@@ -35,10 +35,10 @@ then
     exit 1
 fi
 
-DATAGEN_URL="http://localhost:${SERVER_PORT}"
+DATAGEN_URL="http://localhost:${SERVER_PORT}/api/v1"
 if [ "${TLS_ENABLED}" = "true" ]
 then
-  DATAGEN_URL="https://localhost:${SERVER_PORT}"
+  DATAGEN_URL="https://localhost:${SERVER_PORT}/api/v1"
 fi 
 
 # Generic Function to generate Data
@@ -63,7 +63,7 @@ generate_data() {
 
   if [ $number_of_connectors == 1 ]
   then
-    URL_TO_CALL="${DATAGEN_URL}/datagen/${CONNECTOR_ARRAY[0]}/?batches=${BATCHES}&rows=${ROWS}&threads=${THREADS}"
+    URL_TO_CALL="${DATAGEN_URL}/datagen/${CONNECTOR_ARRAY[0]}?batches=${BATCHES}&rows=${ROWS}&threads=${THREADS}"
   else
     CONNECTOR_STRING=""
     for i in ${CONNECTOR_ARRAY[@]}
@@ -125,63 +125,63 @@ case $CMD in
  (gen_customer_hdfs_ozone_hive)
      echo "Starting to Generate Customer data to HDFS in Parquet & Hive & Ozone in Parquet"
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-china-model.json 120000 1 10 600  hdfs-parquet hive ozone-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-china-model.json 120000 1 10 600  hdfs_parquet hive ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-china-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-france-model.json 90000 1 10 600  hdfs-parquet hive ozone-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-france-model.json 90000 1 10 600  hdfs_parquet hive ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-france-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-germany-model.json 90000 1 10 600  hdfs-parquet hive ozone-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-germany-model.json 90000 1 10 600  hdfs_parquet hive ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-germany-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-india-model.json 190000 1 10 600  hdfs-parquet hive ozone-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-india-model.json 190000 1 10 600  hdfs_parquet hive ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-india-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-italy-model.json 30000 1 10 600  hdfs-parquet hive ozone-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-italy-model.json 30000 1 10 600  hdfs_parquet hive ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-italy-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-japan-model.json 110000 1 10 600  hdfs-parquet hive ozone-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-japan-model.json 110000 1 10 600  hdfs_parquet hive ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-japan-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-spain-model.json 40000 1 10 600  hdfs-parquet hive ozone-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-spain-model.json 40000 1 10 600  hdfs_parquet hive ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-spain-model.json"
        exit 1
      fi
 
-    generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-turkey-model.json 120000 1 10 600  hdfs-parquet hive ozone-parquet
+    generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-turkey-model.json 120000 1 10 600  hdfs_parquet hive ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-turkey-model.json"
        exit 1
      fi
 
-    generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-usa-model.json 210000 1 10 600  hdfs-parquet hive ozone-parquet
+    generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-usa-model.json 210000 1 10 600  hdfs_parquet hive ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-usa-model.json"
@@ -195,63 +195,63 @@ case $CMD in
  (gen_customer_hdfs)
      echo "Starting to Generate Customer data to HDFS in Parquet"
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-china-model.json 10000 12 10 600  hdfs-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-china-model.json 10000 12 10 600  hdfs_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-china-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-france-model.json 10000 9 10 600  hdfs-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-france-model.json 10000 9 10 600  hdfs_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-france-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-germany-model.json 10000 9 10 600  hdfs-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-germany-model.json 10000 9 10 600  hdfs_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-germany-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-india-model.json 10000 9 10 600  hdfs-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-india-model.json 10000 9 10 600  hdfs_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-india-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-italy-model.json 10000 3 10 600  hdfs-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-italy-model.json 10000 3 10 600  hdfs_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-italy-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-japan-model.json 10000 11 10 600  hdfs-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-japan-model.json 10000 11 10 600  hdfs_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-japan-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-spain-model.json 10000 4 10 600  hdfs-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-spain-model.json 10000 4 10 600  hdfs_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-spain-model.json"
        exit 1
      fi
 
-    generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-turkey-model.json 10000 12 10 600  hdfs-parquet
+    generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-turkey-model.json 10000 12 10 600  hdfs_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-turkey-model.json"
        exit 1
      fi
 
-    generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-usa-model.json 10000 21 10 600  hdfs-parquet
+    generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-usa-model.json 10000 21 10 600  hdfs_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-usa-model.json"
@@ -265,63 +265,63 @@ case $CMD in
  (gen_customer_ozone)
      echo "Starting to Generate Customer data to OZONE in Parquet"
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-china-model.json 10000 12 10 600  ozone-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-china-model.json 10000 12 10 600  ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-china-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-france-model.json 10000 9 10 600  ozone-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-france-model.json 10000 9 10 600  ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-france-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-germany-model.json 10000 9 10 600  ozone-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-germany-model.json 10000 9 10 600  ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-germany-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-india-model.json 10000 9 10 600  ozone-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-india-model.json 10000 9 10 600  ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-india-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-italy-model.json 10000 3 10 600  ozone-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-italy-model.json 10000 3 10 600  ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-italy-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-japan-model.json 10000 11 10 600  ozone-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-japan-model.json 10000 11 10 600  ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-japan-model.json"
        exit 1
      fi
 
-     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-spain-model.json 10000 4 10 600  ozone-parquet
+     generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-spain-model.json 10000 4 10 600  ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-spain-model.json"
        exit 1
      fi
 
-    generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-turkey-model.json 10000 12 10 600  ozone-parquet
+    generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-turkey-model.json 10000 12 10 600  ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-turkey-model.json"
        exit 1
      fi
 
-    generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-usa-model.json 10000 21 10 600  ozone-parquet
+    generate_data /opt/cloudera/parcels/DATAGEN/models/customer/customer-usa-model.json 10000 21 10 600  ozone_parquet
      ret=$?
      if [ $ret -ne 0 ]; then
        echo " Unable to generate data for customer-usa-model.json"

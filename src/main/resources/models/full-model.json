@@ -1,4 +1,5 @@
 {
+  "model_name": "full",
   "Fields": [
     {
       "name": "size",
@@ -92,8 +93,8 @@
     {
       "name": "birthdate_old",
       "type": "BIRTHDATE",
-      "min": "1/1/1900",
-      "max": "1/1/1950"
+      "min_date": "1/1/1900",
+      "max_date": "1/1/1950"
     },
     {
       "name": "date_now",
@@ -104,8 +105,8 @@
       "name": "date_string",
       "type": "DATE_AS_STRING",
       "pattern": "yyyy_MM_dd-K a mm:ss.SSS ZZZ",
-      "min": "2024_02_14-7 am 31:53.000 +0000",
-      "max": "2024_03_14-7 pm 31:53.050 +0330"
+      "min_date": "2024-02-14 13:56:59",
+      "max_date": "2024-02-16 00:56:54"
     },
     {
       "name": "name",
@@ -133,9 +134,7 @@
     {
       "name": "formula_1",
       "type": "STRING",
-      "conditionals": {
-        "formula": "2 * $longPercent + 42 - $onePlusOne"
-      }
+      "formula": "2 * ${longPercent} + 42 - ${onePlusOne}"
     },
     {
       "name": "condition_2",
@@ -156,23 +155,17 @@
     {
       "name": "city_lat",
       "type": "LINK",
-      "conditionals": {
-        "link": "$city.lat"
-      }
+      "link": "$city.lat"
     },
     {
       "name": "city_long",
       "type": "LINK",
-      "conditionals": {
-        "link": "$city.long"
-      }
+      "link": "$city.long"
     },
     {
       "name": "city_country",
       "type": "LINK",
-      "conditionals": {
-        "link": "$city.country"
-      }
+      "link": "$city.country"
     },
     {
       "name": "recording_time",
@@ -195,9 +188,7 @@
     {
       "name": "person_department",
       "type": "LINK",
-      "conditionals": {
-        "link": "$person.department"
-      }
+      "link": "$person.department"
     },
     {
       "name": "phone_number",
@@ -211,9 +202,14 @@
     {
       "name": "email_from_name",
       "type": "STRING",
-      "conditionals": {
-        "injection": "toto_${name}@our_company_name.${country}"
-      }
+      "injection": "toto_${name}@our_company_name.${country}"
+    },
+    {
+      "name": "birthday_wish",
+      "type": "OLLAMA",
+      "request": "generate a birthday wish to ${name} born ${birthdate} and who is living in ${city} , ${city_country}",
+      "temperature": 1.5,
+      "model_type": "mistral"
     }
   ],
   "Table_Names": {
@@ -248,24 +244,22 @@
     "GCS_LOCAL_FILE_PATH": "/tmp/datagen/temp/full/",
     "AVRO_NAME":  "datagenfull"
   },
-  "Primary_Keys": {
-    "KAFKA_MSG_KEY": "bigSize",
-    "HBASE_PRIMARY_KEY":  "bool,progression",
-    "KUDU_PRIMARY_KEYS":  "size,category,department",
-    "KUDU_HASH_KEYS":  "size,department",
-    "KUDU_RANGE_KEYS":  "category"
-  },
   "Options": {
+    "HBASE_PRIMARY_KEY":  "bool,progression",
     "HBASE_COLUMN_FAMILIES_MAPPING": "c:randomName,abbreviation,size,bool,progression,percentage,limitedName,userEmail,department;d:bytesLittleArray,bigSize,startDate,bytesArray,hash,birthdate,name,country,restrictedHash,category;e:longPercent,onePlusOne,onePlusTwo,formula_1,condition_2,recording_time",
     "SOLR_SHARDS":  1,
     "SOLR_REPLICAS":  1,
     "KUDU_REPLICAS":  1,
     "ONE_FILE_PER_ITERATION":  true,
+    "KAFKA_MSG_KEY": "bigSize",
     "KAFKA_MESSAGE_TYPE":  "json",
     "KAFKA_REPLICATION_FACTOR":  3,
     "KAFKA_PARTITIONS_NUMBER":  3,
     "KAFKA_JAAS_FILE_PATH":  "/tmp/kafka.jaas",
     "SOLR_JAAS_FILE_PATH":  "/tmp/solr.jaas",
+    "KUDU_PRIMARY_KEYS":  "size,category,department",
+    "KUDU_HASH_KEYS":  "size,department",
+    "KUDU_RANGE_KEYS":  "category",
     "HIVE_THREAD_NUMBER":  1,
     "HIVE_TABLE_TYPE":  "EXTERNAL",
     "HIVE_TABLE_FORMAT":  "PARQUET",

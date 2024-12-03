@@ -1,0 +1,149 @@
+{
+  "model_name" : "store-nodesc",
+  "Fields" : [ {
+    "name" : "store_id",
+    "type" : "INCREMENT_INTEGER",
+    "min" : 0
+  }, {
+    "name" : "city_of_store",
+    "type" : "CITY",
+    "filters" : [ "USA" ]
+  }, {
+    "name" : "country_of_store",
+    "type" : "LINK",
+    "link" : "$city_of_store.country"
+  }, {
+    "name" : "opening_date",
+    "type" : "BIRTHDATE",
+    "min_date" : "01/01/2019",
+    "max_date" : "01/01/2024"
+  }, {
+    "name" : "opening-hours-start",
+    "type" : "INTEGER",
+    "ghost" : "true",
+    "max" : 11,
+    "min" : 8
+  }, {
+    "name" : "extra-night-hours-week",
+    "type" : "INTEGER",
+    "ghost" : "true",
+    "possible_values_weighted" : {
+      "0" : 100,
+      "1" : 10,
+      "2" : 1
+    }
+  }, {
+    "name" : "extra-night-hours-week-end",
+    "type" : "INTEGER",
+    "ghost" : "true",
+    "possible_values_weighted" : {
+      "0" : 30,
+      "1" : 25,
+      "2" : 10,
+      "3" : 1
+    }
+  },
+    {
+      "name" : "extra-day-hours-week-end",
+      "type" : "INTEGER",
+      "ghost" : "true",
+      "possible_values_weighted" : {
+        "0" : 40,
+        "1" : 32,
+        "2" : 5
+      }
+    }, {
+      "name" : "opening-hours-start-week-end",
+      "type" : "INTEGER",
+      "ghost" : "true",
+      "formula" : "${opening-hours-start}-${extra-day-hours-week-end}"
+    }, {
+      "name" : "open-sunday",
+      "type" : "BOOLEAN",
+      "ghost" : "true",
+      "possible_values_weighted" : {
+        "false" : 10,
+        "true" : 1
+      }
+    }, {
+      "name" : "opening-hours-end-week",
+      "type" : "INTEGER",
+      "ghost" : "true",
+      "formula" : "${opening-hours-start}+8-12+${extra-night-hours-week}"
+    }, {
+      "name" : "opening-hours-end-week-end",
+      "type" : "INTEGER",
+      "ghost" : "true",
+      "formula" : "${opening-hours-start}+8-12+${extra-night-hours-week-end}"
+    }, {
+      "name" : "monday_hours",
+      "type" : "STRING",
+      "length" : 20,
+      "injection" : "${opening-hours-start} AM - ${opening-hours-end-week} PM"
+    },
+    {
+      "name" : "tuesday_hours",
+      "type" : "STRING",
+      "length" : 20,
+      "injection" : "${opening-hours-start} AM - ${opening-hours-end-week} PM"
+    },
+    {
+      "name" : "wednesday_hours",
+      "type" : "STRING",
+      "length" : 20,
+      "injection" : "${opening-hours-start} AM - ${opening-hours-end-week} PM"
+    },
+    {
+      "name" : "thursday_hours",
+      "type" : "STRING",
+      "length" : 20,
+      "injection" : "${opening-hours-start} AM - ${opening-hours-end-week} PM"
+    },
+    {
+      "name" : "friday_hours",
+      "type" : "STRING",
+      "length" : 20,
+      "injection" : "${opening-hours-start} AM - ${opening-hours-end-week} PM"
+    },
+    {
+      "name" : "saturday_hours",
+      "type" : "STRING",
+      "length" : 20,
+      "injection" : "${opening-hours-start-week-end} AM - ${opening-hours-end-week} PM"
+    }, {
+      "name" : "sunday_hours",
+      "type" : "STRING",
+      "length" : 20,
+      "formula" : "if( ${open-sunday} == true) {\n\"closed\"\n} else {\n \"${opening-hours-start-week-end} AM - ${opening-hours-end-week-end} PM\"\n}"
+    }, {
+      "name" : "square_meters",
+      "type" : "FLOAT",
+      "max" : 500,
+      "min" : 50
+    }, {
+      "name" : "size",
+      "type" : "STRING",
+      "length" : 20,
+      "formula" : "if(${square_meters} < 100) {\n\"small\"\n} else if(${square_meters} < 250) {\n\"medium\"\n} else if(${square_meters} < 450) {\n\"large\" \n} else {\n\"extra-large\"\n}"
+    }, {
+      "name" : "number_of_employees",
+      "type" : "INTEGER",
+      "formula" : "var extra_factor = 0\nif(${open-sunday} == true){\nextra_factor+=1\n}\nif(${extra-night-hours-week}==1) {\nextra_factor+=0.7\n} else if(${extra-night-hours-week}==2) {\nextra_factor+=1\n}\nif(${extra-night-hours-week-end}==1) {\nextra_factor+=0.6\n} else if(${extra-night-hours-week-end}>=2) {\nextra_factor+=1.1\n}\n1+Math.round((${square_meters}/17.5)+extra_factor)"
+    }],
+  "Table_Names" : {
+    "HIVE_HDFS_FILE_PATH" : "/tmp/datagen-store/",
+    "HDFS_FILE_NAME": "store",
+    "HIVE_DATABASE" : "datagen",
+    "HIVE_TABLE_NAME" : "store"
+  },
+  "Options" : {
+    "HIVE_ON_HDFS" : true,
+    "ONE_FILE_PER_ITERATION" : true,
+    "HIVE_TABLE_FORMAT" : "PARQUET",
+    "HIVE_TABLE_TYPE" : "EXTERNAL",
+    "PARQUET_DICTIONARY_ENCODING" : true,
+    "CSV_HEADER" : true,
+    "DELETE_PREVIOUS" : true,
+    "KAFKA_MESSAGE_TYPE" : "JSON"
+  }
+}

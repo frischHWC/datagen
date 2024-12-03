@@ -1,0 +1,8 @@
+{
+  "model_name": "example-model",
+  "owner": "francois",
+  "allowed_users": [],
+  "allowed_groups": ["public"],
+  "allowed_admin_users": [],
+  "allowed_admin_groups": ["admin_group"]
+}

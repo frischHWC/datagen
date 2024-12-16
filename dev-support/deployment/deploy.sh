@@ -44,9 +44,9 @@ export CM_PASSWORD="admin"
 export RANGER_PASSWORD="admin"
 
 # Version of RD to create (to inject datagen-env.sh)
-export CDP_VERSION="7.1.9.2"
-export DATAGEN_VERSION="0.4.12"
-export DISTRO_SUFFIX="el7"
+export CDP_VERSION="7.3.1.0"
+export DATAGEN_VERSION="1.0.1"
+export DISTRO_SUFFIX="el8"
 
 # Steps to launch
 export CREATE_DATAGEN=true
@@ -280,6 +280,9 @@ then
       --distributions-to-build=${DISTRO_SUFFIX} \
       --csd-dir=${CSD_LOCAL_DIR} \
       --parcel-dir=${PARCEL_LOCAL_DIR} \
+      --build-k8s=false \
+      --build-standalone=false \
+      --build-models=false \
       --debug=${DEBUG}
     cd ../
   fi

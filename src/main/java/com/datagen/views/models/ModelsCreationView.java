@@ -1687,6 +1687,10 @@ public class ModelsCreationView extends Composite<VerticalLayout> {
                     OptionsConverter.Options.HIVE_TABLE_TYPE, optionsPropsBinder,
                     "EXTERNAL", "MANAGED", "ICEBERG"),
                 ""),
+                createInfoForAParameter(
+                        createGenericBooleanOptionProps("Hive Iceberg V2", true,
+                                OptionsConverter.Options.HIVE_TABLE_ICEBERG_V2, optionsPropsBinder),
+                        ""),
             createInfoForAParameter(
                 createGenericComboStringOptionProps("Hive Table Format", "PARQUET",
                     OptionsConverter.Options.HIVE_TABLE_FORMAT, optionsPropsBinder,

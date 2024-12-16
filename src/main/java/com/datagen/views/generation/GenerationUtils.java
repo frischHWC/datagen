@@ -712,6 +712,15 @@ public class GenerationUtils {
     return field;
   }
 
+  static RadioButtonGroup createHiveIcebergVersion(Binder<Model> binderModel, Map<OptionsConverter.Options, Object> tableNamesProps) {
+    var field = createGenericBooleanRadio(tableNamesProps,
+            OptionsConverter.Options.HIVE_TABLE_ICEBERG_V2,
+            "Iceberg Version 2",
+            binderModel);
+    field.setRequired(true);
+    return field;
+  }
+
   static ComboBox<String> createHiveTableFormat(Binder<Model> binderModel, Map<OptionsConverter.Options, Object> tableNamesProps) {
     var field = createGenericComboBoxfield(tableNamesProps,
         OptionsConverter.Options.HIVE_TABLE_FORMAT,

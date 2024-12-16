@@ -378,6 +378,7 @@ public Object getOptionsOrDefault(OptionsConverter.Options option) {
     case PARQUET_DICTIONARY_ENCODING:
     case HIVE_ON_HDFS:
     case ONE_FILE_PER_ITERATION:
+    case HIVE_TABLE_ICEBERG_V2:
       optionResult = true;
       break;
     case KAFKA_ACKS_CONFIG:

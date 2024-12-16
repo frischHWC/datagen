@@ -2,7 +2,7 @@
   "name": "DATAGEN",
   "label": "Datagen",
   "description": "The service to generate Data into various services of CDP platform",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "parcel": {
     "requiredTags": [
       "datagen"
@@ -20,7 +20,7 @@
   "compatibility": {
     "generation": 2,
     "cdhVersion": {
-      "min": "7.1.9",
+      "min": "7.3.1.0",
       "max": "8.0.0"
     }
   },

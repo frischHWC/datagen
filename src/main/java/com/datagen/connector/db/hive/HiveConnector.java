@@ -60,6 +60,7 @@ public class HiveConnector implements ConnectorInterface {
   private final boolean hiveOnHDFS;
   private final String queue;
   private final Boolean useKerberos;
+  private final Boolean useIcebergV2;
   private final Boolean isPartitioned;
   private final LinkedList<String> partCols;
   private final Boolean isBucketed;
@@ -67,6 +68,7 @@ public class HiveConnector implements ConnectorInterface {
   private int bucketNumber;
   private final String extraCreate;
   private final String extraInsert;
+  private final String extraTblProperties;
   private final Model.HiveTableType hiveTableType;
   private final Model.HiveTableFormat hiveTableFormat;
   private Map<ApplicationConfigs, String> properties;
@@ -83,11 +85,16 @@ public class HiveConnector implements ConnectorInterface {
     this.tableName = (String) model.getTableNames()
         .get(OptionsConverter.TableNames.HIVE_TABLE_NAME);
     this.tableNameTemporary = model.getTableNames()
-        .get(OptionsConverter.TableNames.HIVE_TEMPORARY_TABLE_NAME) == null ?
-        tableName + "_tmp" : (String) model.getTableNames()
-        .get(OptionsConverter.TableNames.HIVE_TEMPORARY_TABLE_NAME);
+        .get(OptionsConverter.TableNames.HIVE_TEMPORARY_TABLE_NAME) != null &&
+            !model.getTableNames()
+                    .get(OptionsConverter.TableNames.HIVE_TEMPORARY_TABLE_NAME).toString().isBlank()?
+            (String) model.getTableNames()
+          .get(OptionsConverter.TableNames.HIVE_TEMPORARY_TABLE_NAME) :
+            tableName + "_tmp";
     this.queue = (String) model.getOptionsOrDefault(
         OptionsConverter.Options.HIVE_TEZ_QUEUE_NAME);
+    this.useIcebergV2 = (Boolean) model.getOptionsOrDefault(
+            OptionsConverter.Options.HIVE_TABLE_ICEBERG_V2);
     this.locationTemporaryTable = (String) model.getTableNames()
         .get(OptionsConverter.TableNames.HIVE_HDFS_FILE_PATH);
     this.hiveUri =
@@ -125,6 +132,12 @@ public class HiveConnector implements ConnectorInterface {
         model.getSQLPartBucketCreate(partCols, bucketCols, bucketNumber);
     this.extraInsert =
         model.getSQLPartBucketInsert(partCols, bucketCols, bucketNumber);
+
+    if(this.useIcebergV2){
+      this.extraTblProperties = "'format-version' = '2'";
+    } else {
+      this.extraTblProperties = "";
+    }
 
     Configuration hadoopConf = new org.apache.hadoop.conf.Configuration();
     hadoopConf.set("iceberg.engine.hive.enabled", "true");
@@ -211,7 +224,9 @@ public class HiveConnector implements ConnectorInterface {
           tableStatementCreation =
               "CREATE TABLE IF NOT EXISTS `" + tableName + "`" +
                   model.getSQLSchema(partCols) + this.extraCreate +
-                  " STORED BY ICEBERG";
+                      // model.HiveTFtoString(this.hiveTableFormat) +
+                  " STORED BY ICEBERG" +
+                      " TBLPROPERTIES ( " + this.extraTblProperties + " )";
         } else if (hiveTableType == Model.HiveTableType.EXTERNAL) {
           log.info("Creating External table: " + tableName);
           tableStatementCreation =
@@ -254,7 +269,7 @@ public class HiveConnector implements ConnectorInterface {
           }
           this.hdfsconnector.init(model, writer);
 
-          if (hiveTableType == Model.HiveTableType.MANAGED) {
+          if (hiveTableType == Model.HiveTableType.MANAGED || hiveTableType == Model.HiveTableType.ICEBERG) {
             String tableStatementCreationTemp =
                 "CREATE EXTERNAL TABLE IF NOT EXISTS `" + tableNameTemporary + "`" +
                     model.getSQLSchema(null) +
@@ -289,7 +304,7 @@ public class HiveConnector implements ConnectorInterface {
   public void terminate() {
     try {
       if (hiveOnHDFS) {
-        if (hiveTableType == Model.HiveTableType.MANAGED) {
+        if (hiveTableType == Model.HiveTableType.MANAGED || hiveTableType == Model.HiveTableType.ICEBERG) {
           log.info("Starting to load data to final table");
           prepareAndExecuteStatement(
               "INSERT INTO `" + tableName + "`" + this.extraInsert +

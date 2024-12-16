@@ -622,6 +622,7 @@ public class GenerationView extends Composite<VerticalLayout> {
             var tempTableName = createHiveTempTable(binderModel,tableNamesProps);
             var hiveThreadNumber  = createHiveThreadNumber(binderModel, optionsProps);
             var hiveTableType = createHiveTableType(binderModel, optionsProps);
+            var hiveIcebergV2 = createHiveIcebergVersion(binderModel, optionsProps);
             var hiveTableFormat = createHiveTableFormat(binderModel, optionsProps);
             var hiveOnHdfs = createHiveOnHdfs(binderModel, optionsProps);
             var hiveTezQueueName = createHiveTezQueueName(binderModel, optionsProps);
@@ -629,7 +630,7 @@ public class GenerationView extends Composite<VerticalLayout> {
             var hiveTableBucketCols = createHiveTableBucketsCols(binderModel, optionsProps);
             var hiveTableBucketNumber = createHiveTableBucketsNumber(binderModel, optionsProps);
 
-            var details = createOptionalConfigs(deletePrevious, tempTableName, hiveThreadNumber, hiveTableType, hiveTableFormat,
+            var details = createOptionalConfigs(deletePrevious, tempTableName, hiveThreadNumber, hiveTableType, hiveIcebergV2, hiveTableFormat,
                 hiveOnHdfs, hiveTezQueueName, hiveTablePartitionCols, hiveTableBucketCols, hiveTableBucketNumber);
             return List.of(database, tablename, hdfsPath, hdfsFileName, details);
         }

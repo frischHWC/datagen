@@ -270,9 +270,11 @@ then
   mkdir -p ${CSD_DIR}
   mkdir -p  ${CSD_DIR}/descriptor/
   mkdir -p  ${CSD_DIR}/scripts/
+  mkdir -p  ${CSD_DIR}/images/
   mkdir -p  ${CSD_DIR}/aux/templates/
 
   cp -R scripts/* ${CSD_DIR}/scripts/
+  cp -R images/* ${CSD_DIR}/images/
   cp -R descriptor/* ${CSD_DIR}/descriptor/
   cp -R aux/templates/* ${CSD_DIR}/aux/templates
 

@@ -33,6 +33,8 @@ import org.vaadin.lineawesome.LineAwesomeIcon;
 @Slf4j
 public class MainLayout extends AppLayout {
 
+    String version = "1.0.1";
+
     private H1 viewTitle;
     private final transient AuthenticationContext authContext;
 
@@ -107,11 +109,10 @@ public class MainLayout extends AppLayout {
         anchorGit.getElement().setAttribute("target", "_blank");
         Anchor anchorDoc = new Anchor("https://datagener.github.io/", LineAwesomeIcon.BOOK_OPEN_SOLID.create());
         anchorDoc.getElement().setAttribute("target", "_blank");
-        //var localUri = Page.fetchCurrentURL();
+
         var localUri = UI.getCurrent().getActiveViewLocation().getPath();
         Anchor anchorSwagger = new Anchor(localUri + "/swagger-ui.html#/", LineAwesomeIcon.CODE_SOLID.create());
         anchorSwagger.getElement().setAttribute("target", "_blank");
-        String version = "1.0.0";
 
         // User Info
         var userInfo = authContext.getAuthenticatedUser(UserDetails.class)

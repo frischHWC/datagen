@@ -3,6 +3,7 @@
   "label": "Datagen",
   "description": "The service to generate Data into various services of CDP platform",
   "version": "1.0.1",
+  "icon": "images/datagen.svg",
   "parcel": {
     "requiredTags": [
       "datagen"
@@ -16,7 +17,6 @@
     "group": "datagen",
     "principal": "datagen"
   },
-  "maxInstances": 1,
   "compatibility": {
     "generation": 2,
     "cdhVersion": {

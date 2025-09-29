@@ -38,4 +38,7 @@ drivers/
 error-screenshots/
 webpack.generated.js
 
+# if using plugin continue
+.continue
+
 

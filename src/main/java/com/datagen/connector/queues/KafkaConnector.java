@@ -92,7 +92,6 @@ public class KafkaConnector implements ConnectorInterface {
         properties.get(ApplicationConfigs.KAFKA_AUTH_KERBEROS_KEYTAB) :
         model.getTableNames().get(OptionsConverter.TableNames.KAFKA_KEYTAB).toString();
 
-
     props = new Properties();
     props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
         properties.get(ApplicationConfigs.KAFKA_BROKERS));

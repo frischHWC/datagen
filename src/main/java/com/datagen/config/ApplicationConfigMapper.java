@@ -31,12 +31,16 @@ import java.util.stream.Collectors;
 @Component
 public class ApplicationConfigMapper {
 
+  private ApplicationConfigMapper() {
+    throw new UnsupportedOperationException("This class cannot be instantiated");
+  }
+
   public static ApplicationConfigs getApplicationConfigFromProperty(
       String propertyName) {
     ApplicationConfigs propValue=null;
     var propParsed=propertyName.toUpperCase(Locale.ROOT)
-        .replaceAll("\\.", "_")
-        .replaceAll("-", "_");
+        .replace("\\.", "_")
+        .replace("-", "_");
     try {
       propValue = ApplicationConfigs.valueOf(propParsed);
     } catch (Exception e) {

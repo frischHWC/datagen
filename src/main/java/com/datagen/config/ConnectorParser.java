@@ -75,7 +75,7 @@ public class ConnectorParser {
     SOLR
     ;
 
-    public static Comparator<Connector> connectorInitPrecedence = new Comparator<>() {
+    public static final Comparator<Connector> connectorInitPrecedence = new Comparator<>() {
       @Override
       public int compare(Connector s1, Connector s2) {
         if (s1.equals(Connector.OZONE_AVRO) ||
